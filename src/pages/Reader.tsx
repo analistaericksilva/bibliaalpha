@@ -286,6 +286,8 @@ const Reader = () => {
               {verses.map((v) => {
                 const speechClass = getSpeechClass(v.text, currentBook);
                 const hasNote = noteVerses.has(v.verse);
+                const hasCrossRef = crossRefVerses.has(v.verse);
+                const isClickable = hasNote || hasCrossRef;
                 const hlColor = getHighlightColor(v.verse);
                 const fav = isFavorite(v.verse);
                 const pNote = hasPersonalNote(v.verse);
@@ -295,8 +297,8 @@ const Reader = () => {
                   <span key={v.verse}>
                     <span
                       ref={(el) => { verseRefs.current[v.verse] = el; }}
-                      className={`${hasNote ? "cursor-pointer" : ""} ${hlBg} rounded px-0.5 transition-colors`}
-                      onClick={hasNote ? () => handleVerseClick(v.verse) : undefined}
+                      className={`${isClickable ? "cursor-pointer" : ""} ${hlBg} rounded px-0.5 transition-colors`}
+                      onClick={isClickable ? () => handleVerseClick(v.verse) : undefined}
                       onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                       onTouchStart={(e) => {
                         const timer = setTimeout(() => handleVerseLongPress(v.verse, e), 500);
