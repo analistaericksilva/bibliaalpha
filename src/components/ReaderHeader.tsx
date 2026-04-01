@@ -25,6 +25,7 @@ const ReaderHeader = ({
   onToggleFavorites,
   onToggleGoTo,
   onToggleMap,
+  onShare,
 }: ReaderHeaderProps) => {
   const { isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
