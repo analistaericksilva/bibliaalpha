@@ -98,11 +98,6 @@ const Reader = () => {
 
     if (notesRes.data) {
       setNoteVerses(new Set(notesRes.data.map((n: any) => n.verse_start)));
-      const notesMap = new Map<number, InlineNote>();
-      notesRes.data.forEach((n: any) => {
-        notesMap.set(n.verse_start, { verse_start: n.verse_start, title: n.title, content: n.content });
-      });
-      setInlineNotes(notesMap);
     }
     setLoading(false);
   };
