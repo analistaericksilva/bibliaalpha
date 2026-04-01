@@ -189,6 +189,18 @@ const Reader = () => {
     setShowUserPanel(true);
   };
 
+  const handleShareChapter = async () => {
+    const shareText = `📖 ${book?.name} ${currentChapter} — Bíblia Alpha`;
+    const shareUrl = `${window.location.origin}/reader?book=${currentBook}&chapter=${currentChapter}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: shareText, text: shareText, url: shareUrl });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <ReaderHeader
