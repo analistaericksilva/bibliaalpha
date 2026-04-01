@@ -171,10 +171,8 @@ const Reader = () => {
   };
 
   const handleVerseClick = (verseNum: number) => {
-    if (noteVerses.has(verseNum) || crossRefVerses.has(verseNum)) {
-      setSelectedVerse(verseNum);
-      setShowNotes(true);
-    }
+    setSelectedVerse(verseNum);
+    setShowNotes(true);
   };
 
   const handleVerseLongPress = (verseNum: number, e: React.MouseEvent | React.TouchEvent) => {
