@@ -199,20 +199,25 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                   </div>
                   <div className="px-5 py-4 space-y-4">
                     {typeNotes.map((note) => (
-                      <div key={note.id}>
-                        {(typeNotes.length > 1 || note.title) && (
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <span className="text-[10px] font-sans font-semibold text-primary tracking-wider">
-                              v. {note.verse_start}
-                              {note.verse_end ? `–${note.verse_end}` : ""}
-                            </span>
-                            {note.title && (
-                              <span className="text-xs font-sans font-semibold text-foreground">
+                      <div key={note.id} className={typeNotes.length > 1 ? "pb-4 border-b border-border/30 last:border-0 last:pb-0" : ""}>
+                        <div className="flex items-start gap-2 mb-1.5">
+                          <span className="text-[10px] font-sans font-semibold text-primary tracking-wider shrink-0 mt-0.5">
+                            v. {note.verse_start}
+                            {note.verse_end ? `–${note.verse_end}` : ""}
+                          </span>
+                          <div className="flex-1">
+                            {note.title && note.title !== config.label && (
+                              <span className="text-xs font-sans font-semibold text-foreground block">
                                 {note.title}
                               </span>
                             )}
+                            {note.source && type === "sermon" && (
+                              <span className="text-[10px] font-sans text-muted-foreground italic">
+                                {note.source}
+                              </span>
+                            )}
                           </div>
-                        )}
+                        </div>
                         <p className="text-[13px] font-serif leading-[1.8] text-foreground/90 whitespace-pre-line">
                           {note.content}
                         </p>
