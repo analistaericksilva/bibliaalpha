@@ -2,11 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { bibleBooks } from "@/data/bibleBooks";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import ReaderHeader from "@/components/ReaderHeader";
 import BookSelector from "@/components/BookSelector";
 import SearchPanel from "@/components/SearchPanel";
 import StudyNotesPanel from "@/components/StudyNotesPanel";
 import DictionaryPanel from "@/components/DictionaryPanel";
+import UserPanel from "@/components/UserPanel";
+import VerseActionMenu from "@/components/VerseActionMenu";
+import { useUserAnnotations } from "@/hooks/useUserAnnotations";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 interface Verse {
@@ -14,8 +18,6 @@ interface Verse {
   text: string;
 }
 
-
-// Patterns that indicate God speaking in OT
 const godSpeechPatterns = [
   /^Disse (?:mais )?(?:o )?(?:Senhor|Deus|SENHOR|Jeová)/i,
   /^E disse (?:o )?(?:Senhor|Deus|SENHOR)/i,
@@ -29,7 +31,6 @@ const godSpeechPatterns = [
   /^E disse Deus:/i,
 ];
 
-// Patterns for Jesus speaking in NT
 const jesusSpeechPatterns = [
   /^(?:E )?[Dd]isse-lhes? (?:Jesus|ele|Ele)/i,
   /^(?:E )?[Rr]espondeu-lhes? (?:Jesus|ele|Ele)/i,
@@ -41,32 +42,54 @@ const jesusSpeechPatterns = [
   /^Em verdade,? em verdade/i,
 ];
 
-const ntBooks = new Set(bibleBooks.filter(b => b.testament === "new").map(b => b.id));
+const ntBooks = new Set(bibleBooks.filter((b) => b.testament === "new").map((b) => b.id));
 
 const getSpeechClass = (text: string, bookId: string): string => {
   if (ntBooks.has(bookId)) {
-    if (jesusSpeechPatterns.some(p => p.test(text))) return "text-jesus";
+    if (jesusSpeechPatterns.some((p) => p.test(text))) return "text-jesus";
   } else {
-    if (godSpeechPatterns.some(p => p.test(text))) return "text-god";
+    if (godSpeechPatterns.some((p) => p.test(text))) return "text-god";
   }
   return "";
 };
 
+const HIGHLIGHT_BG: Record<string, string> = {
+  yellow: "bg-yellow-200/60",
+  green: "bg-green-200/60",
+  blue: "bg-blue-200/60",
+  pink: "bg-pink-200/60",
+  orange: "bg-orange-200/60",
+};
+
 const Reader = () => {
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [currentBook, setCurrentBook] = useState(searchParams.get("book") || "gn");
   const [currentChapter, setCurrentChapter] = useState(Number(searchParams.get("chapter")) || 1);
   const [showBooks, setShowBooks] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showDictionary, setShowDictionary] = useState(false);
+  const [showUserPanel, setShowUserPanel] = useState(false);
+  const [userPanelTab, setUserPanelTab] = useState("history");
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const [noteVerses, setNoteVerses] = useState<Set<number>>(new Set());
+  const [actionMenu, setActionMenu] = useState<{ verse: number; x: number; y: number } | null>(null);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
 
   const book = bibleBooks.find((b) => b.id === currentBook);
+
+  const {
+    highlights,
+    personalNotes,
+    favorites,
+    toggleHighlight,
+    toggleFavorite,
+    savePersonalNote,
+    recordReading,
+  } = useUserAnnotations(currentBook, currentChapter);
 
   const fetchVerses = async (bookId: string, chapter: number) => {
     setLoading(true);
@@ -79,10 +102,9 @@ const Reader = () => {
         .order("verse_number"),
       supabase
         .from("study_notes")
-        .select("verse_start, title, content")
+        .select("verse_start")
         .eq("book_id", bookId)
-        .eq("chapter", chapter)
-        .order("verse_start"),
+        .eq("chapter", chapter),
     ]);
 
     if (versesRes.data && !versesRes.error) {
@@ -100,6 +122,13 @@ const Reader = () => {
   useEffect(() => {
     fetchVerses(currentBook, currentChapter);
   }, [currentBook, currentChapter]);
+
+  // Record reading history
+  useEffect(() => {
+    if (!loading && verses.length > 0) {
+      recordReading();
+    }
+  }, [currentBook, currentChapter, loading, verses.length, recordReading]);
 
   const goToChapter = (bookId: string, chapter: number, verse?: number) => {
     setCurrentBook(bookId);
@@ -137,6 +166,27 @@ const Reader = () => {
     }
   };
 
+  const handleVerseLongPress = (verseNum: number, e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+    setActionMenu({ verse: verseNum, x: clientX, y: clientY });
+  };
+
+  const getHighlightColor = (verse: number) => {
+    const hl = highlights.find((h) => h.verse === verse);
+    return hl ? hl.color : null;
+  };
+
+  const isFavorite = (verse: number) => favorites.some((f) => f.verse === verse);
+  const getPersonalNote = (verse: number) => personalNotes.find((n) => n.verse === verse)?.content || "";
+  const hasPersonalNote = (verse: number) => personalNotes.some((n) => n.verse === verse);
+
+  const openUserPanel = (tab: string) => {
+    setUserPanelTab(tab);
+    setShowUserPanel(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <ReaderHeader
@@ -144,6 +194,9 @@ const Reader = () => {
         onToggleBookSelector={() => setShowBooks(!showBooks)}
         onToggleNotes={() => { setSelectedVerse(null); setShowNotes(!showNotes); }}
         onToggleDictionary={() => setShowDictionary(!showDictionary)}
+        onToggleHistory={() => openUserPanel("history")}
+        onToggleFavorites={() => openUserPanel("favorites")}
+        onToggleGoTo={() => openUserPanel("goto")}
       />
 
       {/* Navigation zones */}
@@ -163,7 +216,6 @@ const Reader = () => {
       {/* Reader content */}
       <main className="max-w-3xl mx-auto px-6 md:px-12 pt-32 pb-48">
         <div className="bg-paper page-shadow rounded p-8 md:p-16 mb-8 animate-fade-in">
-          {/* Chapter heading */}
           <div className="text-center mb-12">
             <p className="text-[9px] tracking-[0.4em] text-muted-foreground font-sans mb-2">
               {book?.testament === "old" ? "ANTIGO TESTAMENTO" : "NOVO TESTAMENTO"}
@@ -175,7 +227,7 @@ const Reader = () => {
           </div>
 
           {/* Legend */}
-          <div className="flex items-center justify-center gap-4 mb-8 text-[10px] font-sans tracking-wider">
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-8 text-[10px] font-sans tracking-wider">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-[hsl(var(--god))]" />
               <span className="text-muted-foreground">DEUS FALA</span>
@@ -186,9 +238,18 @@ const Reader = () => {
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-primary" />
-              <span className="text-muted-foreground">TEM NOTA</span>
+              <span className="text-muted-foreground">NOTA DE ESTUDO</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-destructive" />
+              <span className="text-muted-foreground">FAVORITO</span>
             </span>
           </div>
+
+          {/* Tip */}
+          <p className="text-[9px] text-center text-muted-foreground font-sans mb-6 tracking-wide">
+            Clique longo em qualquer versículo para grifar, favoritar ou anotar
+          </p>
 
           {/* Verses */}
           {loading ? (
@@ -200,15 +261,33 @@ const Reader = () => {
               {verses.map((v) => {
                 const speechClass = getSpeechClass(v.text, currentBook);
                 const hasNote = noteVerses.has(v.verse);
+                const hlColor = getHighlightColor(v.verse);
+                const fav = isFavorite(v.verse);
+                const pNote = hasPersonalNote(v.verse);
+                const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
+
                 return (
                   <span key={v.verse}>
                     <span
                       ref={(el) => { verseRefs.current[v.verse] = el; }}
-                      className={`${hasNote ? "cursor-pointer hover:bg-primary/5 rounded px-0.5" : ""}`}
+                      className={`${hasNote ? "cursor-pointer" : ""} ${hlBg} rounded px-0.5 transition-colors`}
                       onClick={hasNote ? () => handleVerseClick(v.verse) : undefined}
+                      onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
+                      onTouchStart={(e) => {
+                        const timer = setTimeout(() => handleVerseLongPress(v.verse, e), 500);
+                        const clear = () => clearTimeout(timer);
+                        e.currentTarget.addEventListener("touchend", clear, { once: true });
+                        e.currentTarget.addEventListener("touchmove", clear, { once: true });
+                      }}
                     >
-                      <sup className={`verse-number ${hasNote ? "!text-primary !font-bold" : ""}`}>
-                        {v.verse}
+                      <sup
+                        className={`verse-number ${
+                          hasNote ? "!text-primary !font-bold" : ""
+                        } ${fav ? "!text-destructive !font-bold" : ""} ${
+                          pNote ? "!text-accent !underline" : ""
+                        }`}
+                      >
+                        {v.verse}{fav && "♥"}
                       </sup>
                       <span className={speechClass}>{v.text}</span>{" "}
                     </span>
@@ -244,6 +323,22 @@ const Reader = () => {
         </div>
       </main>
 
+      {/* Action menu for verse interactions */}
+      {actionMenu && (
+        <VerseActionMenu
+          verse={actionMenu.verse}
+          x={actionMenu.x}
+          y={actionMenu.y}
+          isFavorite={isFavorite(actionMenu.verse)}
+          highlightColor={getHighlightColor(actionMenu.verse)}
+          existingNote={getPersonalNote(actionMenu.verse)}
+          onClose={() => setActionMenu(null)}
+          onToggleFavorite={() => toggleFavorite(actionMenu.verse)}
+          onHighlight={(color) => toggleHighlight(actionMenu.verse, color)}
+          onSaveNote={(content) => savePersonalNote(actionMenu.verse, content)}
+        />
+      )}
+
       <BookSelector
         open={showBooks}
         onClose={() => setShowBooks(false)}
@@ -269,6 +364,13 @@ const Reader = () => {
       <DictionaryPanel
         open={showDictionary}
         onClose={() => setShowDictionary(false)}
+      />
+
+      <UserPanel
+        open={showUserPanel}
+        onClose={() => setShowUserPanel(false)}
+        onNavigate={goToChapter}
+        defaultTab={userPanelTab}
       />
     </div>
   );
