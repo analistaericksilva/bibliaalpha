@@ -9,6 +9,7 @@ import SearchPanel from "@/components/SearchPanel";
 import StudyNotesPanel from "@/components/StudyNotesPanel";
 import DictionaryPanel from "@/components/DictionaryPanel";
 import UserPanel from "@/components/UserPanel";
+import BibleMapPanel from "@/components/BibleMapPanel";
 import VerseActionMenu from "@/components/VerseActionMenu";
 import { useUserAnnotations } from "@/hooks/useUserAnnotations";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
@@ -71,6 +72,7 @@ const Reader = () => {
   const [showNotes, setShowNotes] = useState(false);
   const [showDictionary, setShowDictionary] = useState(false);
   const [showUserPanel, setShowUserPanel] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [userPanelTab, setUserPanelTab] = useState("history");
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [verses, setVerses] = useState<Verse[]>([]);
@@ -197,6 +199,7 @@ const Reader = () => {
         onToggleHistory={() => openUserPanel("history")}
         onToggleFavorites={() => openUserPanel("favorites")}
         onToggleGoTo={() => openUserPanel("goto")}
+        onToggleMap={() => setShowMap(!showMap)}
       />
 
       {/* Navigation zones */}
@@ -374,6 +377,14 @@ const Reader = () => {
         onClose={() => setShowUserPanel(false)}
         onNavigate={goToChapter}
         defaultTab={userPanelTab}
+      />
+
+      <BibleMapPanel
+        open={showMap}
+        onClose={() => setShowMap(false)}
+        bookId={currentBook}
+        chapter={currentChapter}
+        onNavigate={goToChapter}
       />
     </div>
   );
