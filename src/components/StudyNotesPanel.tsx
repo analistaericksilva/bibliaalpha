@@ -17,17 +17,12 @@ interface StudyNote {
   note_type: string;
 }
 
-interface CrossRef {
-  id: string;
-  verse: number;
-  refs: string;
-}
-
 interface DictEntry {
   id: string;
   term: string;
   definition: string;
   hebrew_greek: string | null;
+  references_list: any;
 }
 
 interface StudyNotesPanelProps {
@@ -43,16 +38,16 @@ interface StudyNotesPanelProps {
 
 const abbrevToId: Record<string, string> = {};
 const nameToId: Record<string, string> = {};
+const idToAbbrev: Record<string, string> = {};
 bibleBooks.forEach((b) => {
   abbrevToId[b.abbrev.toLowerCase()] = b.id;
   nameToId[b.name.toLowerCase()] = b.id;
-  // also map id itself
   abbrevToId[b.id] = b.id;
+  idToAbbrev[b.id] = b.abbrev;
 });
 
 function parseReference(refStr: string): { bookId: string; chapter: number; verse?: number } | null {
   const s = refStr.trim();
-  // Match patterns like "Gn 1.2", "1Co 3.4", "Sl 119.105", "Hb 1.10"
   const match = s.match(/^(\d?\s?[A-Za-zÀ-ú]+)\s+(\d+)(?:[\.:](\d+))?/);
   if (!match) return null;
   const abbrev = match[1].replace(/\s/g, "").toLowerCase();
@@ -63,14 +58,12 @@ function parseReference(refStr: string): { bookId: string; chapter: number; vers
   return { bookId, chapter, verse };
 }
 
-// Renders a text block making all biblical references clickable
 function renderContentWithRefs(
   text: string,
   onNavigate: ((bookId: string, chapter: number, verse?: number) => void) | undefined
 ) {
   if (!onNavigate) return <span className="font-serif">{text}</span>;
 
-  // Regex to find biblical references like "Gn 1.2", "1Co 3:4", "Sl 119.105", "Êx 20.11"
   const refRegex = /(\d?\s?[A-ZÀ-Ú][a-zà-ú]+)\s+(\d+)[\.:](\d+)(?:-(\d+))?/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
@@ -82,7 +75,6 @@ function renderContentWithRefs(
     const bookId = abbrevToId[abbrev] || nameToId[abbrev];
 
     if (bookId) {
-      // Add text before the match
       if (match.index > lastIndex) {
         parts.push(<span key={`t${lastIndex}`} className="font-serif">{text.slice(lastIndex, match.index)}</span>);
       }
@@ -108,7 +100,6 @@ function renderContentWithRefs(
   return parts.length > 0 ? <>{parts}</> : <span className="font-serif">{text}</span>;
 }
 
-// Renders semicolon-separated cross references as clickable links
 function renderClickableRefs(
   refsText: string,
   onNavigate: (bookId: string, chapter: number, verse?: number) => void
@@ -146,8 +137,26 @@ const SOURCE_LABELS: Record<string, { label: string; subtitle: string }> = {
   commentary: { label: "NOTA DE ESTUDO", subtitle: "Comentário" },
 };
 
-// --- Display order for note groups ---
 const TYPE_ORDER = ["matthew_henry", "sermon", "commentary"];
+
+// --- Helper: match dict references to current verse ---
+
+function dictEntryMatchesVerse(entry: DictEntry, bookId: string, chapter: number, verse: number | null): boolean {
+  if (!entry.references_list || !Array.isArray(entry.references_list)) return false;
+  const abbrev = idToAbbrev[bookId];
+  if (!abbrev) return false;
+
+  return entry.references_list.some((ref: string) => {
+    if (!ref) return false;
+    // refs like "Gn 1:1", "Sl 19:1", "Gn 15:18"
+    const parsed = parseReference(ref);
+    if (!parsed) return false;
+    if (parsed.bookId !== bookId) return false;
+    if (parsed.chapter !== chapter) return false;
+    if (verse && parsed.verse) return parsed.verse === verse;
+    return true; // chapter-level match
+  });
+}
 
 const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate }: StudyNotesPanelProps) => {
   const [notes, setNotes] = useState<StudyNote[]>([]);
@@ -160,7 +169,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
     const fetchData = async () => {
       setLoading(true);
 
-      // Fetch study notes (exclude concordance — it's shown separately)
+      // Fetch study notes (exclude concordance — shown separately)
       let notesQuery = supabase
         .from("study_notes")
         .select("*")
@@ -170,7 +179,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
         .order("verse_start")
         .limit(500);
 
-      // Fetch concordance from study_notes (the main source with 31k+ entries)
+      // Fetch concordance
       let concQuery = supabase
         .from("study_notes")
         .select("*")
@@ -185,13 +194,14 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
         concQuery = concQuery.eq("verse_start", selectedVerse);
       }
 
-      // Fetch Strong's dictionary entries relevant to this verse/chapter
-      // Search for entries that reference this book+chapter
-      const searchTerm = selectedVerse
-        ? `${bookId} ${chapter}:${selectedVerse}`
-        : `${bookId} ${chapter}`;
+      // Fetch curated Portuguese Strong's/dictionary entries (those with references)
+      const dictQuery = supabase
+        .from("bible_dictionary")
+        .select("*")
+        .not("references_list", "is", null)
+        .not("hebrew_greek", "is", null);
 
-      const [notesRes, concRes] = await Promise.all([notesQuery, concQuery]);
+      const [notesRes, concRes, dictRes] = await Promise.all([notesQuery, concQuery, dictQuery]);
 
       // Filter notes covering selected verse
       let filteredNotes = (notesRes.data as StudyNote[]) || [];
@@ -206,46 +216,12 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
       setNotes(filteredNotes);
       setConcordanceRefs((concRes.data as StudyNote[]) || []);
 
-      // Fetch Strong's entries based on verse text keywords
-      if (selectedVerse) {
-        // First get the verse text
-        const { data: verseData } = await supabase
-          .from("bible_verses")
-          .select("text")
-          .eq("book_id", bookId)
-          .eq("chapter", chapter)
-          .eq("verse_number", selectedVerse)
-          .single();
-
-        if (verseData?.text) {
-          // Extract meaningful words (4+ chars, no common words)
-          const stopWords = new Set(["para", "como", "pela", "pelo", "dele", "dela", "deus", "senhor", "sobre", "disse", "todos", "toda", "este", "esta", "isso", "aqui", "mais", "seus", "suas", "eles", "elas", "foram", "será", "está", "tinha", "fazer", "onde", "qual", "quem", "quando", "porque", "porém", "então", "também", "depois", "antes", "entre", "ainda", "muito", "outro", "outra", "cada", "mesmo", "mesma", "nosso", "vosso", "terra", "casa", "pois", "assim", "seria", "pode", "podem", "havia", "estas", "estes", "outros", "outras", "tudo", "nada"]);
-          const words = verseData.text
-            .replace(/[^\wÀ-ú]/g, " ")
-            .split(/\s+/)
-            .filter((w: string) => w.length >= 4 && !stopWords.has(w.toLowerCase()))
-            .map((w: string) => w.toLowerCase())
-            .slice(0, 6); // Top 6 keywords
-
-          if (words.length > 0) {
-            // Search dictionary for terms matching any keyword
-            const orFilter = words.map((w: string) => `term.ilike.%${w}%`).join(",");
-            const { data: strongData } = await supabase
-              .from("bible_dictionary")
-              .select("*")
-              .not("hebrew_greek", "is", null)
-              .or(orFilter)
-              .limit(8);
-            setStrongEntries((strongData as DictEntry[]) || []);
-          } else {
-            setStrongEntries([]);
-          }
-        } else {
-          setStrongEntries([]);
-        }
-      } else {
-        setStrongEntries([]);
-      }
+      // Filter dictionary entries by verse reference match
+      const allDict = (dictRes.data as DictEntry[]) || [];
+      const matched = allDict.filter((e) =>
+        dictEntryMatchesVerse(e, bookId, chapter, selectedVerse)
+      );
+      setStrongEntries(matched);
 
       setLoading(false);
     };
@@ -264,7 +240,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
 
   if (!open) return null;
 
-  // Group notes by note_type, excluding concordance
+  // Group notes by note_type
   const groupedNotes: Record<string, StudyNote[]> = {};
   notes.forEach((note) => {
     const key = note.note_type || "commentary";
@@ -272,13 +248,13 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
     groupedNotes[key].push(note);
   });
 
-  // Sort groups by defined order
   const sortedTypes = Object.keys(groupedNotes).sort((a, b) => {
     const ai = TYPE_ORDER.indexOf(a);
     const bi = TYPE_ORDER.indexOf(b);
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
   });
 
+  const bookName = bibleBooks.find((b) => b.id === bookId)?.name || bookId;
   const hasContent = notes.length > 0 || concordanceRefs.length > 0 || strongEntries.length > 0;
 
   return (
@@ -287,16 +263,23 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
       <div className="fixed top-0 right-0 h-full w-full max-w-lg bg-background border-l border-border z-50 animate-fade-in flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-[11px] tracking-[0.25em] font-sans font-semibold text-foreground uppercase">
-            {selectedVerse ? `Notas de Estudo — v. ${selectedVerse}` : "Notas e Referências"}
-          </h2>
+          <div>
+            <h2 className="text-[11px] tracking-[0.25em] font-sans font-semibold text-foreground uppercase">
+              {selectedVerse
+                ? `${bookName} ${chapter}:${selectedVerse}`
+                : `${bookName} ${chapter}`}
+            </h2>
+            <p className="text-[10px] font-sans text-muted-foreground mt-0.5">
+              {selectedVerse ? "Notas, referências e léxico" : "Visão geral do capítulo"}
+            </p>
+          </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-5 space-y-5">
+          <div className="p-5 space-y-4">
             {loading && (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -305,8 +288,68 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
 
             {!loading && !hasContent && (
               <p className="text-sm text-muted-foreground text-center py-16 font-sans">
-                Nenhuma nota ou referência disponível para este {selectedVerse ? "versículo" : "capítulo"}.
+                Nenhuma nota ou referência disponível para {selectedVerse ? "este versículo" : "este capítulo"}.
               </p>
+            )}
+
+            {/* Léxico Hebraico/Grego — show first when available for immediate context */}
+            {!loading && strongEntries.length > 0 && (
+              <div className="rounded-lg border border-border bg-card overflow-hidden">
+                <div className="px-5 pt-4 pb-2 border-b border-border/50 bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <Languages className="w-3.5 h-3.5 text-primary" />
+                    <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
+                      PALAVRAS ORIGINAIS
+                    </h3>
+                  </div>
+                  <p className="text-[10px] font-sans text-muted-foreground mt-0.5">
+                    Hebraico & Grego — Léxico de Strong
+                  </p>
+                </div>
+                <div className="px-5 py-4 space-y-3">
+                  {strongEntries.map((entry) => (
+                    <div key={entry.id} className="pb-3 border-b border-border/30 last:border-0 last:pb-0">
+                      <div className="flex items-start gap-2 mb-1.5">
+                        <span className="text-sm font-serif font-bold text-primary leading-tight">
+                          {entry.term}
+                        </span>
+                      </div>
+                      {entry.hebrew_greek && (
+                        <p className="text-[11px] font-mono text-muted-foreground mb-1.5">
+                          {entry.hebrew_greek}
+                        </p>
+                      )}
+                      <p className="text-[13px] font-serif leading-[1.8] text-foreground/90">
+                        {entry.definition}
+                      </p>
+                      {/* Render references as clickable */}
+                      {entry.references_list && Array.isArray(entry.references_list) && entry.references_list.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {entry.references_list.map((ref: string, i: number) => {
+                            const parsed = parseReference(ref);
+                            if (parsed && onNavigate) {
+                              return (
+                                <button
+                                  key={i}
+                                  className="text-[10px] font-sans text-primary hover:underline cursor-pointer bg-primary/5 rounded px-1.5 py-0.5"
+                                  onClick={() => handleNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
+                                >
+                                  {ref}
+                                </button>
+                              );
+                            }
+                            return (
+                              <span key={i} className="text-[10px] font-sans text-muted-foreground bg-muted rounded px-1.5 py-0.5">
+                                {ref}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* Notes grouped by source/type */}
@@ -315,7 +358,6 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                 const typeNotes = groupedNotes[type];
                 const config = SOURCE_LABELS[type] || { label: type.toUpperCase(), subtitle: "" };
 
-                // Group sermons by source (Wesley vs Spurgeon)
                 if (type === "sermon") {
                   const bySource: Record<string, StudyNote[]> = {};
                   typeNotes.forEach((n) => {
@@ -394,7 +436,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                 );
               })}
 
-            {/* Concordância Exaustiva — from study_notes concordance type */}
+            {/* Concordância Exaustiva */}
             {!loading && concordanceRefs.length > 0 && (
               <div className="rounded-lg border border-border bg-card overflow-hidden">
                 <div className="px-5 pt-4 pb-2 border-b border-border/50 bg-muted/30">
@@ -417,34 +459,6 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                           ? renderClickableRefs(ref.content, handleNavigate)
                           : <span className="font-serif">{ref.content}</span>}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Strong's Lexicon */}
-            {!loading && strongEntries.length > 0 && (
-              <div className="rounded-lg border border-border bg-card overflow-hidden">
-                <div className="px-5 pt-4 pb-2 border-b border-border/50 bg-muted/30">
-                  <div className="flex items-center gap-2">
-                    <Languages className="w-3.5 h-3.5 text-primary" />
-                    <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
-                      LÉXICO DE STRONG
-                    </h3>
-                  </div>
-                  <p className="text-[10px] font-sans text-muted-foreground mt-0.5">Hebraico & Grego</p>
-                </div>
-                <div className="px-5 py-4 space-y-3">
-                  {strongEntries.map((entry) => (
-                    <div key={entry.id} className="pb-3 border-b border-border/30 last:border-0 last:pb-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono font-bold text-primary">{entry.hebrew_greek}</span>
-                        <span className="text-xs font-sans font-semibold text-foreground">{entry.term}</span>
-                      </div>
-                      <p className="text-[13px] font-serif leading-[1.8] text-foreground/90">
-                        {entry.definition}
-                      </p>
                     </div>
                   ))}
                 </div>
