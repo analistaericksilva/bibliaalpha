@@ -12,7 +12,7 @@ import UserPanel from "@/components/UserPanel";
 import BibleMapPanel from "@/components/BibleMapPanel";
 import VerseActionMenu from "@/components/VerseActionMenu";
 import { useUserAnnotations } from "@/hooks/useUserAnnotations";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft } from "lucide-react";
 
 interface Verse {
   verse: number;
@@ -80,6 +80,7 @@ const Reader = () => {
   const [noteVerses, setNoteVerses] = useState<Set<number>>(new Set());
   const [crossRefVerses, setCrossRefVerses] = useState<Set<number>>(new Set());
   const [actionMenu, setActionMenu] = useState<{ verse: number; x: number; y: number } | null>(null);
+  const [navHistory, setNavHistory] = useState<Array<{ bookId: string; chapter: number; verse?: number }>>([]);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
 
   const book = bibleBooks.find((b) => b.id === currentBook);
@@ -142,11 +143,31 @@ const Reader = () => {
   }, [currentBook, currentChapter, loading, verses.length, recordReading]);
 
   const goToChapter = (bookId: string, chapter: number, verse?: number) => {
+    // Push current location to history stack before navigating
+    if (bookId !== currentBook || chapter !== currentChapter) {
+      setNavHistory((prev) => [...prev, { bookId: currentBook, chapter: currentChapter }]);
+    }
     setCurrentBook(bookId);
     setCurrentChapter(chapter);
     if (verse) {
       setTimeout(() => {
         const el = verseRefs.current[verse];
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 500);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const goBack = () => {
+    if (navHistory.length === 0) return;
+    const prev = navHistory[navHistory.length - 1];
+    setNavHistory((h) => h.slice(0, -1));
+    setCurrentBook(prev.bookId);
+    setCurrentChapter(prev.chapter);
+    if (prev.verse) {
+      setTimeout(() => {
+        const el = verseRefs.current[prev.verse!];
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 500);
     } else {
@@ -239,6 +260,17 @@ const Reader = () => {
       {/* Reader content */}
       <main className="max-w-3xl mx-auto px-6 md:px-12 pt-32 pb-48">
         <div className="bg-paper page-shadow rounded p-8 md:p-16 mb-8 animate-fade-in">
+          {/* Back button */}
+          {navHistory.length > 0 && (
+            <button
+              onClick={goBack}
+              className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] font-sans text-primary hover:text-primary/80 transition-colors mb-4"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              VOLTAR AO TEXTO ANTERIOR
+            </button>
+          )}
+
           <div className="text-center mb-12">
             <p className="text-[9px] tracking-[0.4em] text-muted-foreground font-sans mb-2">
               {book?.testament === "old" ? "ANTIGO TESTAMENTO" : "NOVO TESTAMENTO"}
