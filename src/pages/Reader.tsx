@@ -171,7 +171,7 @@ const Reader = () => {
   };
 
   const handleVerseClick = (verseNum: number) => {
-    if (noteVerses.has(verseNum)) {
+    if (noteVerses.has(verseNum) || crossRefVerses.has(verseNum)) {
       setSelectedVerse(verseNum);
       setShowNotes(true);
     }
