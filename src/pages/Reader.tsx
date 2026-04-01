@@ -96,7 +96,7 @@ const Reader = () => {
 
   const fetchVerses = async (bookId: string, chapter: number) => {
     setLoading(true);
-    const [versesRes, notesRes] = await Promise.all([
+    const [versesRes, notesRes, crossRefsRes] = await Promise.all([
       supabase
         .from("bible_verses")
         .select("verse_number, text")
@@ -106,6 +106,11 @@ const Reader = () => {
       supabase
         .from("study_notes")
         .select("verse_start")
+        .eq("book_id", bookId)
+        .eq("chapter", chapter),
+      supabase
+        .from("bible_cross_references")
+        .select("verse")
         .eq("book_id", bookId)
         .eq("chapter", chapter),
     ]);
@@ -118,6 +123,9 @@ const Reader = () => {
 
     if (notesRes.data) {
       setNoteVerses(new Set(notesRes.data.map((n: any) => n.verse_start)));
+    }
+    if (crossRefsRes.data) {
+      setCrossRefVerses(new Set(crossRefsRes.data.map((r: any) => r.verse)));
     }
     setLoading(false);
   };
