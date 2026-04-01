@@ -30,7 +30,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-sm mx-auto px-6 animate-fade-in">
         <div className="text-center mb-16">
-          <img src={logoSrc} alt="Bíblia Alpha" className="w-28 h-28 mx-auto mb-8 drop-shadow-lg" width={112} height={112} />
+          <img src={logoSrc} alt="Bíblia Alpha" className="w-36 h-36 mx-auto mb-8 drop-shadow-xl" width={144} height={144} />
           <h1 className="text-5xl tracking-[0.4em] font-serif font-medium text-foreground leading-tight">
             BÍBLIA
           </h1>
