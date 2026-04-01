@@ -199,6 +199,7 @@ const Reader = () => {
         onToggleHistory={() => openUserPanel("history")}
         onToggleFavorites={() => openUserPanel("favorites")}
         onToggleGoTo={() => openUserPanel("goto")}
+        onToggleMap={() => setShowMap(!showMap)}
       />
 
       {/* Navigation zones */}
