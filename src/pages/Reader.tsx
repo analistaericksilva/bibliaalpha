@@ -327,6 +327,9 @@ const Reader = () => {
       {actionMenu && (
         <VerseActionMenu
           verse={actionMenu.verse}
+          verseText={verses.find((v) => v.verse === actionMenu.verse)?.text || ""}
+          bookName={book?.name || ""}
+          chapter={currentChapter}
           x={actionMenu.x}
           y={actionMenu.y}
           isFavorite={isFavorite(actionMenu.verse)}
