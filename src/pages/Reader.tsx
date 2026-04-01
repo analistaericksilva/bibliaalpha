@@ -137,12 +137,8 @@ const Reader = () => {
 
   const handleVerseClick = (verseNum: number) => {
     if (noteVerses.has(verseNum)) {
-      setExpandedNotes(prev => {
-        const next = new Set(prev);
-        if (next.has(verseNum)) next.delete(verseNum);
-        else next.add(verseNum);
-        return next;
-      });
+      setSelectedVerse(verseNum);
+      setShowNotes(true);
     }
   };
 
