@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { X, BookOpen, Loader2, Link2 } from "lucide-react";
+import { X, BookOpen, Loader2, Link2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { bibleBooks } from "@/data/bibleBooks";
 
 interface StudyNote {
   id: string;
@@ -26,12 +27,69 @@ interface StudyNotesPanelProps {
   bookId: string;
   chapter: number;
   selectedVerse: number | null;
+  onNavigate?: (bookId: string, chapter: number, verse?: number) => void;
 }
 
-const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse }: StudyNotesPanelProps) => {
+// Map abbreviations to book IDs
+const abbrevToId: Record<string, string> = {};
+bibleBooks.forEach((b) => {
+  abbrevToId[b.abbrev.toLowerCase()] = b.id;
+});
+
+function parseReference(refStr: string): { bookId: string; chapter: number; verse?: number } | null {
+  // Match patterns like "Gn 1.1", "1Co 3.13", "Pv 8.22-24", "Sl 33.6,9"
+  const match = refStr.trim().match(/^(\d?\s?[A-Za-zÀ-ú]+)\s+(\d+)(?:\.(\d+))?/);
+  if (!match) return null;
+  const abbrev = match[1].replace(/\s/g, "").toLowerCase();
+  const chapter = parseInt(match[2], 10);
+  const verse = match[3] ? parseInt(match[3], 10) : undefined;
+  const bookId = abbrevToId[abbrev];
+  if (!bookId) return null;
+  return { bookId, chapter, verse };
+}
+
+function renderClickableRefs(
+  refsText: string,
+  onNavigate: (bookId: string, chapter: number, verse?: number) => void
+) {
+  // Split by semicolons, then render each group
+  const groups = refsText.split(";").map((g) => g.trim()).filter(Boolean);
+  
+  return groups.map((group, gi) => {
+    // Each group might be like "Pv 8.22-24" or "Sl 33.6,9" or just "10,12,18,25,31"
+    // Try to parse the leading book reference
+    const parsed = parseReference(group);
+    
+    if (parsed) {
+      return (
+        <span key={gi}>
+          {gi > 0 && <span className="text-muted-foreground">; </span>}
+          <button
+            className="text-primary hover:underline cursor-pointer font-serif"
+            onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
+          >
+            {group}
+          </button>
+        </span>
+      );
+    }
+    
+    // Fallback: just render as text
+    return (
+      <span key={gi}>
+        {gi > 0 && <span className="text-muted-foreground">; </span>}
+        <span className="font-serif">{group}</span>
+      </span>
+    );
+  });
+}
+
+const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate }: StudyNotesPanelProps) => {
   const [notes, setNotes] = useState<StudyNote[]>([]);
   const [crossRefs, setCrossRefs] = useState<CrossRef[]>([]);
   const [loading, setLoading] = useState(false);
+  const [aiNotes, setAiNotes] = useState<Record<number, string>>({});
+  const [aiLoading, setAiLoading] = useState<number | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -65,6 +123,32 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse }: Stud
     };
     fetchData();
   }, [open, bookId, chapter, selectedVerse]);
+
+  const handleNavigate = useCallback((targetBookId: string, targetChapter: number, verse?: number) => {
+    if (onNavigate) {
+      onClose();
+      onNavigate(targetBookId, targetChapter, verse);
+    }
+  }, [onNavigate, onClose]);
+
+  const generateAiNote = useCallback(async (verse: number) => {
+    const book = bibleBooks.find((b) => b.id === bookId);
+    if (!book) return;
+    
+    setAiLoading(verse);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-study-note", {
+        body: { bookId, bookName: book.name, chapter, verse },
+      });
+      if (!error && data?.note) {
+        setAiNotes((prev) => ({ ...prev, [verse]: data.note }));
+      }
+    } catch (err) {
+      console.error("Error generating AI note:", err);
+    } finally {
+      setAiLoading(null);
+    }
+  }, [bookId, chapter]);
 
   if (!open) return null;
 
@@ -110,11 +194,53 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse }: Stud
                     <span className="text-[10px] font-sans font-semibold text-primary tracking-wider block mb-2">
                       V. {ref.verse}
                     </span>
-                    <p className="text-sm font-serif leading-relaxed text-foreground/90">
-                      {ref.refs}
-                    </p>
+                    <div className="text-sm leading-relaxed text-foreground/90 flex flex-wrap gap-x-0.5">
+                      {onNavigate
+                        ? renderClickableRefs(ref.refs, handleNavigate)
+                        : <span className="font-serif">{ref.refs}</span>
+                      }
+                    </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* AI Study Note Generator */}
+            {!loading && selectedVerse && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <span className="text-[10px] tracking-[0.3em] font-sans font-semibold text-muted-foreground">
+                    NOTA EXPLICATIVA
+                  </span>
+                </div>
+                {aiNotes[selectedVerse] ? (
+                  <div className="bg-paper rounded p-4 border border-border">
+                    <p className="text-sm font-serif leading-relaxed text-foreground/90 whitespace-pre-line">
+                      {aiNotes[selectedVerse]}
+                    </p>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs font-sans"
+                    onClick={() => generateAiNote(selectedVerse)}
+                    disabled={aiLoading === selectedVerse}
+                  >
+                    {aiLoading === selectedVerse ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                        Gerando nota...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3 h-3 mr-2" />
+                        Gerar nota explicativa
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             )}
 

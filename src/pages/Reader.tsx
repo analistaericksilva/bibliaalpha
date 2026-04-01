@@ -171,10 +171,8 @@ const Reader = () => {
   };
 
   const handleVerseClick = (verseNum: number) => {
-    if (noteVerses.has(verseNum) || crossRefVerses.has(verseNum)) {
-      setSelectedVerse(verseNum);
-      setShowNotes(true);
-    }
+    setSelectedVerse(verseNum);
+    setShowNotes(true);
   };
 
   const handleVerseLongPress = (verseNum: number, e: React.MouseEvent | React.TouchEvent) => {
@@ -287,7 +285,7 @@ const Reader = () => {
                 const speechClass = getSpeechClass(v.text, currentBook);
                 const hasNote = noteVerses.has(v.verse);
                 const hasCrossRef = crossRefVerses.has(v.verse);
-                const isClickable = hasNote || hasCrossRef;
+                const isClickable = true;
                 const hlColor = getHighlightColor(v.verse);
                 const fav = isFavorite(v.verse);
                 const pNote = hasPersonalNote(v.verse);
@@ -297,8 +295,8 @@ const Reader = () => {
                   <span key={v.verse}>
                     <span
                       ref={(el) => { verseRefs.current[v.verse] = el; }}
-                      className={`${isClickable ? "cursor-pointer" : ""} ${hlBg} rounded px-0.5 transition-colors`}
-                      onClick={isClickable ? () => handleVerseClick(v.verse) : undefined}
+                      className={`cursor-pointer ${hlBg} rounded px-0.5 transition-colors`}
+                      onClick={() => handleVerseClick(v.verse)}
                       onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                       onTouchStart={(e) => {
                         const timer = setTimeout(() => handleVerseLongPress(v.verse, e), 500);
@@ -389,6 +387,7 @@ const Reader = () => {
         bookId={currentBook}
         chapter={currentChapter}
         selectedVerse={selectedVerse}
+        onNavigate={goToChapter}
       />
 
       <DictionaryPanel
