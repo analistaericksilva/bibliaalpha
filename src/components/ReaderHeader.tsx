@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Book, Search, Settings, Shield, LogOut } from "lucide-react";
+import { Book, Search, Settings, Shield, LogOut, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoSrc from "@/assets/star-of-david-logo.png";
 
