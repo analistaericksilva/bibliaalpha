@@ -75,7 +75,6 @@ const Reader = () => {
 
   const fetchVerses = async (bookId: string, chapter: number) => {
     setLoading(true);
-    setExpandedNotes(new Set());
     const [versesRes, notesRes] = await Promise.all([
       supabase
         .from("bible_verses")
