@@ -23,41 +23,45 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
   const [query, setQuery] = useState(initialTerm || "");
   const [entries, setEntries] = useState<DictEntry[]>([]);
   const [loading, setLoading] = useState(false);
-  const [allEntries, setAllEntries] = useState<DictEntry[]>([]);
+  const [filter, setFilter] = useState<"all" | "hebrew" | "greek">("all");
 
-  useEffect(() => {
+  const searchEntries = useCallback(async (searchQuery: string, langFilter: string) => {
     if (!open) return;
-    const fetchAll = async () => {
-      setLoading(true);
-      const { data } = await supabase
-        .from("bible_dictionary")
-        .select("*")
-        .order("term");
-      if (data) {
-        const mapped = data.map((d: any) => ({
+    setLoading(true);
+
+    let q = supabase
+      .from("bible_dictionary")
+      .select("*")
+      .order("term")
+      .limit(50);
+
+    if (searchQuery.length > 0) {
+      q = q.ilike("term", `%${searchQuery}%`);
+    }
+
+    if (langFilter === "hebrew") {
+      q = q.ilike("hebrew_greek", "hebraico%");
+    } else if (langFilter === "greek") {
+      q = q.ilike("hebrew_greek", "grego%");
+    }
+
+    const { data } = await q;
+    if (data) {
+      setEntries(
+        data.map((d: any) => ({
           ...d,
           references_list: Array.isArray(d.references_list) ? d.references_list : [],
-        }));
-        setAllEntries(mapped);
-        setEntries(mapped);
-      }
-      setLoading(false);
-    };
-    fetchAll();
+        }))
+      );
+    }
+    setLoading(false);
   }, [open]);
 
   useEffect(() => {
-    if (query.length > 0) {
-      const filtered = allEntries.filter(
-        (e) =>
-          e.term.toLowerCase().includes(query.toLowerCase()) ||
-          e.definition.toLowerCase().includes(query.toLowerCase())
-      );
-      setEntries(filtered);
-    } else {
-      setEntries(allEntries);
-    }
-  }, [query, allEntries]);
+    if (!open) return;
+    const timer = setTimeout(() => searchEntries(query, filter), 300);
+    return () => clearTimeout(timer);
+  }, [open, query, filter, searchEntries]);
 
   if (!open) return null;
 
@@ -68,26 +72,45 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <BookText className="w-4 h-4 text-primary" />
-            <h2 className="text-xs tracking-[0.3em] font-sans font-semibold text-foreground">DICIONÁRIO BÍBLICO</h2>
+            <h2 className="text-xs tracking-[0.3em] font-sans font-semibold text-foreground">
+              DICIONÁRIO BÍBLICO & STRONG
+            </h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-4 h-4" />
           </Button>
         </div>
-        <div className="p-4 border-b border-border">
+
+        <div className="p-4 border-b border-border space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar termo..."
+              placeholder="Buscar termo, Strong's (H1234, G5678)..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-10 font-sans text-sm"
               autoFocus
             />
           </div>
+          <div className="flex gap-1.5">
+            {(["all", "hebrew", "greek"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`text-[10px] tracking-[0.15em] font-sans px-3 py-1.5 rounded-full transition-colors ${
+                  filter === f
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {f === "all" ? "TODOS" : f === "hebrew" ? "HEBRAICO" : "GREGO"}
+              </button>
+            ))}
+          </div>
         </div>
+
         <ScrollArea className="flex-1">
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-3">
             {loading && (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -95,38 +118,64 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
             )}
             {!loading && entries.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-8 font-sans">
-                Nenhum termo encontrado.
+                {query ? "Nenhum termo encontrado." : "Digite para buscar no léxico."}
               </p>
             )}
             {!loading &&
-              entries.map((entry) => (
-                <div key={entry.id} className="bg-paper rounded p-4 border border-border">
-                  <h3 className="text-base font-serif font-semibold text-primary mb-1">{entry.term}</h3>
-                  {entry.hebrew_greek && (
-                    <p className="text-[11px] font-sans text-muted-foreground mb-2 italic">
-                      {entry.hebrew_greek}
-                    </p>
-                  )}
-                  <p className="text-sm font-serif leading-relaxed text-foreground/90 mb-3">
-                    {entry.definition}
-                  </p>
-                  {entry.references_list.length > 0 && (
-                    <div>
-                      <p className="text-[10px] tracking-[0.2em] font-sans text-muted-foreground mb-1">REFERÊNCIAS</p>
-                      <div className="flex flex-wrap gap-1">
-                        {entry.references_list.map((ref, i) => (
-                          <span
-                            key={i}
-                            className="text-xs font-sans text-primary bg-primary/10 px-2 py-0.5 rounded"
-                          >
-                            {ref}
+              entries.map((entry) => {
+                const isStrongs = /^[GH]\d+/.test(entry.term);
+                const langBadge = entry.hebrew_greek?.startsWith("hebraico")
+                  ? "HEB"
+                  : entry.hebrew_greek?.startsWith("grego")
+                  ? "GRK"
+                  : null;
+
+                return (
+                  <div key={entry.id} className="rounded-lg border border-border bg-card overflow-hidden">
+                    <div className="px-4 py-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-base font-serif font-semibold text-primary leading-tight">
+                          {entry.term}
+                        </h3>
+                        {langBadge && (
+                          <span className={`shrink-0 text-[9px] tracking-[0.15em] font-sans font-bold px-2 py-0.5 rounded ${
+                            langBadge === "HEB"
+                              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                          }`}>
+                            {langBadge}
                           </span>
-                        ))}
+                        )}
                       </div>
+                      {entry.hebrew_greek && (
+                        <p className="text-[11px] font-sans text-muted-foreground mt-0.5 italic">
+                          {entry.hebrew_greek}
+                        </p>
+                      )}
+                      <p className="text-sm font-serif leading-relaxed text-foreground/90 mt-2 whitespace-pre-line">
+                        {entry.definition}
+                      </p>
+                      {entry.references_list.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-[10px] tracking-[0.2em] font-sans text-muted-foreground mb-1">
+                            REFERÊNCIAS
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {entry.references_list.map((ref, i) => (
+                              <span
+                                key={i}
+                                className="text-xs font-sans text-primary bg-primary/10 px-2 py-0.5 rounded"
+                              >
+                                {ref}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
           </div>
         </ScrollArea>
       </div>

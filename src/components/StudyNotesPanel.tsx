@@ -78,13 +78,12 @@ function renderClickableRefs(
 // Group notes by source/type for display
 const SOURCE_LABELS: Record<string, { label: string; subtitle: string }> = {
   "matthew_henry": { label: "MATTHEW HENRY", subtitle: "Comentário Devocional" },
-  "strong": { label: "AUGUSTUS H. STRONG", subtitle: "Teologia Sistemática" },
+  "concordance": { label: "CONCORDÂNCIA EXAUSTIVA", subtitle: "Referências Cruzadas" },
+  "sermon": { label: "SERMÃO", subtitle: "Pregação Clássica" },
+  "strong": { label: "LÉXICO DE STRONG", subtitle: "Hebraico & Grego" },
   "pentecostal": { label: "NOTA PENTECOSTAL", subtitle: "Perspectiva Carismática" },
   "devocional": { label: "DEVOCIONAL DIÁRIO", subtitle: "Reflexão Espiritual" },
   "aplicacao": { label: "APLICAÇÃO PESSOAL", subtitle: "Vida Prática" },
-  "wesley": { label: "JOHN WESLEY", subtitle: "Sermões" },
-  "spurgeon": { label: "C. H. SPURGEON", subtitle: "Sermões Graciosos" },
-  "enciclopedia": { label: "ENCICLOPÉDIA BÍBLICA", subtitle: "Referência" },
   "commentary": { label: "NOTA DE ESTUDO", subtitle: "Comentário" },
 };
 
