@@ -46,6 +46,9 @@ const ReaderHeader = ({ onToggleSearch, onToggleBookSelector, onToggleNotes, onT
             <BookText className="w-4 h-4" />
           </Button>
         )}
+        <Button variant="ghost" size="icon" onClick={() => navigate("/prefacio")} title="Prefácio">
+          <FileText className="w-4 h-4" />
+        </Button>
         <Button variant="ghost" size="icon" onClick={() => navigate("/planos")} title="Planos de Leitura">
           <Calendar className="w-4 h-4" />
         </Button>
