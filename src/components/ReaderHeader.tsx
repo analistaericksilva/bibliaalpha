@@ -78,6 +78,7 @@ const ReaderHeader = ({
           <Button variant="ghost" size="icon" onClick={onToggleMap} title="Mapa Bíblico">
             <MapPin className="w-4 h-4" />
           </Button>
+        )}
         <Button variant="ghost" size="icon" onClick={() => navigate("/prefacio")} title="Prefácio">
           <FileText className="w-4 h-4" />
         </Button>
