@@ -14,11 +14,6 @@ interface Verse {
   text: string;
 }
 
-interface InlineNote {
-  verse_start: number;
-  title: string | null;
-  content: string;
-}
 
 // Patterns that indicate God speaking in OT
 const godSpeechPatterns = [
