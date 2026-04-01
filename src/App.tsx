@@ -10,6 +10,7 @@ import Signup from "./pages/Signup";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import ReadingPlans from "./pages/ReadingPlans";
+import Preface from "./pages/Preface";
 
 const queryClient = new QueryClient();
 
