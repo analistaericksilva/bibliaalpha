@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    const prompt = `Você é um teólogo evangélico experiente. Gere notas de estudo para o versículo abaixo, organizadas em seções claramente separadas.
+    const prompt = `Você é um teólogo evangélico experiente. Gere notas de estudo para o versículo abaixo.
 
 Livro: ${bookName}
 Capítulo: ${chapter}
@@ -67,29 +67,16 @@ Texto: "${verseText}"
 Contexto (versículos ao redor):
 ${contextText}
 
-Formato obrigatório (use exatamente estes títulos de seção):
+Responda EXATAMENTE no formato JSON abaixo, sem nenhum texto fora do JSON, sem markdown, sem backticks:
+{"matthewHenry":"<nota devocional e prática no estilo de Matthew Henry, 2-3 parágrafos, cite como do Comentário Bíblico de Matthew Henry>","strong":"<nota teológica sistemática no estilo de Augustus Hopkins Strong, 1-2 parágrafos, aborde aspectos doutrinários>","pentecostal":"<nota breve 2-3 frases com perspectiva pentecostal, sem citar fontes>","devocional":"<devocional pessoal breve, máximo 5 linhas, reflexão espiritual>","aplicacao":"<aplicação prática direta, máximo 3 linhas, comece com verbo de ação>"}
 
-**📖 Matthew Henry**
-Escreva uma nota devocional e prática no estilo característico de Matthew Henry. Inclua aplicação espiritual para a vida cristã. Cite como se fosse do Comentário Bíblico de Matthew Henry. 2-3 parágrafos.
-
-**📚 Augustus H. Strong**
-Escreva uma nota teológica sistemática no estilo de Augustus Hopkins Strong (Teologia Sistemática). Aborde aspectos doutrinários e teológicos relevantes do versículo. 1-2 parágrafos.
-
-**🔥 Nota Pentecostal**
-Uma breve nota (2-3 frases) com perspectiva pentecostal/carismática sobre o versículo. Sem citar fontes.
-
-**🙏 Devocional Diário**
-Um breve devocional pessoal baseado no versículo. Máximo 5 linhas. Inclua uma reflexão espiritual que toque o coração do leitor.
-
-**�✏️ Aplicação Pessoal**
-Uma aplicação prática e direta para o dia a dia do cristão. Máximo 3 linhas. Comece com um verbo de ação (ex: "Procure...", "Dedique...", "Lembre-se...").
-
-Instruções gerais:
+Instruções:
 - Escreva em português brasileiro
 - Não repita o texto do versículo
 - Tom reverente mas acessível
-- Cada seção deve ser claramente identificada com o título em negrito
-- IMPORTANTE: Devocional + Aplicação juntos não devem exceder 7 linhas no total`
+- Não use emojis, asteriscos ou markdown
+- Devocional + Aplicação juntos não devem exceder 7 linhas
+- Responda SOMENTE o JSON, nada mais`
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
