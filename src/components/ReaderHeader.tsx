@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Book, Search, Shield, LogOut, Calendar, BookOpen, BookText, FileText, Clock, Heart, Navigation, MapPin } from "lucide-react";
+import { Book, Search, Shield, LogOut, Calendar, BookOpen, BookText, FileText, Clock, Heart, Navigation, MapPin, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoSrc from "@/assets/star-of-david-logo.png";
 
@@ -13,6 +13,7 @@ interface ReaderHeaderProps {
   onToggleFavorites?: () => void;
   onToggleGoTo?: () => void;
   onToggleMap?: () => void;
+  onShare?: () => void;
 }
 
 const ReaderHeader = ({
@@ -24,6 +25,7 @@ const ReaderHeader = ({
   onToggleFavorites,
   onToggleGoTo,
   onToggleMap,
+  onShare,
 }: ReaderHeaderProps) => {
   const { isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
@@ -77,6 +79,11 @@ const ReaderHeader = ({
         {onToggleMap && (
           <Button variant="ghost" size="icon" onClick={onToggleMap} title="Mapa Bíblico">
             <MapPin className="w-4 h-4" />
+          </Button>
+        )}
+        {onShare && (
+          <Button variant="ghost" size="icon" onClick={onShare} title="Compartilhar Capítulo">
+            <Share2 className="w-4 h-4" />
           </Button>
         )}
         <Button variant="ghost" size="icon" onClick={() => navigate("/prefacio")} title="Prefácio">

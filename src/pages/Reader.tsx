@@ -78,6 +78,7 @@ const Reader = () => {
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const [noteVerses, setNoteVerses] = useState<Set<number>>(new Set());
+  const [crossRefVerses, setCrossRefVerses] = useState<Set<number>>(new Set());
   const [actionMenu, setActionMenu] = useState<{ verse: number; x: number; y: number } | null>(null);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
 
@@ -95,7 +96,7 @@ const Reader = () => {
 
   const fetchVerses = async (bookId: string, chapter: number) => {
     setLoading(true);
-    const [versesRes, notesRes] = await Promise.all([
+    const [versesRes, notesRes, crossRefsRes] = await Promise.all([
       supabase
         .from("bible_verses")
         .select("verse_number, text")
@@ -105,6 +106,11 @@ const Reader = () => {
       supabase
         .from("study_notes")
         .select("verse_start")
+        .eq("book_id", bookId)
+        .eq("chapter", chapter),
+      supabase
+        .from("bible_cross_references")
+        .select("verse")
         .eq("book_id", bookId)
         .eq("chapter", chapter),
     ]);
@@ -117,6 +123,9 @@ const Reader = () => {
 
     if (notesRes.data) {
       setNoteVerses(new Set(notesRes.data.map((n: any) => n.verse_start)));
+    }
+    if (crossRefsRes.data) {
+      setCrossRefVerses(new Set(crossRefsRes.data.map((r: any) => r.verse)));
     }
     setLoading(false);
   };
@@ -162,7 +171,7 @@ const Reader = () => {
   };
 
   const handleVerseClick = (verseNum: number) => {
-    if (noteVerses.has(verseNum)) {
+    if (noteVerses.has(verseNum) || crossRefVerses.has(verseNum)) {
       setSelectedVerse(verseNum);
       setShowNotes(true);
     }
@@ -189,6 +198,18 @@ const Reader = () => {
     setShowUserPanel(true);
   };
 
+  const handleShareChapter = async () => {
+    const shareText = `📖 ${book?.name} ${currentChapter} — Bíblia Alpha`;
+    const shareUrl = `${window.location.origin}/reader?book=${currentBook}&chapter=${currentChapter}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: shareText, text: shareText, url: shareUrl });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <ReaderHeader
@@ -200,6 +221,7 @@ const Reader = () => {
         onToggleFavorites={() => openUserPanel("favorites")}
         onToggleGoTo={() => openUserPanel("goto")}
         onToggleMap={() => setShowMap(!showMap)}
+        onShare={handleShareChapter}
       />
 
       {/* Navigation zones */}
@@ -264,6 +286,8 @@ const Reader = () => {
               {verses.map((v) => {
                 const speechClass = getSpeechClass(v.text, currentBook);
                 const hasNote = noteVerses.has(v.verse);
+                const hasCrossRef = crossRefVerses.has(v.verse);
+                const isClickable = hasNote || hasCrossRef;
                 const hlColor = getHighlightColor(v.verse);
                 const fav = isFavorite(v.verse);
                 const pNote = hasPersonalNote(v.verse);
@@ -273,8 +297,8 @@ const Reader = () => {
                   <span key={v.verse}>
                     <span
                       ref={(el) => { verseRefs.current[v.verse] = el; }}
-                      className={`${hasNote ? "cursor-pointer" : ""} ${hlBg} rounded px-0.5 transition-colors`}
-                      onClick={hasNote ? () => handleVerseClick(v.verse) : undefined}
+                      className={`${isClickable ? "cursor-pointer" : ""} ${hlBg} rounded px-0.5 transition-colors`}
+                      onClick={isClickable ? () => handleVerseClick(v.verse) : undefined}
                       onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                       onTouchStart={(e) => {
                         const timer = setTimeout(() => handleVerseLongPress(v.verse, e), 500);
