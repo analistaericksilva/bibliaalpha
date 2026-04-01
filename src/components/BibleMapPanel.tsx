@@ -68,7 +68,7 @@ const BibleMapPanel = ({ open, onClose, bookId, chapter, onNavigate }: BibleMapP
         .from("bible_places")
         .select("*")
         .order("name");
-      if (data) setAllPlaces(data as BiblePlace[]);
+      if (data) setAllPlaces(data as unknown as BiblePlace[]);
       setLoading(false);
     };
     fetch();
