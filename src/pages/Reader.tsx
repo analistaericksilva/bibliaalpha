@@ -217,14 +217,6 @@ const Reader = () => {
                       </sup>
                       <span className={speechClass}>{v.text}</span>{" "}
                     </span>
-                    {hasNote && expandedNotes.has(v.verse) && inlineNotes.has(v.verse) && (
-                      <span className="block my-2 mx-1 px-3 py-2 bg-primary/5 border-l-2 border-primary rounded-r text-xs font-sans text-foreground/80 leading-relaxed animate-fade-in">
-                        {inlineNotes.get(v.verse)!.title && (
-                          <span className="font-semibold text-primary mr-1">{inlineNotes.get(v.verse)!.title}:</span>
-                        )}
-                        {inlineNotes.get(v.verse)!.content}
-                      </span>
-                    )}
                   </span>
                 );
               })}
