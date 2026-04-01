@@ -80,6 +80,7 @@ const Reader = () => {
   const [noteVerses, setNoteVerses] = useState<Set<number>>(new Set());
   const [crossRefVerses, setCrossRefVerses] = useState<Set<number>>(new Set());
   const [actionMenu, setActionMenu] = useState<{ verse: number; x: number; y: number } | null>(null);
+  const [navHistory, setNavHistory] = useState<Array<{ bookId: string; chapter: number; verse?: number }>>([]);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
 
   const book = bibleBooks.find((b) => b.id === currentBook);
