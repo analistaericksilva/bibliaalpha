@@ -143,11 +143,31 @@ const Reader = () => {
   }, [currentBook, currentChapter, loading, verses.length, recordReading]);
 
   const goToChapter = (bookId: string, chapter: number, verse?: number) => {
+    // Push current location to history stack before navigating
+    if (bookId !== currentBook || chapter !== currentChapter) {
+      setNavHistory((prev) => [...prev, { bookId: currentBook, chapter: currentChapter }]);
+    }
     setCurrentBook(bookId);
     setCurrentChapter(chapter);
     if (verse) {
       setTimeout(() => {
         const el = verseRefs.current[verse];
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 500);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const goBack = () => {
+    if (navHistory.length === 0) return;
+    const prev = navHistory[navHistory.length - 1];
+    setNavHistory((h) => h.slice(0, -1));
+    setCurrentBook(prev.bookId);
+    setCurrentChapter(prev.chapter);
+    if (prev.verse) {
+      setTimeout(() => {
+        const el = verseRefs.current[prev.verse!];
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 500);
     } else {
