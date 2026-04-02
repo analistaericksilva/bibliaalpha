@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Book, Search, Shield, LogOut, Calendar, BookOpen, BookText,
   FileText, Clock, Heart, Navigation, MapPin, Share2, ArrowLeftRight,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Languages, Users,
 } from "lucide-react";
 import logoSrc from "@/assets/star-of-david-logo.png";
 import {
