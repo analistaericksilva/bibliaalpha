@@ -260,20 +260,26 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
   return (
     <>
       <div className="fixed inset-0 bg-foreground/5 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-lg bg-background border-l border-border z-50 animate-fade-in flex flex-col">
+      <div className="fixed top-0 right-0 h-full w-full max-w-lg bg-background border-l border-border z-50 animate-fade-in flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-muted/20">
           <div>
-            <h2 className="text-[11px] tracking-[0.25em] font-sans font-semibold text-foreground uppercase">
+            <div className="flex items-center gap-2 mb-1">
+              <BookOpen className="w-4 h-4 text-primary" />
+              <h2 className="text-xs tracking-[0.2em] font-sans font-bold text-foreground uppercase">
+                NOTAS DE ESTUDO
+              </h2>
+            </div>
+            <p className="text-sm font-serif text-foreground/80">
               {selectedVerse
                 ? `${bookName} ${chapter}:${selectedVerse}`
-                : `${bookName} ${chapter}`}
-            </h2>
-            <p className="text-[10px] font-sans text-muted-foreground mt-0.5">
-              {selectedVerse ? "Notas, referências e léxico" : "Visão geral do capítulo"}
+                : `${bookName} — Capítulo ${chapter}`}
+            </p>
+            <p className="text-[10px] font-sans text-muted-foreground mt-1">
+              {selectedVerse ? "Comentários, referências e léxico do versículo" : "Visão geral do capítulo"}
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-muted">
             <X className="w-4 h-4" />
           </Button>
         </div>
