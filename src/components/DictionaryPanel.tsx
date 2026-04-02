@@ -36,7 +36,7 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
       .limit(50);
 
     if (searchQuery.length > 0) {
-      q = q.ilike("term", `%${searchQuery}%`);
+      q = q.or(`term.ilike.%${searchQuery}%,definition.ilike.%${searchQuery}%`);
     }
 
     if (langFilter === "hebrew") {
