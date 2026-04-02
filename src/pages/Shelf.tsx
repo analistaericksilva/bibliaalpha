@@ -3,6 +3,7 @@ import { LogOut, Mail, Instagram } from "lucide-react";
 import ShelfProductCard from "@/components/ShelfProductCard";
 import bibleCover from "@/assets/bible-cover.png";
 import financeAppCover from "@/assets/finance-app-cover.png";
+import logoSrc from "@/assets/star-of-david-logo.png";
 
 const Shelf = () => {
   const { user, loading, isApproved, isAdmin, signOut } = useAuth();
@@ -14,7 +15,6 @@ const Shelf = () => {
       "alpha-login",
       "width=560,height=780,resizable=yes,scrollbars=yes"
     );
-
     loginWindow?.focus();
   };
 
@@ -28,33 +28,52 @@ const Shelf = () => {
     );
   }
 
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Minimal header */}
-      <header className="w-full flex items-center justify-between px-6 sm:px-10 pt-8 pb-4">
-        <div />
-        <h1 className="font-serif text-sm sm:text-base tracking-[0.4em] uppercase text-foreground/60 select-none">
-          Plataforma Alpha de Estudo
-        </h1>
-        {user ? (
+      {/* Premium header */}
+      <header className="w-full flex flex-col items-center pt-10 pb-6 px-6 sm:px-10 relative">
+        {/* Sign out */}
+        {user && (
           <button
             onClick={signOut}
-            className="text-muted-foreground hover:text-foreground transition-colors duration-300 p-2"
+            className="absolute top-6 right-6 sm:right-10 text-muted-foreground/50 hover:text-foreground transition-colors duration-300 p-2"
             title="Sair"
           >
             <LogOut className="w-4 h-4" />
           </button>
-        ) : (
-          <div />
         )}
+
+        {/* Logo */}
+        <div className="mb-4">
+          <img
+            src={logoSrc}
+            alt="Alpha Studio"
+            className="w-10 h-10 sm:w-12 sm:h-12 opacity-70"
+            width={48}
+            height={48}
+          />
+        </div>
+
+        {/* Brand name */}
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wide text-foreground/90 leading-tight">
+          Alpha <span className="italic font-display text-primary">Studio</span>
+        </h1>
+        <p className="font-elegant text-sm sm:text-base tracking-[0.25em] uppercase text-muted-foreground/60 mt-2 font-light">
+          Plataforma Digital de Conhecimento
+        </p>
+
+        {/* Ornamental divider */}
+        <div className="flex items-center gap-3 mt-6">
+          <div className="w-12 h-px bg-primary/20" />
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
+          <div className="w-12 h-px bg-primary/20" />
+        </div>
       </header>
 
-      {/* Subtle divider */}
-      <div className="w-16 h-px bg-border mx-auto" />
-
-      {/* Shelf area */}
+      {/* Products */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-8 sm:py-12 gap-10">
-        {/* Products grid */}
         <div className="animate-fade-in flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16">
           <ShelfProductCard
             title="Bíblia Alpha"
@@ -73,43 +92,53 @@ const Shelf = () => {
             onCustomClick={() => window.open("https://inteligenciafinanceira.tech/", "_blank")}
           />
         </div>
-
       </main>
 
-      {/* Footer with support email */}
-      <footer className="pb-8 pt-4 flex flex-col items-center gap-4">
-        <div className="flex items-center gap-5 flex-wrap justify-center">
+      {/* Premium footer */}
+      <footer className="pb-8 pt-6 flex flex-col items-center gap-5">
+        {/* Social & contact */}
+        <div className="flex items-center gap-6 flex-wrap justify-center">
           <a
             href="mailto:analista.ericksilva@gmail.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-[11px] tracking-[0.1em]"
+            className="inline-flex items-center gap-1.5 text-muted-foreground/50 hover:text-primary transition-colors duration-300 text-[11px] tracking-[0.15em] font-sans"
           >
-            <Mail className="w-4 h-4" />
+            <Mail className="w-3.5 h-3.5" />
             Contato
           </a>
           <a
             href="https://www.instagram.com/bibliaalphadigital?igsh=Ym91YmlyNzNzZDU0"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-[11px] tracking-[0.1em]"
+            className="inline-flex items-center gap-1.5 text-muted-foreground/50 hover:text-primary transition-colors duration-300 text-[11px] tracking-[0.15em] font-sans"
           >
-            <Instagram className="w-4 h-4" />
+            <Instagram className="w-3.5 h-3.5" />
             @bibliaalphadigital
           </a>
           <a
             href="https://www.instagram.com/analista.erick?igsh=YnE1aDRibHlqZXpta"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-[11px] tracking-[0.1em]"
+            className="inline-flex items-center gap-1.5 text-muted-foreground/50 hover:text-primary transition-colors duration-300 text-[11px] tracking-[0.15em] font-sans"
           >
-            <Instagram className="w-4 h-4" />
+            <Instagram className="w-3.5 h-3.5" />
             @analista.erick
           </a>
         </div>
-        <p className="font-sans text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40">
-          Alpha Digital Library
-        </p>
+
+        {/* Divider */}
+        <div className="w-20 h-px bg-border/60" />
+
+        {/* Copyright */}
+        <div className="flex flex-col items-center gap-1">
+          <p className="font-elegant text-xs tracking-[0.15em] text-muted-foreground/40">
+            © {currentYear} Alpha Studio. Todos os direitos reservados.
+          </p>
+          <p className="font-sans text-[9px] tracking-[0.25em] uppercase text-muted-foreground/30">
+            Alpha Digital Library
+          </p>
+        </div>
       </footer>
     </div>
   );
