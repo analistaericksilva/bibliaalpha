@@ -18,6 +18,7 @@ const ShelfProductCard = ({
   route,
   badge,
   comingSoon = false,
+  onCustomClick,
 }: ShelfProductCardProps) => {
   const navigate = useNavigate();
   const [isPressed, setIsPressed] = useState(false);
@@ -25,9 +26,11 @@ const ShelfProductCard = ({
   const handleClick = () => {
     if (comingSoon) return;
     setIsPressed(true);
-    setTimeout(() => {
-      navigate(route);
-    }, 400);
+    if (onCustomClick) {
+      setTimeout(() => { onCustomClick(); setIsPressed(false); }, 300);
+    } else {
+      setTimeout(() => { navigate(route); }, 400);
+    }
   };
 
   return (
