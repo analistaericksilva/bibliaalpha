@@ -167,12 +167,9 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
     );
   }
 
-  if (!hasContent) {
-    return (
-      <div className="py-2 px-4">
-        <p className="text-xs text-muted-foreground font-sans italic">Sem notas de estudo para este versículo.</p>
-      </div>
-    );
+  if (!hasContent && activeTab === "notes") {
+    // Still show interlinear tab even if no notes
+    // Fall through to the main render
   }
 
   // Group notes by type
