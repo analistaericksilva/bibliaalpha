@@ -1,16 +1,9 @@
-import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Mail, Instagram } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
 import ShelfProductCard from "@/components/ShelfProductCard";
 import bibleCover from "@/assets/bible-cover.png";
 import financeAppCover from "@/assets/finance-app-cover.png";
-
-type AuthMode = "login" | "signup";
 
 const Shelf = () => {
   const { user, loading, isApproved, isAdmin, signOut } = useAuth();
