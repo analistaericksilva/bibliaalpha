@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Mail, Instagram, Sparkles, Crown, BookOpen, Copy, Check } from "lucide-react";
+import { LogOut, Mail, Instagram, Sparkles, Crown, BookOpen, Copy, Check, MessageCircle } from "lucide-react";
 import ShelfProductCard from "@/components/ShelfProductCard";
 import bibleCover from "@/assets/bible-cover.png";
 import financeAppCover from "@/assets/finance-app-cover.png";
