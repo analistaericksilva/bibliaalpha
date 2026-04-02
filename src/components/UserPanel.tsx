@@ -2,8 +2,20 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { bibleBooks } from "@/data/bibleBooks";
-import { X, Clock, Heart, Search, Download, Loader2 } from "lucide-react";
+import { X, Clock, Heart, Search, Download, Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,10 +57,31 @@ const UserPanel = ({ open, onClose, onNavigate, defaultTab = "history" }: UserPa
   const [goToChapter, setGoToChapter] = useState("");
   const [goToVerse, setGoToVerse] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
+  const [resetting, setResetting] = useState(false);
+
+  const handleReset = async () => {
+    if (!user) return;
+    setResetting(true);
+    try {
+      await Promise.all([
+        supabase.from("highlights").delete().eq("user_id", user.id),
+        supabase.from("personal_notes").delete().eq("user_id", user.id),
+        supabase.from("favorites").delete().eq("user_id", user.id),
+        supabase.from("reading_history").delete().eq("user_id", user.id),
+        supabase.from("user_plan_progress").delete().eq("user_id", user.id),
+      ]);
+      setHistory([]);
+      setFavorites([]);
+      toast({ title: "Dados resetados", description: "Todas as suas anotações, marcações e histórico foram apagados." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível resetar os dados.", variant: "destructive" });
+    }
+    setResetting(false);
+  };
 
   useEffect(() => {
     if (!open || !user) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       setLoading(true);
       const [histRes, favRes] = await Promise.all([
         supabase
@@ -67,7 +100,7 @@ const UserPanel = ({ open, onClose, onNavigate, defaultTab = "history" }: UserPa
       if (favRes.data) setFavorites(favRes.data as FavoriteItem[]);
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [open, user]);
 
   const getBookName = (bookId: string) => bibleBooks.find((b) => b.id === bookId)?.name || bookId;
@@ -275,6 +308,35 @@ const UserPanel = ({ open, onClose, onNavigate, defaultTab = "history" }: UserPa
               </div>
             )}
           </TabsContent>
+
+          {/* Reset */}
+          <div className="p-4 border-t border-border">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full text-xs text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/50 hover:bg-destructive/5">
+                  <RotateCcw className="w-3 h-3 mr-2" /> Resetar todos os meus dados
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação irá apagar permanentemente todas as suas anotações pessoais, marcações de destaque, favoritos, histórico de leitura e progresso dos planos de leitura. Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleReset}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {resetting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Sim, apagar tudo
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </Tabs>
       </div>
     </>
