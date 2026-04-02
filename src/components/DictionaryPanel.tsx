@@ -36,13 +36,13 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
       .limit(50);
 
     if (searchQuery.length > 0) {
-      q = q.ilike("term", `%${searchQuery}%`);
+      q = q.or(`term.ilike.%${searchQuery}%,definition.ilike.%${searchQuery}%`);
     }
 
     if (langFilter === "hebrew") {
-      q = q.ilike("hebrew_greek", "hebraico%");
+      q = q.or("hebrew_greek.ilike.hebraico%,hebrew_greek.ilike.heb:%");
     } else if (langFilter === "greek") {
-      q = q.ilike("hebrew_greek", "grego%");
+      q = q.or("hebrew_greek.ilike.grego%,hebrew_greek.ilike.gr:%");
     }
 
     const { data } = await q;
@@ -124,9 +124,9 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
             {!loading &&
               entries.map((entry) => {
                 const isStrongs = /^[GH]\d+/.test(entry.term);
-                const langBadge = entry.hebrew_greek?.startsWith("hebraico")
+                const langBadge = entry.hebrew_greek?.match(/hebraico|heb:/i)
                   ? "HEB"
-                  : entry.hebrew_greek?.startsWith("grego")
+                  : entry.hebrew_greek?.match(/grego|gr:/i)
                   ? "GRK"
                   : null;
 
