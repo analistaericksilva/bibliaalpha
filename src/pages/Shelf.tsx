@@ -7,6 +7,7 @@ import financeAppCover from "@/assets/finance-app-cover.png";
 import logoSrc from "@/assets/star-of-david-logo.png";
 import promoBanner from "@/assets/promo-bible-banner.jpg";
 import pixQr from "@/assets/pix-qr.png";
+import financePromoBanner from "@/assets/finance-promo-banner.jpg";
 
 const Shelf = () => {
   const { user, loading, isApproved, isAdmin, signOut } = useAuth();
