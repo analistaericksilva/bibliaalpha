@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Book, Search, Shield, LogOut, LogIn, Calendar, BookOpen, BookText, FileText, Clock, Heart, Navigation, MapPin, Share2 } from "lucide-react";
+import { Book, Search, Shield, LogOut, Calendar, BookOpen, BookText, FileText, Clock, Heart, Navigation, MapPin, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoSrc from "@/assets/star-of-david-logo.png";
 
@@ -27,88 +27,80 @@ const ReaderHeader = ({
   onToggleMap,
   onShare,
 }: ReaderHeaderProps) => {
-  const { user, isAdmin, signOut } = useAuth();
+  const { isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 left-0 w-full h-16 bg-background/95 backdrop-blur-sm border-b border-border z-50 flex items-center justify-between px-4 md:px-8" role="banner" aria-label="Cabeçalho da Bíblia Alpha">
+    <header className="fixed top-0 left-0 w-full h-16 bg-background/95 backdrop-blur-sm border-b border-border z-50 flex items-center justify-between px-4 md:px-8">
       <div className="flex items-center gap-3">
-        <a href="/" aria-label="Ir para a página inicial da Bíblia Alpha">
-          <img src={logoSrc} alt="Logo da Bíblia Alpha" className="w-10 h-10 drop-shadow" width={40} height={40} />
-        </a>
+        <img src={logoSrc} alt="Bíblia Alpha" className="w-10 h-10 drop-shadow" width={40} height={40} />
         <div className="hidden sm:block">
-          <h1 className="text-base tracking-[0.3em] font-serif font-medium text-foreground">
+          <span className="text-base tracking-[0.3em] font-serif font-medium text-foreground">
             BÍBLIA
-          </h1>
-          <p className="text-xs tracking-[0.4em] font-sans font-light text-primary ml-2">
+          </span>
+          <span className="text-xs tracking-[0.4em] font-sans font-light text-primary ml-2">
             ALPHA
-          </p>
+          </span>
         </div>
       </div>
 
-      <nav className="flex items-center gap-0.5 overflow-x-auto" aria-label="Navegação principal" role="navigation">
-        <Button variant="ghost" size="icon" onClick={onToggleBookSelector} title="Livros" aria-label="Abrir seletor de livros">
-          <Book className="w-4 h-4" aria-hidden="true" />
+      <div className="flex items-center gap-0.5 overflow-x-auto">
+        <Button variant="ghost" size="icon" onClick={onToggleBookSelector} title="Livros">
+          <Book className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onToggleSearch} title="Buscar" aria-label="Abrir busca">
-          <Search className="w-4 h-4" aria-hidden="true" />
+        <Button variant="ghost" size="icon" onClick={onToggleSearch} title="Buscar">
+          <Search className="w-4 h-4" />
         </Button>
         {onToggleGoTo && (
-          <Button variant="ghost" size="icon" onClick={onToggleGoTo} title="Ir Para" aria-label="Abrir navegação">
-            <Navigation className="w-4 h-4" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={onToggleGoTo} title="Ir Para">
+            <Navigation className="w-4 h-4" />
           </Button>
         )}
         {onToggleNotes && (
-          <Button variant="ghost" size="icon" onClick={onToggleNotes} title="Notas de Estudo" aria-label="Abrir notas de estudo">
-            <BookOpen className="w-4 h-4" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={onToggleNotes} title="Notas de Estudo">
+            <BookOpen className="w-4 h-4" />
           </Button>
         )}
         {onToggleDictionary && (
-          <Button variant="ghost" size="icon" onClick={onToggleDictionary} title="Dicionário Bíblico" aria-label="Abrir dicionário bíblico">
-            <BookText className="w-4 h-4" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={onToggleDictionary} title="Dicionário Bíblico">
+            <BookText className="w-4 h-4" />
           </Button>
         )}
         {onToggleHistory && (
-          <Button variant="ghost" size="icon" onClick={onToggleHistory} title="Histórico" aria-label="Abrir histórico de leitura">
-            <Clock className="w-4 h-4" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={onToggleHistory} title="Histórico">
+            <Clock className="w-4 h-4" />
           </Button>
         )}
         {onToggleFavorites && (
-          <Button variant="ghost" size="icon" onClick={onToggleFavorites} title="Favoritos" aria-label="Abrir favoritos">
-            <Heart className="w-4 h-4" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={onToggleFavorites} title="Favoritos">
+            <Heart className="w-4 h-4" />
           </Button>
         )}
         {onToggleMap && (
-          <Button variant="ghost" size="icon" onClick={onToggleMap} title="Mapa Bíblico" aria-label="Abrir mapa bíblico">
-            <MapPin className="w-4 h-4" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={onToggleMap} title="Mapa Bíblico">
+            <MapPin className="w-4 h-4" />
           </Button>
         )}
         {onShare && (
-          <Button variant="ghost" size="icon" onClick={onShare} title="Compartilhar Capítulo" aria-label="Compartilhar capítulo atual">
-            <Share2 className="w-4 h-4" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={onShare} title="Compartilhar Capítulo">
+            <Share2 className="w-4 h-4" />
           </Button>
         )}
-        <Button variant="ghost" size="icon" onClick={() => navigate("/prefacio")} title="Prefácio" aria-label="Abrir prefácio">
-          <FileText className="w-4 h-4" aria-hidden="true" />
+        <Button variant="ghost" size="icon" onClick={() => navigate("/prefacio")} title="Prefácio">
+          <FileText className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => navigate("/planos")} title="Planos de Leitura" aria-label="Abrir planos de leitura">
-          <Calendar className="w-4 h-4" aria-hidden="true" />
+        <Button variant="ghost" size="icon" onClick={() => navigate("/planos")} title="Planos de Leitura">
+          <Calendar className="w-4 h-4" />
         </Button>
         {isAdmin && (
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin")} title="Administração" aria-label="Abrir painel de administração">
-            <Shield className="w-4 h-4" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin")} title="Administração">
+            <Shield className="w-4 h-4" />
           </Button>
         )}
-        {user ? (
-          <Button variant="ghost" size="icon" onClick={signOut} title="Sair" aria-label="Sair da conta">
-            <LogOut className="w-4 h-4" aria-hidden="true" />
-          </Button>
-        ) : (
-          <Button variant="ghost" size="icon" onClick={() => navigate("/login")} title="Entrar" aria-label="Fazer login">
-            <LogIn className="w-4 h-4" aria-hidden="true" />
-          </Button>
-        )}
-      </nav>
+        <Button variant="ghost" size="icon" onClick={signOut} title="Sair">
+          <LogOut className="w-4 h-4" />
+        </Button>
+      </div>
     </header>
   );
 };

@@ -1,46 +1,14 @@
-# Bíblia Alpha - Robots.txt
-# Configuração de crawling para buscadores
-
-# Google
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 0
 
-# Bing
 User-agent: Bingbot
 Allow: /
-Crawl-delay: 0
 
-# Twitter
 User-agent: Twitterbot
 Allow: /
 
-# Facebook
 User-agent: facebookexternalhit
 Allow: /
 
-# DuckDuckGo
-User-agent: DuckDuckBot
-Allow: /
-
-# Yandex
-User-agent: YandexBot
-Allow: /
-
-# Baidu
-User-agent: Baiduspider
-Allow: /
-
-# Todos os outros buscadores
 User-agent: *
 Allow: /
-Crawl-delay: 1
-
-# Disallow de arquivos desnecessários
-Disallow: /admin
-Disallow: /.env
-Disallow: /.git
-Disallow: /node_modules
-
-# Referência ao sitemap
-Sitemap: https://bibliaalpha.com/sitemap.xml

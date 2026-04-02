@@ -194,19 +194,14 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
         concQuery = concQuery.eq("verse_start", selectedVerse);
       }
 
-      // Fetch curated Portuguese Strong's/dictionary entries matching this verse
-      const bookAbbrev = idToAbbrev[bookId];
-      const dictPromise = (bookAbbrev)
-        ? supabase
-            .from("bible_dictionary")
-            .select("*")
-            .not("hebrew_greek", "is", null)
-            .not("references_list", "is", null)
-            .limit(50)
-            .then(res => res)
-        : Promise.resolve({ data: [] as DictEntry[] });
+      // Fetch curated Portuguese Strong's/dictionary entries (those with references)
+      const dictQuery = supabase
+        .from("bible_dictionary")
+        .select("*")
+        .not("references_list", "is", null)
+        .not("hebrew_greek", "is", null);
 
-      const [notesRes, concRes, dictRes] = await Promise.all([notesQuery, concQuery, dictPromise]);
+      const [notesRes, concRes, dictRes] = await Promise.all([notesQuery, concQuery, dictQuery]);
 
       // Filter notes covering selected verse
       let filteredNotes = (notesRes.data as StudyNote[]) || [];
@@ -221,8 +216,8 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
       setNotes(filteredNotes);
       setConcordanceRefs((concRes.data as StudyNote[]) || []);
 
-      // Filter dictionary entries by verse reference match (client-side on limited set)
-      const allDict = (dictRes?.data as DictEntry[]) || [];
+      // Filter dictionary entries by verse reference match
+      const allDict = (dictRes.data as DictEntry[]) || [];
       const matched = allDict.filter((e) =>
         dictEntryMatchesVerse(e, bookId, chapter, selectedVerse)
       );
