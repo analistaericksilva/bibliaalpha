@@ -75,6 +75,7 @@ const Reader = () => {
   const [showDictionary, setShowDictionary] = useState(false);
   const [showUserPanel, setShowUserPanel] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
   const [userPanelTab, setUserPanelTab] = useState("history");
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [verses, setVerses] = useState<Verse[]>([]);
