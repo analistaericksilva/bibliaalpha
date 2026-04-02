@@ -8,6 +8,7 @@ import ReaderSidebar from "@/components/ReaderSidebar";
 import BookSelector from "@/components/BookSelector";
 import SearchPanel from "@/components/SearchPanel";
 import StudyNotesPanel from "@/components/StudyNotesPanel";
+import InlineStudyNotes from "@/components/InlineStudyNotes";
 import DictionaryPanel from "@/components/DictionaryPanel";
 import UserPanel from "@/components/UserPanel";
 import BibleMapPanel from "@/components/BibleMapPanel";
