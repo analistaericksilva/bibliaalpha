@@ -196,18 +196,15 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
 
       // Fetch curated Portuguese Strong's/dictionary entries matching this verse
       const bookAbbrev = idToAbbrev[bookId];
-      let dictPromise: Promise<any> = Promise.resolve({ data: [] });
-      if (bookAbbrev) {
-        const searchRef = selectedVerse
-          ? `${bookAbbrev} ${chapter}:${selectedVerse}`
-          : `${bookAbbrev} ${chapter}:`;
-        dictPromise = supabase
-          .from("bible_dictionary")
-          .select("*")
-          .not("hebrew_greek", "is", null)
-          .not("references_list", "is", null)
-          .limit(50);
-      }
+      const dictPromise = (bookAbbrev)
+        ? supabase
+            .from("bible_dictionary")
+            .select("*")
+            .not("hebrew_greek", "is", null)
+            .not("references_list", "is", null)
+            .limit(50)
+            .then(res => res)
+        : Promise.resolve({ data: [] as DictEntry[] });
 
       const [notesRes, concRes, dictRes] = await Promise.all([notesQuery, concQuery, dictPromise]);
 
