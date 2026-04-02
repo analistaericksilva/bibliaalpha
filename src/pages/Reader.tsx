@@ -8,6 +8,7 @@ import ReaderSidebar from "@/components/ReaderSidebar";
 import BookSelector from "@/components/BookSelector";
 import SearchPanel from "@/components/SearchPanel";
 import StudyNotesPanel from "@/components/StudyNotesPanel";
+import InlineStudyNotes from "@/components/InlineStudyNotes";
 import DictionaryPanel from "@/components/DictionaryPanel";
 import UserPanel from "@/components/UserPanel";
 import BibleMapPanel from "@/components/BibleMapPanel";
@@ -170,8 +171,8 @@ const Reader = () => {
   };
 
   const handleVerseClick = (verseNum: number) => {
-    setSelectedVerse(verseNum);
-    setShowNotes(true);
+    // Toggle inline notes for this verse
+    setSelectedVerse((prev) => (prev === verseNum ? null : verseNum));
   };
 
   const handleVerseLongPress = (verseNum: number, e: React.MouseEvent | React.TouchEvent) => {
@@ -211,7 +212,7 @@ const Reader = () => {
         <ReaderSidebar
           onToggleSearch={() => setShowSearch(!showSearch)}
           onToggleBookSelector={() => setShowBooks(!showBooks)}
-          onToggleNotes={() => { setSelectedVerse(null); setShowNotes(!showNotes); }}
+          onToggleNotes={() => { setSelectedVerse(null); setShowNotes((p) => !p); }}
           onToggleDictionary={() => setShowDictionary(!showDictionary)}
           onToggleHistory={() => openUserPanel("history")}
           onToggleFavorites={() => openUserPanel("favorites")}
@@ -316,7 +317,7 @@ const Reader = () => {
                       const pNote = hasPersonalNote(v.verse);
                       const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
 
-                      return (
+                        return (
                         <span key={v.verse}>
                           <span
                             ref={(el) => { verseRefs.current[v.verse] = el; }}
@@ -337,6 +338,15 @@ const Reader = () => {
                             </sup>
                             <span className={speechClass}>{v.text}</span>{" "}
                           </span>
+                          {selectedVerse === v.verse && (
+                            <InlineStudyNotes
+                              bookId={currentBook}
+                              chapter={currentChapter}
+                              verse={v.verse}
+                              onNavigate={goToChapter}
+                              onClose={() => setSelectedVerse(null)}
+                            />
+                          )}
                         </span>
                       );
                     })}
