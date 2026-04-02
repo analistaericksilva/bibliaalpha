@@ -3,45 +3,110 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Bíblia Alpha — Estudo Bíblico</title>
-    <!-- SEO -->
+    <title>Bíblia Alpha — Estudo Bíblico Online com Notas e Dicionário</title>
+    
+    <!-- SEO Essencial -->
     <meta
       name="description"
-      content="Bíblia de estudo com notas de Matthew Henry, dicionário bíblico, grifos e anotações pessoais."
+      content="Bíblia de estudo online com notas de Matthew Henry, dicionário bíblico, concordância, sermões de Wesley e Spurgeon, grifos e anotações pessoais. Leitura gratuita com funcionalidades premium."
     />
+    <meta name="keywords" content="Bíblia, estudo bíblico, Bíblia online, notas bíblicas, dicionário bíblico, Matthew Henry, concordância, sermões, estudo da Palavra" />
     <meta name="author" content="Bíblia Alpha" />
-    <!-- Tema -->
+    <link rel="canonical" href="https://bibliaalpha.com/" />
+    
+    <!-- Tema e Acessibilidade -->
     <meta name="theme-color" content="#b8972e" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Bíblia Alpha" />
+    <meta name="color-scheme" content="light dark" />
+    
     <!-- Ícones -->
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="icon" type="image/png" href="/icon-192.png" />
     <link rel="manifest" href="/manifest.json" />
+    
     <!-- OPEN GRAPH (WHATSAPP / FACEBOOK) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Bíblia Alpha" />
-    <meta property="og:title" content="Bíblia Alpha — Estudo Bíblico" />
+    <meta property="og:title" content="Bíblia Alpha — Estudo Bíblico Online" />
     <meta
       property="og:description"
-      content="A experiência definitiva de estudo bíblico com notas versículo por versículo, dicionário bíblico, grifos e anotações pessoais."
+      content="A experiência definitiva de estudo bíblico com notas versículo por versículo, dicionário bíblico, concordância, sermões e anotações pessoais."
     />
-    <meta property="og:url" content="https://bibliaalpha.com" />
+    <meta property="og:url" content="https://bibliaalpha.com/" />
     <meta property="og:image" content="https://bibliaalpha.com/og-image.jpg" />
     <meta property="og:image:secure_url" content="https://bibliaalpha.com/og-image.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="pt_BR" />
-    <!-- TWITTER (WHATSAPP USA TAMBÉM) -->
+    
+    <!-- TWITTER CARD -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Bíblia Alpha — Estudo Bíblico" />
+    <meta name="twitter:title" content="Bíblia Alpha — Estudo Bíblico Online" />
     <meta
       name="twitter:description"
-      content="A experiência definitiva de estudo bíblico com notas versículo por versículo, dicionário bíblico, grifos e anotações pessoais."
+      content="Estude a Bíblia com notas de Matthew Henry, dicionário bíblico, concordância e sermões. Acesso gratuito com funcionalidades premium."
     />
     <meta name="twitter:image" content="https://bibliaalpha.com/og-image.jpg" />
+    
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Bíblia Alpha",
+      "description": "Plataforma de estudo bíblico online com notas, dicionário e ferramentas de anotação",
+      "url": "https://bibliaalpha.com",
+      "applicationCategory": "EducationalApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL",
+        "availability": "https://schema.org/InStock"
+      },
+      "image": "https://bibliaalpha.com/og-image.jpg",
+      "author": {
+        "@type": "Organization",
+        "name": "Bíblia Alpha",
+        "url": "https://bibliaalpha.com"
+      },
+      "inLanguage": "pt-BR",
+      "operatingSystem": "Web",
+      "browserRequirements": "Requires JavaScript"
+    }
+    </script>
+    
+    <!-- Schema.org CreativeWork (Bíblia) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      "name": "Bíblia Alpha",
+      "description": "Versão de estudo da Bíblia Sagrada com anotações e recursos educacionais",
+      "url": "https://bibliaalpha.com",
+      "author": {
+        "@type": "Organization",
+        "name": "Bíblia Alpha"
+      },
+      "inLanguage": "pt-BR",
+      "datePublished": "2026-04-01",
+      "image": "https://bibliaalpha.com/og-image.jpg",
+      "about": {
+        "@type": "Thing",
+        "name": "Bíblia Sagrada",
+        "description": "Texto sagrado do Cristianismo"
+      }
+    }
+    </script>
+    
+    <!-- Preconnect para Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
   </head>
   <body>
     <div id="root"></div>
