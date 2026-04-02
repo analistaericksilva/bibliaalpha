@@ -300,17 +300,21 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
 
             {/* Léxico Hebraico/Grego — show first when available for immediate context */}
             {!loading && strongEntries.length > 0 && (
-              <div className="rounded-lg border border-border bg-card overflow-hidden">
-                <div className="px-5 pt-4 pb-2 border-b border-border/50 bg-muted/30">
-                  <div className="flex items-center gap-2">
-                    <Languages className="w-3.5 h-3.5 text-primary" />
-                    <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
-                      PALAVRAS ORIGINAIS
-                    </h3>
+              <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+                <div className="px-5 pt-4 pb-3 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Languages className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
+                        PALAVRAS ORIGINAIS
+                      </h3>
+                      <p className="text-[10px] font-sans text-muted-foreground">
+                        Hebraico & Grego — Léxico de Strong
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-[10px] font-sans text-muted-foreground mt-0.5">
-                    Hebraico & Grego — Léxico de Strong
-                  </p>
                 </div>
                 <div className="px-5 py-4 space-y-3">
                   {strongEntries.map((entry) => (
