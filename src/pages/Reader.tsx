@@ -408,6 +408,7 @@ const Reader = () => {
       
       <LexiconPanel open={showLexicon} onClose={() => setShowLexicon(false)} />
       <PeoplePanel open={showPeople} onClose={() => setShowPeople(false)} />
+      <OnboardingTour />
     </SidebarProvider>
   );
 };
