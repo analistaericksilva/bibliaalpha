@@ -57,12 +57,27 @@ const UserPanel = ({ open, onClose, onNavigate, defaultTab = "history" }: UserPa
   const [goToChapter, setGoToChapter] = useState("");
   const [goToVerse, setGoToVerse] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
+  const [resetting, setResetting] = useState(false);
 
-  useEffect(() => {
-    if (!open || !user) return;
-    const fetch = async () => {
-      setLoading(true);
-      const [histRes, favRes] = await Promise.all([
+  const handleReset = async () => {
+    if (!user) return;
+    setResetting(true);
+    try {
+      await Promise.all([
+        supabase.from("highlights").delete().eq("user_id", user.id),
+        supabase.from("personal_notes").delete().eq("user_id", user.id),
+        supabase.from("favorites").delete().eq("user_id", user.id),
+        supabase.from("reading_history").delete().eq("user_id", user.id),
+        supabase.from("user_plan_progress").delete().eq("user_id", user.id),
+      ]);
+      setHistory([]);
+      setFavorites([]);
+      toast({ title: "Dados resetados", description: "Todas as suas anotações, marcações e histórico foram apagados." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível resetar os dados.", variant: "destructive" });
+    }
+    setResetting(false);
+  };
         supabase
           .from("reading_history")
           .select("book_id, chapter, read_at")
@@ -316,7 +331,6 @@ const UserPanel = ({ open, onClose, onNavigate, defaultTab = "history" }: UserPa
               </AlertDialogContent>
             </AlertDialog>
           </div>
-          </TabsContent>
         </Tabs>
       </div>
     </>
