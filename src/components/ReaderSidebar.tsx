@@ -46,6 +46,8 @@ const ReaderSidebar = ({
   onToggleMap,
   onShare,
   onToggleCompare,
+  onToggleLexicon,
+  onTogglePeople,
 }: ReaderSidebarProps) => {
   const { isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
