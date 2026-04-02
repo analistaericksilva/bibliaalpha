@@ -78,6 +78,12 @@ const UserPanel = ({ open, onClose, onNavigate, defaultTab = "history" }: UserPa
     }
     setResetting(false);
   };
+
+  useEffect(() => {
+    if (!open || !user) return;
+    const fetchData = async () => {
+      setLoading(true);
+      const [histRes, favRes] = await Promise.all([
         supabase
           .from("reading_history")
           .select("book_id, chapter, read_at")
@@ -94,7 +100,7 @@ const UserPanel = ({ open, onClose, onNavigate, defaultTab = "history" }: UserPa
       if (favRes.data) setFavorites(favRes.data as FavoriteItem[]);
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [open, user]);
 
   const getBookName = (bookId: string) => bibleBooks.find((b) => b.id === bookId)?.name || bookId;
