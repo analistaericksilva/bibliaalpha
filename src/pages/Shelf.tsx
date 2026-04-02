@@ -211,14 +211,36 @@ const Shelf = () => {
       </main>
 
       {/* Footer with support email */}
-      <footer className="pb-8 pt-4 flex flex-col items-center gap-3">
+      <footer className="pb-8 pt-4 flex flex-col items-center gap-4">
         <a
           href="mailto:analista.ericksilva@gmail.com"
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-xs tracking-[0.1em]"
         >
           <Mail className="w-3.5 h-3.5" />
           analista.ericksilva@gmail.com
         </a>
+        <div className="flex items-center gap-6">
+          <a
+            href="https://www.instagram.com/bibliaalphadigital?igsh=Ym91YmlyNzNzZDU0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-[11px] tracking-[0.1em]"
+          >
+            <Instagram className="w-4 h-4" />
+            @bibliaalphadigital
+          </a>
+          <a
+            href="https://www.instagram.com/analista.erick?igsh=YnE1aDRibHlqZXpta"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-muted-foreground/60 hover:text-primary transition-colors duration-300 text-[11px] tracking-[0.1em]"
+          >
+            <Instagram className="w-4 h-4" />
+            @analista.erick
+          </a>
+        </div>
         <p className="font-sans text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40">
           Alpha Digital Library
         </p>
