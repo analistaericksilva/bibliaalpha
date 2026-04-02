@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Loader2, Languages, Search } from "lucide-react";
+import { X, Loader2, Languages, Search, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ const LexiconPanel = ({ open, onClose }: LexiconPanelProps) => {
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [langFilter, setLangFilter] = useState<"all" | "hebrew" | "greek">("all");
+  const [searchField, setSearchField] = useState<"all" | "strongs" | "gloss" | "transliteration" | "original">("all");
 
   useEffect(() => {
     if (!open || search.length < 2) {
@@ -43,28 +44,41 @@ const LexiconPanel = ({ open, onClose }: LexiconPanelProps) => {
         query = query.eq("language", langFilter);
       }
 
-      // Search by Strong's number or gloss/transliteration
-      if (/^[GHgh]\d+/.test(search)) {
+      // Field-specific search
+      if (searchField === "strongs" || /^[GHgh]\d+/.test(search)) {
         query = query.ilike("strongs_number", `${search.toUpperCase()}%`);
+      } else if (searchField === "gloss") {
+        query = query.ilike("gloss", `%${search}%`);
+      } else if (searchField === "transliteration") {
+        query = query.ilike("transliteration", `%${search}%`);
+      } else if (searchField === "original") {
+        query = query.ilike("original_word", `%${search}%`);
       } else {
-        query = query.or(`gloss.ilike.%${search}%,transliteration.ilike.%${search}%,original_word.ilike.%${search}%`);
+        query = query.or(`gloss.ilike.%${search}%,transliteration.ilike.%${search}%,original_word.ilike.%${search}%,definition.ilike.%${search}%`);
       }
 
-      const { data } = await query.limit(50);
+      const { data } = await query.limit(80);
       setResults((data as LexiconEntry[]) || []);
       setLoading(false);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [open, search, langFilter]);
+  }, [open, search, langFilter, searchField]);
 
   if (!open) return null;
+
+  const searchFields = [
+    { key: "all" as const, label: "Todos" },
+    { key: "strongs" as const, label: "Strong's" },
+    { key: "gloss" as const, label: "Significado" },
+    { key: "transliteration" as const, label: "Transliteração" },
+    { key: "original" as const, label: "Original" },
+  ];
 
   return (
     <>
       <div className="fixed inset-0 bg-foreground/5 backdrop-blur-sm z-40" onClick={onClose} />
       <div className="fixed top-0 right-0 h-full w-full max-w-md bg-background border-l border-border z-50 animate-fade-in flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Languages className="w-4 h-4 text-primary" />
@@ -77,17 +91,18 @@ const LexiconPanel = ({ open, onClose }: LexiconPanelProps) => {
           </Button>
         </div>
 
-        {/* Search */}
         <div className="p-4 border-b border-border space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por Strong's (H0001, G0018) ou palavra..."
+              placeholder="Buscar por Strong's, palavra, significado..."
               className="pl-9 text-sm"
             />
           </div>
+
+          {/* Language filter */}
           <div className="flex gap-1.5">
             {(["all", "hebrew", "greek"] as const).map((lang) => (
               <button
@@ -103,18 +118,33 @@ const LexiconPanel = ({ open, onClose }: LexiconPanelProps) => {
               </button>
             ))}
           </div>
+
+          {/* Search field filter */}
+          <div className="flex flex-wrap gap-1">
+            {searchFields.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setSearchField(f.key)}
+                className={`px-2 py-1 text-[9px] tracking-wider font-sans rounded transition-colors ${
+                  searchField === f.key
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Stats */}
         <div className="px-4 py-2 text-[9px] tracking-[0.2em] text-muted-foreground font-sans">
           {results.length > 0
             ? `${results.length} RESULTADO${results.length > 1 ? "S" : ""}`
             : search.length >= 2
-            ? "NENHUM RESULTADO"
+            ? loading ? "BUSCANDO..." : "NENHUM RESULTADO"
             : "DIGITE PARA BUSCAR • 20.192 ENTRADAS DISPONÍVEIS"}
         </div>
 
-        {/* Results */}
         <ScrollArea className="flex-1">
           <div className="p-4 space-y-2">
             {loading && (
@@ -180,7 +210,7 @@ const LexiconPanel = ({ open, onClose }: LexiconPanelProps) => {
               <div className="text-center py-12 space-y-3">
                 <Languages className="w-8 h-8 mx-auto text-muted-foreground/40" />
                 <p className="text-sm text-muted-foreground font-sans">
-                  Pesquise por número Strong's ou palavra
+                  Pesquise por número Strong's, significado ou palavra original
                 </p>
                 <p className="text-xs text-muted-foreground/60 font-sans">
                   Dados do STEPBible (CC BY 4.0) — Tyndale House Cambridge
