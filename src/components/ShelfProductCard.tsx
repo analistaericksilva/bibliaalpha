@@ -8,6 +8,7 @@ interface ShelfProductCardProps {
   route: string;
   badge?: string;
   comingSoon?: boolean;
+  onCustomClick?: () => void;
 }
 
 const ShelfProductCard = ({
