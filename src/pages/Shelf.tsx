@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import ShelfProductCard from "@/components/ShelfProductCard";
 import bibleCover from "@/assets/bible-cover.png";
+import financeAppCover from "@/assets/finance-app-cover.png";
 
 type AuthMode = "login" | "signup";
 
