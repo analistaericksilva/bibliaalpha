@@ -124,9 +124,9 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
             {!loading &&
               entries.map((entry) => {
                 const isStrongs = /^[GH]\d+/.test(entry.term);
-                const langBadge = entry.hebrew_greek?.startsWith("hebraico")
+                const langBadge = entry.hebrew_greek?.match(/hebraico|heb:/i)
                   ? "HEB"
-                  : entry.hebrew_greek?.startsWith("grego")
+                  : entry.hebrew_greek?.match(/grego|gr:/i)
                   ? "GRK"
                   : null;
 
