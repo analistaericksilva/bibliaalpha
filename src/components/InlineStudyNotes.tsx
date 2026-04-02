@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { bibleBooks } from "@/data/bibleBooks";
 import { Loader2, BookOpen, Languages, Link2, ChevronDown, ChevronUp } from "lucide-react";
+import InterlinearView from "@/components/InterlinearView";
 
 interface StudyNote {
   id: string;
@@ -87,6 +88,7 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
   const [dictEntries, setDictEntries] = useState<DictEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["main"]));
+  const [activeTab, setActiveTab] = useState<"notes" | "interlinear">("notes");
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => {
@@ -165,12 +167,9 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
     );
   }
 
-  if (!hasContent) {
-    return (
-      <div className="py-2 px-4">
-        <p className="text-xs text-muted-foreground font-sans italic">Sem notas de estudo para este versículo.</p>
-      </div>
-    );
+  if (!hasContent && activeTab === "notes") {
+    // Still show interlinear tab even if no notes
+    // Fall through to the main render
   }
 
   // Group notes by type
@@ -183,18 +182,51 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
 
   return (
     <div className="my-2 mx-1 rounded-lg border border-primary/20 bg-card/80 backdrop-blur-sm shadow-sm overflow-hidden animate-fade-in">
-      {/* Header */}
+      {/* Header with tabs */}
       <div className="flex items-center justify-between px-4 py-2 bg-primary/5 border-b border-primary/10">
-        <div className="flex items-center gap-1.5">
-          <BookOpen className="w-3 h-3 text-primary" />
-          <span className="text-[10px] tracking-[0.2em] font-sans font-bold text-foreground uppercase">
-            v. {verse} — Notas de Estudo
-          </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActiveTab("notes")}
+            className={`flex items-center gap-1 text-[10px] tracking-[0.15em] font-sans font-bold uppercase transition-colors ${
+              activeTab === "notes" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <BookOpen className="w-3 h-3" />
+            Notas
+          </button>
+          <button
+            onClick={() => setActiveTab("interlinear")}
+            className={`flex items-center gap-1 text-[10px] tracking-[0.15em] font-sans font-bold uppercase transition-colors ${
+              activeTab === "interlinear" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Languages className="w-3 h-3" />
+            Interlinear
+          </button>
         </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xs px-1">
           ✕
         </button>
       </div>
+
+      {/* Interlinear tab */}
+      {activeTab === "interlinear" && (
+        <InterlinearView
+          bookId={bookId}
+          chapter={chapter}
+          verse={verse}
+          onClose={() => setActiveTab("notes")}
+        />
+      )}
+
+      {/* Notes tab */}
+      {activeTab === "notes" && !hasContent && (
+        <div className="py-3 px-4">
+          <p className="text-xs text-muted-foreground font-sans italic">Sem notas de estudo para este versículo.</p>
+        </div>
+      )}
+
+      {activeTab === "notes" && hasContent && (
 
       <div className="divide-y divide-border/50">
         {/* Dictionary / Original Words */}
@@ -295,6 +327,7 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };
