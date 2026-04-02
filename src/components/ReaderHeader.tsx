@@ -14,6 +14,7 @@ interface ReaderHeaderProps {
   onToggleGoTo?: () => void;
   onToggleMap?: () => void;
   onShare?: () => void;
+  onToggleCompare?: () => void;
 }
 
 const ReaderHeader = ({
