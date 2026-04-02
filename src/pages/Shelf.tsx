@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import ShelfProductCard from "@/components/ShelfProductCard";
 import bibleCover from "@/assets/bible-cover.png";
+import financeAppCover from "@/assets/finance-app-cover.png";
 
 type AuthMode = "login" | "signup";
 
@@ -108,8 +109,8 @@ const Shelf = () => {
 
       {/* Shelf area */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-8 sm:py-12 gap-10">
-        {/* Product */}
-        <div className="animate-fade-in">
+        {/* Products grid */}
+        <div className="animate-fade-in flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16">
           <ShelfProductCard
             title="Bíblia Alpha"
             subtitle="Edição de Estudo"
@@ -117,6 +118,14 @@ const Shelf = () => {
             route="#"
             badge={user && (isApproved || isAdmin) ? "Acessar" : undefined}
             onCustomClick={handleProductClick}
+          />
+          <ShelfProductCard
+            title="Inteligência Financeira"
+            subtitle="Plataforma Digital"
+            coverImage={financeAppCover}
+            route="https://inteligenciafinanceira.tech/"
+            badge="Acessar"
+            onCustomClick={() => window.open("https://inteligenciafinanceira.tech/", "_blank")}
           />
         </div>
 
