@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Mail, Instagram } from "lucide-react";
+import { LogOut, Mail, Instagram, Sparkles, Crown, BookOpen, Copy, Check } from "lucide-react";
 import ShelfProductCard from "@/components/ShelfProductCard";
 import bibleCover from "@/assets/bible-cover.png";
 import financeAppCover from "@/assets/finance-app-cover.png";
 import logoSrc from "@/assets/star-of-david-logo.png";
+import promoBanner from "@/assets/promo-bible-banner.jpg";
+import pixQr from "@/assets/pix-qr.png";
 
 const Shelf = () => {
   const { user, loading, isApproved, isAdmin, signOut } = useAuth();
