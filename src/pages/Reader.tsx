@@ -76,6 +76,7 @@ const HIGHLIGHT_BG: Record<string, string> = {
 const Reader = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { fontSize } = useReaderSettings();
   const [currentBook, setCurrentBook] = useState(searchParams.get("book") || "gn");
   const [currentChapter, setCurrentChapter] = useState(Number(searchParams.get("chapter")) || 1);
   const [showBooks, setShowBooks] = useState(false);
