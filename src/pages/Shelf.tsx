@@ -107,79 +107,131 @@ const Shelf = () => {
         </div>
 
         {/* ===== PROMO SECTION ===== */}
-        <div className="w-full max-w-4xl mx-auto mt-4">
-          <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-[#0f1729] via-[#141e33] to-[#1a1a2e] shadow-2xl">
-            {/* Glow effects */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/10 blur-3xl rounded-full" />
-            <div className="absolute bottom-0 right-0 w-40 h-40 bg-primary/5 blur-3xl rounded-full" />
+        <div className="w-full max-w-5xl mx-auto mt-6">
+          <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-[#0a0e1a] via-[#111827] to-[#0f172a] shadow-[0_20px_60px_-15px_rgba(212,175,55,0.15)]">
+            {/* Animated glow effects */}
+            <div className="absolute -top-20 left-1/3 w-96 h-96 bg-primary/8 blur-[100px] rounded-full animate-pulse" />
+            <div className="absolute -bottom-20 -right-10 w-72 h-72 bg-primary/5 blur-[80px] rounded-full" />
+            <div className="absolute top-1/2 left-0 w-40 h-40 bg-primary/3 blur-[60px] rounded-full" />
 
-            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 p-6 sm:p-8 lg:p-10">
+            {/* Top urgency bar */}
+            <div className="relative z-10 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border-b border-primary/15 px-4 py-2.5 flex items-center justify-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+              </span>
+              <span className="text-[10px] sm:text-[11px] tracking-[0.25em] uppercase font-sans font-semibold text-primary">
+                🔥 Oferta Exclusiva — Vagas Limitadas
+              </span>
+            </div>
+
+            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 p-6 sm:p-8 lg:p-12">
               {/* Left: Banner image */}
-              <div className="w-full lg:w-2/5 flex-shrink-0">
-                <img
-                  src={promoBanner}
-                  alt="Bíblia Alpha de Estudos"
-                  className="w-full rounded-xl shadow-lg border border-primary/10"
-                  loading="lazy"
-                  width={800}
-                  height={512}
-                />
+              <div className="w-full lg:w-[38%] flex-shrink-0 group">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <img
+                    src={promoBanner}
+                    alt="Bíblia Alpha de Estudos"
+                    className="w-full rounded-2xl shadow-2xl border border-primary/10 group-hover:scale-[1.02] transition-transform duration-500"
+                    loading="lazy"
+                    width={800}
+                    height={512}
+                  />
+                </div>
               </div>
 
               {/* Right: Promo content */}
-              <div className="flex-1 text-center lg:text-left space-y-4">
+              <div className="flex-1 text-center lg:text-left space-y-5">
                 {/* Badge */}
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 border border-primary/30">
-                  <Sparkles className="w-3 h-3 text-primary" />
-                  <span className="text-[10px] tracking-[0.2em] uppercase font-sans font-semibold text-primary">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 backdrop-blur-sm">
+                  <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
+                  <span className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase font-sans font-bold text-primary">
                     Condição Especial por Tempo Limitado
                   </span>
                 </div>
 
-                <h2 className="font-display text-2xl sm:text-3xl text-white leading-snug">
-                  Bíblia Alpha <span className="italic text-primary">de Estudos</span>
+                <h2 className="font-display text-3xl sm:text-4xl text-white leading-tight">
+                  Bíblia Alpha{" "}
+                  <span className="italic bg-gradient-to-r from-primary to-yellow-500 bg-clip-text text-transparent">
+                    de Estudos
+                  </span>
                 </h2>
 
-                <p className="font-elegant text-sm sm:text-base text-white/60 leading-relaxed max-w-md">
-                  Acesso completo à plataforma de estudos bíblicos mais avançada. Interlinear Hebraico-Grego, 
-                  léxico Strong's, notas de estudo, mapas e muito mais.
+                <p className="font-elegant text-sm sm:text-base text-white/50 leading-relaxed max-w-lg">
+                  A plataforma de estudos bíblicos mais completa do Brasil. Mergulhe nas Escrituras com ferramentas 
+                  profissionais de análise textual que antes só estavam disponíveis em seminários.
                 </p>
 
-                {/* Features */}
-                <div className="flex flex-wrap justify-center lg:justify-start gap-3 text-[10px] tracking-wider uppercase font-sans text-white/40">
-                  <span className="flex items-center gap-1"><BookOpen className="w-3 h-3 text-primary/60" /> Interlinear</span>
-                  <span className="flex items-center gap-1"><Crown className="w-3 h-3 text-primary/60" /> Léxico Strong's</span>
-                  <span className="flex items-center gap-1"><Sparkles className="w-3 h-3 text-primary/60" /> Notas de Estudo</span>
+                {/* Feature pills */}
+                <div className="flex flex-wrap justify-center lg:justify-start gap-2">
+                  {[
+                    { icon: BookOpen, label: "Interlinear Heb-Gr" },
+                    { icon: Crown, label: "Léxico Strong's" },
+                    { icon: Sparkles, label: "Notas de Estudo IA" },
+                  ].map(({ icon: Icon, label }) => (
+                    <span key={label} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] tracking-wider uppercase font-sans text-white/50">
+                      <Icon className="w-3 h-3 text-primary/70" /> {label}
+                    </span>
+                  ))}
                 </div>
 
-                {/* Price */}
-                <div className="flex items-end gap-2 justify-center lg:justify-start">
-                  <span className="font-display text-4xl sm:text-5xl font-bold text-white">R$ 49<span className="text-2xl">,90</span></span>
-                  <span className="text-xs text-white/40 font-sans mb-2">/ano</span>
-                </div>
-
-                {/* QR Code + Copy */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
-                  <div className="bg-white rounded-xl p-2 shadow-lg">
-                    <img src={pixQr} alt="QR Code Pix" className="w-28 h-28 sm:w-32 sm:h-32" width={128} height={128} />
+                {/* Price block */}
+                <div className="flex items-center gap-3 justify-center lg:justify-start">
+                  <div className="flex flex-col items-end mr-1">
+                    <span className="text-[10px] line-through text-white/25 font-sans">R$ 149,90</span>
+                    <span className="text-[9px] tracking-wider uppercase text-green-400/80 font-sans font-semibold">-67% OFF</span>
                   </div>
-                  <div className="space-y-2 text-center sm:text-left">
-                    <p className="text-[10px] tracking-[0.15em] uppercase font-sans text-white/50">
-                      Escaneie o QR Code ou copie o código Pix
+                  <span className="font-display text-5xl sm:text-6xl font-bold bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">
+                    R$ 49<span className="text-3xl">,90</span>
+                  </span>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs text-white/40 font-sans font-medium">/ano</span>
+                    <span className="text-[9px] text-white/25 font-sans">acesso completo</span>
+                  </div>
+                </div>
+
+                {/* QR Code + Copy section */}
+                <div className="flex flex-col sm:flex-row items-center gap-5 pt-3 pb-1">
+                  <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-yellow-500/30 rounded-2xl blur-sm opacity-60 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative bg-white rounded-xl p-2.5 shadow-2xl">
+                      <img src={pixQr} alt="QR Code Pix" className="w-32 h-32 sm:w-36 sm:h-36" width={144} height={144} />
+                    </div>
+                    <p className="text-center text-[8px] tracking-wider uppercase text-white/30 font-sans mt-2">Pix • Pagamento Instantâneo</p>
+                  </div>
+                  <div className="space-y-3 text-center sm:text-left">
+                    <p className="text-[11px] tracking-wide font-sans text-white/60 leading-relaxed">
+                      📱 Escaneie o <strong className="text-white/80">QR Code</strong> com seu banco<br />
+                      ou copie o código Pix abaixo:
                     </p>
                     <button
                       onClick={copyPix}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-sans text-xs tracking-widest uppercase transition-all duration-300 shadow-lg shadow-primary/20"
+                      className={`inline-flex items-center gap-2.5 px-6 py-3 rounded-xl font-sans text-xs tracking-[0.2em] uppercase transition-all duration-300 shadow-lg ${
+                        pixCopied
+                          ? "bg-green-500 text-white shadow-green-500/20"
+                          : "bg-gradient-to-r from-primary to-yellow-600 hover:from-primary/90 hover:to-yellow-600/90 text-primary-foreground shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02]"
+                      }`}
                     >
-                      {pixCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                      {pixCopied ? "CÓDIGO COPIADO!" : "COPIAR CÓDIGO PIX"}
+                      {pixCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {pixCopied ? "Código Copiado!" : "Copiar Código Pix"}
                     </button>
-                    <p className="text-[9px] text-white/30 font-sans">
-                      Após o pagamento, envie o comprovante para ativar seu acesso.
+                    <p className="text-[10px] text-white/35 font-sans flex items-center gap-1 justify-center sm:justify-start">
+                      <Mail className="w-3 h-3" />
+                      Envie o comprovante para ativar seu acesso
                     </p>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Bottom trust bar */}
+            <div className="relative z-10 border-t border-white/5 px-6 py-3 flex items-center justify-center gap-4 sm:gap-8 text-[9px] tracking-wider uppercase font-sans text-white/25">
+              <span className="flex items-center gap-1">🔒 Pagamento Seguro</span>
+              <span className="w-px h-3 bg-white/10" />
+              <span className="flex items-center gap-1">⚡ Acesso Imediato</span>
+              <span className="w-px h-3 bg-white/10 hidden sm:block" />
+              <span className="hidden sm:flex items-center gap-1">✨ Suporte Dedicado</span>
             </div>
           </div>
         </div>
