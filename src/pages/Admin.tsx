@@ -4,7 +4,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Check, X, Clock, Users, Shield, Ban, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, X, Clock, Users, Shield, Ban, Trash2, KeyRound } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +42,10 @@ const Admin = () => {
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<UserProfile | null>(null);
-
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
   useEffect(() => {
     if (!loading && !isAdmin) {
       navigate("/");
@@ -79,6 +91,28 @@ const Admin = () => {
     setDeleteTarget(null);
   };
 
+  const handleChangePassword = async () => {
+    if (newPassword.length < 8) {
+      toast({ title: "Erro", description: "A senha deve ter no mínimo 8 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Erro", description: "As senhas não coincidem.", variant: "destructive" });
+      return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Sucesso", description: "Senha alterada com sucesso." });
+      setPasswordOpen(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+    setChangingPassword(false);
+  };
+
   const filteredUsers = filter === "all" ? users : users.filter((u) => u.status === filter);
 
   const statusCounts = {
@@ -102,6 +136,9 @@ const Admin = () => {
           <span className="text-xs tracking-[0.3em] font-sans font-light text-foreground">ADMINISTRAÇÃO</span>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setPasswordOpen(true)} className="text-[9px] tracking-widest rounded-none h-8">
+            <KeyRound className="w-3 h-3 mr-1" /> ALTERAR SENHA
+          </Button>
           <Shield className="w-4 h-4 text-primary" />
           <span className="text-[10px] tracking-widest text-muted-foreground font-sans">ADMIN</span>
         </div>
@@ -239,6 +276,29 @@ const Admin = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Change password dialog */}
+      <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Alterar Senha</DialogTitle>
+            <DialogDescription>Digite sua nova senha abaixo.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">Nova senha</Label>
+              <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirmar senha</Label>
+              <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repita a senha" />
+            </div>
+            <Button onClick={handleChangePassword} disabled={changingPassword} className="w-full">
+              {changingPassword ? "Alterando..." : "Alterar Senha"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
