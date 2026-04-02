@@ -23,6 +23,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ReaderSettingsProvider>
           <Routes>
             <Route path="/" element={<Shelf />} />
             <Route path="/biblia" element={<Index />} />
