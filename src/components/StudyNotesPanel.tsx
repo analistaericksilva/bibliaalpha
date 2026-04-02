@@ -415,8 +415,8 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                 }
 
                 return (
-                  <div key={type} className="rounded-lg border border-border bg-card overflow-hidden">
-                    <div className="px-5 pt-4 pb-2 border-b border-border/50 bg-muted/30">
+                  <div key={type} className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+                    <div className="px-5 pt-4 pb-3 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
                       <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
                         {config.label}
                       </h3>
