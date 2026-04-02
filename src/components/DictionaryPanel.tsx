@@ -40,9 +40,9 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
     }
 
     if (langFilter === "hebrew") {
-      q = q.ilike("hebrew_greek", "hebraico%");
+      q = q.or("hebrew_greek.ilike.hebraico%,hebrew_greek.ilike.heb:%");
     } else if (langFilter === "greek") {
-      q = q.ilike("hebrew_greek", "grego%");
+      q = q.or("hebrew_greek.ilike.grego%,hebrew_greek.ilike.gr:%");
     }
 
     const { data } = await q;
