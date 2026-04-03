@@ -22,9 +22,6 @@ const Shelf = () => {
     setTimeout(() => setPixCopied(false), 3000);
   };
 
-    setPixCopiedFinance(true);
-    setTimeout(() => setPixCopiedFinance(false), 3000);
-  };
 
   const handleProductClick = () => {
     const loginUrl = `${window.location.origin}/login`;
