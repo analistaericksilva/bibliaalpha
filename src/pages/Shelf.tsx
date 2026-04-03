@@ -101,14 +101,6 @@ const Shelf = () => {
             badge={user && (isApproved || isAdmin) ? "Acessar" : undefined}
             onCustomClick={handleProductClick}
           />
-          <ShelfProductCard
-            title="Inteligência Financeira"
-            subtitle="Plataforma Digital"
-            coverImage={financeAppCover}
-            route="https://inteligenciafinanceira.tech/"
-            badge="Acessar"
-            onCustomClick={() => window.open("https://inteligenciafinanceira.tech/", "_blank")}
-          />
         </div>
 
         {/* ===== PROMO SECTION ===== */}
