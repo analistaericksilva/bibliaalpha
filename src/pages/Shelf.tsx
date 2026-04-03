@@ -22,12 +22,6 @@ const Shelf = () => {
     setTimeout(() => setPixCopied(false), 3000);
   };
 
-  const [pixCopiedFinance, setPixCopiedFinance] = useState(false);
-
-  const pixCodeFinance = "00020126890014br.gov.bcb.pix0129analista.ericksilva@gmail.com0234Plataforma Inteligência Financeira520400005303986540579.905802BR5922Erick Pereira da Silva6002NA62070503***6304140B";
-
-  const copyPixFinance = () => {
-    navigator.clipboard.writeText(pixCodeFinance);
     setPixCopiedFinance(true);
     setTimeout(() => setPixCopiedFinance(false), 3000);
   };
