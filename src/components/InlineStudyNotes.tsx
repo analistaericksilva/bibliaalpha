@@ -320,21 +320,12 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
           {/* Concordance / Cross References */}
           {concordance.length > 0 && (
             <div>
-              <button
-                onClick={() => toggleSection("conc")}
-                className="w-full flex items-center gap-2.5 px-5 py-3.5 hover:bg-muted/30 transition-colors cursor-pointer"
-              >
+              <div className="w-full flex items-center gap-2.5 px-5 py-3.5">
                 <Link2 className="w-4 h-4 text-primary" />
                 <span className="text-xs tracking-wider font-sans font-bold uppercase flex-1 text-left text-foreground">
                   Referências Cruzadas
                 </span>
-                {expandedSections.has("conc") ? (
-                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                )}
-              </button>
-              {expandedSections.has("conc") && (
+              </div>
                 <div className="px-5 pb-5">
                   {concordance.map((ref) => (
                     <div key={ref.id} className="flex flex-wrap gap-2">
@@ -360,7 +351,6 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
                     </div>
                   ))}
                 </div>
-              )}
             </div>
           )}
         </div>
