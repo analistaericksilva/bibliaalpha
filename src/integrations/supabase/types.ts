@@ -461,6 +461,7 @@ export type Database = {
         Row: {
           book_id: string
           chapter: number
+          color: string | null
           content: string
           created_at: string
           id: string
@@ -473,6 +474,7 @@ export type Database = {
         Insert: {
           book_id: string
           chapter: number
+          color?: string | null
           content: string
           created_at?: string
           id?: string
@@ -485,6 +487,7 @@ export type Database = {
         Update: {
           book_id?: string
           chapter?: number
+          color?: string | null
           content?: string
           created_at?: string
           id?: string
