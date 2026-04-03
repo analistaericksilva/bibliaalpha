@@ -58,6 +58,23 @@ const jesusSpeechPatterns = [
 
 const ntBooks = new Set(bibleBooks.filter((b) => b.testament === "new").map((b) => b.id));
 
+const abbrevToId: Record<string, string> = {};
+const nameToId: Record<string, string> = {};
+bibleBooks.forEach((b) => {
+  abbrevToId[b.abbrev.toLowerCase()] = b.id;
+  nameToId[b.name.toLowerCase()] = b.id;
+  abbrevToId[b.id] = b.id;
+});
+
+function parseReference(refStr: string) {
+  const match = refStr.trim().match(/^(\d?\s?[A-Za-zÀ-ú]+)\s+(\d+)(?:[\.:](\d+))?/);
+  if (!match) return null;
+  const abbrev = match[1].replace(/\s/g, "").toLowerCase();
+  const bookId = abbrevToId[abbrev] || nameToId[abbrev];
+  if (!bookId) return null;
+  return { bookId, chapter: parseInt(match[2], 10), verse: match[3] ? parseInt(match[3], 10) : undefined };
+}
+
 const getSpeechClass = (text: string, bookId: string): string => {
   if (ntBooks.has(bookId)) {
     if (jesusSpeechPatterns.some((p) => p.test(text))) return "text-jesus";
@@ -120,7 +137,7 @@ const Reader = () => {
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const [noteVerses, setNoteVerses] = useState<Set<number>>(new Set());
-  const [crossRefVerses, setCrossRefVerses] = useState<Set<number>>(new Set());
+  const [crossRefs, setCrossRefs] = useState<Record<number, string>>({});
   const [actionMenu, setActionMenu] = useState<{ verse: number; x: number; y: number } | null>(null);
   const [navHistory, setNavHistory] = useState<Array<{ bookId: string; chapter: number; verse?: number }>>([]);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
@@ -137,7 +154,7 @@ const Reader = () => {
     const [versesRes, notesRes, crossRefsRes] = await Promise.all([
       supabase.from("bible_verses").select("verse_number, text").eq("book_id", bookId).eq("chapter", chapter).order("verse_number"),
       supabase.from("study_notes").select("verse_start").eq("book_id", bookId).eq("chapter", chapter),
-      supabase.from("bible_cross_references").select("verse").eq("book_id", bookId).eq("chapter", chapter),
+      supabase.from("bible_cross_references").select("verse, refs").eq("book_id", bookId).eq("chapter", chapter),
     ]);
     if (versesRes.data && !versesRes.error) {
       setVerses(versesRes.data.map((v) => ({ verse: v.verse_number, text: v.text })));
@@ -145,7 +162,13 @@ const Reader = () => {
       setVerses([]);
     }
     if (notesRes.data) setNoteVerses(new Set(notesRes.data.map((n: any) => n.verse_start)));
-    if (crossRefsRes.data) setCrossRefVerses(new Set(crossRefsRes.data.map((r: any) => r.verse)));
+    if (crossRefsRes.data) {
+      const refsMap: Record<number, string> = {};
+      crossRefsRes.data.forEach((r: any) => {
+        refsMap[r.verse] = r.refs;
+      });
+      setCrossRefs(refsMap);
+    }
     setLoading(false);
   };
 
@@ -364,6 +387,7 @@ const Reader = () => {
                       const fav = isFavorite(v.verse);
                       const pNote = hasPersonalNote(v.verse);
                       const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
+                      const verseRefsStr = crossRefs[v.verse];
 
                         return (
                         <span key={v.verse}>
@@ -385,6 +409,29 @@ const Reader = () => {
                               {v.verse}{fav && "♥"}
                             </sup>
                             <span className={speechClass}>{v.text}</span>{" "}
+                            {verseRefsStr && (
+                              <span className="inline-flex flex-wrap gap-1 ml-1 align-middle">
+                                {verseRefsStr.split(";").map((r, i) => {
+                                  const parsed = parseReference(r.trim());
+                                  if (parsed) {
+                                    return (
+                                      <button
+                                        key={i}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          goToChapter(parsed.bookId, parsed.chapter, parsed.verse);
+                                        }}
+                                        className="text-[9px] font-sans font-bold text-primary/60 hover:text-primary bg-primary/5 hover:bg-primary/10 px-1 rounded transition-colors"
+                                        title={`Ir para ${r.trim()}`}
+                                      >
+                                        {r.trim()}
+                                      </button>
+                                    );
+                                  }
+                                  return null;
+                                })}
+                              </span>
+                            )}
                           </span>
                           {selectedVerse === v.verse && (
                             <InlineStudyNotes
