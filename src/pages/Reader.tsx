@@ -79,8 +79,32 @@ const Reader = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { fontSize } = useReaderSettings();
-  const [currentBook, setCurrentBook] = useState(searchParams.get("book") || "gn");
-  const [currentChapter, setCurrentChapter] = useState(Number(searchParams.get("chapter")) || 1);
+  const [currentBook, setCurrentBook] = useState(() => {
+    const urlBook = searchParams.get("book");
+    if (urlBook) return urlBook;
+    const saved = localStorage.getItem("lastReadPosition");
+    if (saved) {
+      try {
+        return JSON.parse(saved).book || "gn";
+      } catch (e) {
+        return "gn";
+      }
+    }
+    return "gn";
+  });
+  const [currentChapter, setCurrentChapter] = useState(() => {
+    const urlChapter = searchParams.get("chapter");
+    if (urlChapter) return Number(urlChapter);
+    const saved = localStorage.getItem("lastReadPosition");
+    if (saved) {
+      try {
+        return Number(JSON.parse(saved).chapter) || 1;
+      } catch (e) {
+        return 1;
+      }
+    }
+    return 1;
+  });
   const [showBooks, setShowBooks] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
@@ -128,7 +152,14 @@ const Reader = () => {
   useEffect(() => { fetchVerses(currentBook, currentChapter); }, [currentBook, currentChapter]);
 
   useEffect(() => {
-    if (!loading && verses.length > 0) recordReading();
+    if (!loading && verses.length > 0) {
+      recordReading();
+      // Save last read position to localStorage
+      localStorage.setItem("lastReadPosition", JSON.stringify({
+        book: currentBook,
+        chapter: currentChapter
+      }));
+    }
   }, [currentBook, currentChapter, loading, verses.length, recordReading]);
 
   const goToChapter = useCallback((bookId: string, chapter: number, verse?: number) => {
