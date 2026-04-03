@@ -15,6 +15,7 @@ interface StudyNote {
   content: string;
   source: string | null;
   note_type: string;
+  color: string | null;
 }
 
 interface DictEntry {
@@ -426,9 +427,16 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                     </div>
                     <div className="px-5 py-4 space-y-4">
                       {typeNotes.map((note) => (
-                        <div key={note.id} className={typeNotes.length > 1 ? "pb-4 border-b border-border/30 last:border-0 last:pb-0" : ""}>
+                        <div
+                          key={note.id}
+                          className={`${typeNotes.length > 1 ? "pb-4 border-b border-border/30 last:border-0 last:pb-0" : ""} ${note.color ? "pl-3 border-l-2" : ""}`}
+                          style={note.color ? { borderLeftColor: note.color } : undefined}
+                        >
                           <div className="flex items-start gap-2 mb-1.5">
-                            <span className="text-[10px] font-sans font-semibold text-primary tracking-wider shrink-0 mt-0.5">
+                            <span
+                              className="text-[10px] font-sans font-semibold tracking-wider shrink-0 mt-0.5"
+                              style={{ color: note.color || undefined }}
+                            >
                               v. {note.verse_start}{note.verse_end ? `–${note.verse_end}` : ""}
                             </span>
                             <div className="flex-1">
@@ -436,7 +444,12 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                                 <span className="text-xs font-sans font-semibold text-foreground block">{note.title}</span>
                               )}
                               {note.source && (
-                                <span className="text-[10px] font-sans text-muted-foreground italic">{note.source}</span>
+                                <span
+                                  className="text-[10px] font-sans italic"
+                                  style={{ color: note.color || undefined }}
+                                >
+                                  {note.source}
+                                </span>
                               )}
                             </div>
                           </div>
