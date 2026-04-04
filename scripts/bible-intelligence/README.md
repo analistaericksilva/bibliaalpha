@@ -61,12 +61,46 @@ Saídas:
 
 ---
 
+### 4) Ingerir comentário completo de Matthew Henry (CCEL)
+
+```bash
+node scripts/bible-intelligence/import-matthew-henry-ccel.mjs
+```
+
+Opções úteis:
+
+```bash
+# Limitar para teste rápido
+node scripts/bible-intelligence/import-matthew-henry-ccel.mjs --book-limit 2 --page-limit-per-book 3
+
+# Gerar somente para um livro interno (ex: mt)
+node scripts/bible-intelligence/import-matthew-henry-ccel.mjs --book-id mt
+```
+
+Saídas:
+
+- `data/bible-intelligence/matthew-henry/matthew-henry-normalized.json`
+- `data/bible-intelligence/matthew-henry/matthew-henry-upsert.sql`
+- `data/bible-intelligence/matthew-henry/matthew-henry-warnings.log`
+
+Pipeline aplicado:
+
+- **CCEL HTML** → crawler
+- **Parser/normalizador** → mapeamento por livro/capítulo/versículo
+- **Sem duplicações** → dedupe por `source_item_id` e hash de conteúdo
+- **Banco de dados** → UPSERT em `public.verse_commentary_sources`
+- **API interna** → consumo automático pela `verse-intelligence` via `get_verse_super_insights`
+
+---
+
 ## Ordem recomendada de execução
 
 1. Aplicar migration `20260406090000_bible_intelligence_stack.sql`
-2. Rodar `build-resource-manifest.mjs`
-3. Rodar `import-crossrefs-json.mjs`
-4. Rodar `import-macula-tsv.mjs`
-5. Importar os CSVs/SQL no Supabase
+2. Aplicar migration `20260406103000_matthew_henry_ccel_pipeline.sql`
+3. Rodar `build-resource-manifest.mjs`
+4. Rodar `import-crossrefs-json.mjs`
+5. Rodar `import-macula-tsv.mjs`
+6. Rodar `import-matthew-henry-ccel.mjs`
+7. Importar os CSVs/SQL no Supabase
 
-Com isso, o painel **Inteligência Bíblica 66X** passa a ter dados ricos para todos os livros (conforme cobertura do dataset importado).
+Com isso, o painel **Inteligência Bíblica 66X** passa a ter dados ricos para todos os livros (conforme cobertura do dataset importado), incluindo o acervo completo de Matthew Henry direcionado por versículo.
