@@ -8,11 +8,11 @@ const ReaderSettingsBar = () => {
   const { fontSize, setFontSize, isDark, toggleTheme } = useReaderSettings();
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       {/* Theme toggle */}
       <button
         onClick={toggleTheme}
-        className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+        className="reader-icon-button"
         title={isDark ? "Modo dia" : "Modo noite"}
       >
         {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -22,13 +22,13 @@ const ReaderSettingsBar = () => {
       <Popover>
         <PopoverTrigger asChild>
           <button
-            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            className="reader-icon-button"
             title="Tamanho da fonte"
           >
             <Type className="w-4 h-4" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-56 p-4" align="end">
+        <PopoverContent className="w-60 p-4 reader-surface border border-border/70" align="end">
           <div className="space-y-3">
             <p className="text-[10px] tracking-[0.3em] font-sans font-semibold text-muted-foreground">
               TAMANHO DA FONTE

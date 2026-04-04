@@ -180,6 +180,123 @@
   animation: fadeIn 0.6s ease forwards;
 }
 
+/* Premium reader UI */
+.reader-shell {
+  background:
+    radial-gradient(circle at 20% -10%, hsl(var(--primary) / 0.08), transparent 42%),
+    radial-gradient(circle at 80% 0%, hsl(var(--primary) / 0.05), transparent 40%),
+    hsl(var(--background));
+}
+
+.reader-topbar {
+  background: hsl(var(--background) / 0.84);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid hsl(var(--border) / 0.75);
+}
+
+.reader-main-paper {
+  background: hsl(var(--card) / 0.9);
+  border: 1px solid hsl(var(--border) / 0.75);
+  border-radius: 1rem;
+  box-shadow: 0 10px 38px rgba(15, 23, 42, 0.08);
+}
+
+.reader-surface {
+  background: hsl(var(--card) / 0.9);
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.reader-floating-panel {
+  background: hsl(var(--background) / 0.88) !important;
+  backdrop-filter: blur(16px);
+}
+
+.reader-panel-header {
+  background: linear-gradient(to right, hsl(var(--muted) / 0.7), transparent);
+}
+
+.reader-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border) / 0.9);
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--card) / 0.75);
+}
+
+.reader-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.7rem;
+  padding: 0 0.65rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border) / 0.8);
+  background: hsl(var(--card) / 0.7);
+  color: hsl(var(--muted-foreground));
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+}
+
+.reader-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.95rem;
+  height: 1.95rem;
+  border-radius: 0.6rem;
+  border: 1px solid hsl(var(--border) / 0.7);
+  background: hsl(var(--card) / 0.72);
+  color: hsl(var(--muted-foreground));
+  transition: all 0.2s ease;
+}
+
+.reader-icon-button:hover {
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--primary) / 0.35);
+  background: hsl(var(--muted));
+}
+
+.reader-nav-button {
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  font-family: var(--font-sans);
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+
+.reader-nav-button:hover {
+  color: hsl(var(--foreground));
+}
+
+.reader-verse {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.reader-verse:hover {
+  background-color: hsl(var(--muted) / 0.7);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.dark .reader-main-paper,
+.dark .reader-surface {
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.35);
+}
+
 /* Highlight colors for verses */
 .bg-yellow-200\/60 { background-color: rgba(254, 240, 138, 0.6); }
 .bg-green-200\/60 { background-color: rgba(187, 247, 208, 0.6); }

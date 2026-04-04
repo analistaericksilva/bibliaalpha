@@ -260,10 +260,10 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
 
   return (
     <>
-      <div className="fixed inset-0 bg-foreground/5 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-lg bg-background border-l border-border z-50 animate-fade-in flex flex-col shadow-2xl">
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="reader-floating-panel fixed top-0 right-0 h-full w-full max-w-lg bg-background border-l border-border z-50 animate-fade-in flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-muted/20">
+        <div className="reader-panel-header flex items-center justify-between px-6 py-5 border-b border-border bg-muted/20">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="w-4 h-4 text-primary" />
@@ -280,7 +280,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
               {selectedVerse ? "Comentários, referências e léxico do versículo" : "Visão geral do capítulo"}
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-muted">
+          <Button variant="ghost" size="icon" onClick={onClose} className="reader-icon-button h-8 w-8 rounded-full hover:bg-muted">
             <X className="w-4 h-4" />
           </Button>
         </div>

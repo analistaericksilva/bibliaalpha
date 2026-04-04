@@ -82,26 +82,28 @@ const DailyVerse = () => {
   if (!verse) return null;
 
   return (
-    <div className="bg-paper page-shadow rounded p-6 md:p-8 text-center relative">
-      <div className="flex items-center justify-center gap-2 mb-4">
+    <div className="reader-surface p-6 md:p-8 text-center relative overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+
+      <div className="relative flex items-center justify-center gap-2 mb-4">
         <BookOpen className="w-4 h-4 text-primary" />
         <p className="text-[9px] tracking-[0.4em] font-sans text-primary font-semibold">
           VERSÍCULO DO DIA
         </p>
       </div>
 
-      <blockquote className="text-lg md:text-xl font-serif text-foreground leading-relaxed mb-4 italic">
+      <blockquote className="relative text-lg md:text-xl font-serif text-foreground leading-relaxed mb-4 italic">
         "{verse.text}"
       </blockquote>
 
-      <p className="text-sm font-sans text-muted-foreground">
+      <p className="relative text-sm font-sans text-muted-foreground tracking-wide">
         {verse.book_name} {verse.chapter}:{verse.verse_number}
       </p>
 
       <button
         onClick={handleRefresh}
         disabled={refreshing}
-        className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-primary transition-colors"
+        className="absolute top-4 right-4 p-2 rounded-lg border border-border/60 bg-card/70 text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
         title="Novo versículo"
       >
         <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />

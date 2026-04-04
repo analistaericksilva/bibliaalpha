@@ -67,8 +67,8 @@ const BookSelector = ({ open, onClose, onSelect, currentBook, currentChapter }: 
     <button
       key={book.id}
       onClick={() => setSelectedBookId(book.id)}
-      className={`text-left px-3 py-2.5 text-sm font-sans rounded transition-colors ${
-        currentBook === book.id ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
+      className={`text-left px-3 py-2.5 text-sm font-sans rounded-lg border transition-colors ${
+        currentBook === book.id ? "border-primary/40 bg-primary/10 text-primary" : "border-transparent hover:border-border/70 hover:bg-muted/40 text-foreground"
       }`}
     >
       <span className="block">{book.name}</span>
@@ -82,12 +82,12 @@ const BookSelector = ({ open, onClose, onSelect, currentBook, currentChapter }: 
 
   return (
     <>
-      <div className="fixed inset-0 bg-foreground/5 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-md bg-background border-l border-border z-50 transition-app animate-fade-in">
-        <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="reader-floating-panel fixed top-0 right-0 h-full w-full max-w-md bg-background border-l border-border z-50 transition-app animate-fade-in">
+        <div className="reader-panel-header flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2 min-w-0">
             {selectedBookId && (
-              <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
+              <Button variant="ghost" size="icon" onClick={handleBack} className="reader-icon-button shrink-0">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
             )}
@@ -95,26 +95,26 @@ const BookSelector = ({ open, onClose, onSelect, currentBook, currentChapter }: 
               {selectedBookId ? breadcrumb.toUpperCase() : "LIVROS"}
             </h2>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="reader-icon-button">
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         {/* View mode toggle — only in book list */}
         {!selectedBookId && (
-          <div className="flex gap-1 p-3 border-b border-border">
+          <div className="flex gap-1.5 p-3 border-b border-border/70 bg-muted/20">
             <button
               onClick={() => setViewMode("testament")}
-              className={`flex-1 py-1.5 text-[9px] tracking-[0.2em] font-sans rounded transition-colors ${
-                viewMode === "testament" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              className={`flex-1 py-1.5 text-[9px] tracking-[0.2em] font-sans rounded-lg transition-colors ${
+                viewMode === "testament" ? "bg-primary text-primary-foreground shadow-sm" : "bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
               POR TESTAMENTO
             </button>
             <button
               onClick={() => setViewMode("group")}
-              className={`flex-1 py-1.5 text-[9px] tracking-[0.2em] font-sans rounded transition-colors ${
-                viewMode === "group" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              className={`flex-1 py-1.5 text-[9px] tracking-[0.2em] font-sans rounded-lg transition-colors ${
+                viewMode === "group" ? "bg-primary text-primary-foreground shadow-sm" : "bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
               POR CATEGORIA
@@ -133,7 +133,7 @@ const BookSelector = ({ open, onClose, onSelect, currentBook, currentChapter }: 
                   setSelectedBookId(null);
                   setSelectedChapter(null);
                 }}
-                className="w-full mb-4 py-3 text-sm font-sans rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="w-full mb-4 py-3 text-sm font-sans rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
               >
                 Ir para o capítulo inteiro
               </button>
@@ -148,7 +148,7 @@ const BookSelector = ({ open, onClose, onSelect, currentBook, currentChapter }: 
                       setSelectedBookId(null);
                       setSelectedChapter(null);
                     }}
-                    className="py-3 text-sm font-sans rounded bg-muted text-foreground hover:bg-primary/10 transition-colors"
+                    className="py-3 text-sm font-sans rounded-lg bg-muted/60 text-foreground hover:bg-primary/10 transition-colors"
                   >
                     {v}
                   </button>
@@ -159,7 +159,7 @@ const BookSelector = ({ open, onClose, onSelect, currentBook, currentChapter }: 
             /* Chapter selection with book info */
             <div className="p-4">
               {/* Book metadata */}
-              <div className="mb-4 p-3 bg-muted/50 rounded">
+              <div className="mb-4 p-3 bg-muted/35 border border-border/60 rounded-xl">
                 <p className="text-sm font-serif font-medium text-foreground">{selectedBook.name}</p>
                 {selectedBook.author && (
                   <p className="text-[10px] text-muted-foreground font-sans mt-1">
@@ -180,10 +180,10 @@ const BookSelector = ({ open, onClose, onSelect, currentBook, currentChapter }: 
                   <button
                     key={ch}
                     onClick={() => handleChapterClick(ch)}
-                    className={`py-3 text-sm font-sans rounded transition-colors ${
+                    className={`py-3 text-sm font-sans rounded-lg transition-colors ${
                       currentBook === selectedBookId && currentChapter === ch
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground hover:bg-primary/10"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted/60 text-foreground hover:bg-primary/10"
                     }`}
                   >
                     {ch}

@@ -55,11 +55,11 @@ const SearchPanel = ({ open, onClose, onNavigate }: SearchPanelProps) => {
 
   return (
     <>
-      <div className="fixed inset-0 bg-foreground/5 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-md bg-background border-l border-border z-50 animate-fade-in overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="reader-floating-panel fixed top-0 right-0 h-full w-full max-w-md bg-background border-l border-border z-50 animate-fade-in overflow-hidden flex flex-col">
+        <div className="reader-panel-header flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-xs tracking-[0.3em] font-sans font-semibold text-foreground">BUSCAR NA BÍBLIA</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="reader-icon-button">
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -72,11 +72,11 @@ const SearchPanel = ({ open, onClose, onNavigate }: SearchPanelProps) => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="pl-10 font-sans text-sm"
+                className="pl-10 font-sans text-sm bg-card/70 border-border/70"
                 autoFocus
               />
             </div>
-            <Button onClick={handleSearch} disabled={query.length < 3 || loading} size="sm">
+            <Button onClick={handleSearch} disabled={query.length < 3 || loading} size="sm" className="shadow-sm">
               Buscar
             </Button>
           </div>
@@ -93,7 +93,7 @@ const SearchPanel = ({ open, onClose, onNavigate }: SearchPanelProps) => {
               <button
                 key={`${r.book_id}-${r.chapter}-${r.verse_number}-${i}`}
                 onClick={() => { onNavigate(r.book_id, r.chapter); onClose(); }}
-                className="w-full text-left p-3 bg-muted rounded hover:bg-primary/5 transition-colors"
+                className="w-full text-left p-3 bg-card/70 border border-border/60 rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-colors"
               >
                 <span className="text-[10px] font-sans font-semibold text-primary mr-2">
                   {book?.abbrev || r.book_name} {r.chapter}:{r.verse_number}

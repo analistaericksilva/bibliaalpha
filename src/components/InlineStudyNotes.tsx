@@ -95,7 +95,7 @@ function renderContentWithRefs(
           key={`ref-${match.index}`}
           type="button"
           onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
-          className="underline underline-offset-2 decoration-zinc-400 hover:decoration-zinc-700 text-zinc-700 hover:text-zinc-900 transition-colors"
+          className="underline underline-offset-2 decoration-primary/40 hover:decoration-primary text-primary/90 hover:text-primary transition-colors"
         >
           {matchedText}
         </button>
@@ -214,7 +214,7 @@ const InlineStudyNotes = ({
 
   if (loading) {
     return (
-      <span className="inline-flex items-center gap-2 ml-2 text-[12px] text-zinc-500 align-middle">
+      <span className="inline-flex items-center gap-2 ml-2 text-[12px] text-muted-foreground align-middle">
         <Loader2 className="w-3.5 h-3.5 animate-spin" />
         carregando notas
       </span>
@@ -225,31 +225,31 @@ const InlineStudyNotes = ({
 
   if (!hasAnyContent) {
     return (
-      <span className="block mt-2 mb-5 rounded-xl border border-zinc-200 bg-white px-4 py-3">
+      <span className="block mt-2 mb-5 rounded-xl border border-border/70 bg-card/80 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
         <span className="flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-500">Verso {verse}</span>
+          <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Verso {verse}</span>
           <button
             type="button"
             onClick={onClose}
-            className="h-6 w-6 rounded-full text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+            className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
             aria-label="Fechar notas"
           >
             <X className="w-3.5 h-3.5 mx-auto" />
           </button>
         </span>
-        <span className="mt-2 block text-[13px] text-zinc-600">Sem comentários ou referências para este versículo.</span>
+        <span className="mt-2 block text-[13px] text-muted-foreground">Sem comentários ou referências para este versículo.</span>
       </span>
     );
   }
 
   return (
-    <span className="block mt-2 mb-5 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.05)]">
+    <span className="block mt-2 mb-5 rounded-xl border border-border/70 bg-card/85 px-4 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
       <span className="mb-2 flex items-center justify-between">
-        <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-500">Verso {verse}</span>
+        <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Verso {verse}</span>
         <button
           type="button"
           onClick={onClose}
-          className="h-6 w-6 rounded-full text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+          className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
           aria-label="Fechar notas"
         >
           <X className="w-3.5 h-3.5 mx-auto" />
@@ -263,17 +263,17 @@ const InlineStudyNotes = ({
             const sourceLabel = note.source ? SOURCE_LABELS[note.source] || note.source : null;
 
             return (
-              <span key={note.id} className="block rounded-lg bg-zinc-50 px-3 py-2 border border-zinc-100">
+              <span key={note.id} className="block rounded-lg bg-muted/40 px-3 py-2 border border-border/60">
                 <button
                   type="button"
                   onClick={() => setOpenCommentId((prev) => (prev === note.id ? null : note.id))}
                   className="w-full text-left"
                 >
-                  <span className="block text-[11px] tracking-[0.12em] uppercase text-zinc-500">
+                  <span className="block text-[11px] tracking-[0.12em] uppercase text-muted-foreground">
                     Comentário {index + 1}
                     {sourceLabel ? ` · ${sourceLabel}` : ""}
                   </span>
-                  <span className="block mt-1 text-[14px] leading-6 text-zinc-700">
+                  <span className="block mt-1 text-[14px] leading-6 text-foreground/90">
                     {expanded ? renderContentWithRefs(note.content, onNavigate) : shortText(note.content, 140)}
                   </span>
                 </button>
@@ -285,7 +285,7 @@ const InlineStudyNotes = ({
 
       {crossRefs.length > 0 && (
         <span className="block mt-3">
-          <span className="block text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Referências cruzadas</span>
+          <span className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Referências cruzadas</span>
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] leading-6">
             {crossRefs.map((ref, idx) => {
               const parsed = parseReference(ref);
@@ -295,7 +295,7 @@ const InlineStudyNotes = ({
                     key={`${ref}-${idx}`}
                     type="button"
                     onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
-                    className="underline underline-offset-2 decoration-zinc-400 hover:decoration-zinc-700 text-zinc-700 hover:text-zinc-900 transition-colors"
+                    className="underline underline-offset-2 decoration-primary/40 hover:decoration-primary text-primary/90 hover:text-primary transition-colors"
                   >
                     {ref}
                   </button>
@@ -303,7 +303,7 @@ const InlineStudyNotes = ({
               }
 
               return (
-                <span key={`${ref}-${idx}`} className="text-zinc-600">
+                <span key={`${ref}-${idx}`} className="text-muted-foreground">
                   {ref}
                 </span>
               );
@@ -314,7 +314,7 @@ const InlineStudyNotes = ({
 
       {keywords.length > 0 && (
         <span className="block mt-3">
-          <span className="block text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1">Palavras‑chave</span>
+          <span className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Palavras‑chave</span>
 
           <span className="flex flex-wrap items-center gap-2">
             {keywords.map((entry) => {
@@ -326,8 +326,8 @@ const InlineStudyNotes = ({
                   onClick={() => setOpenKeywordId((prev) => (prev === entry.id ? null : entry.id))}
                   className={`rounded-full border px-2.5 py-0.5 text-[12px] transition-colors ${
                     active
-                      ? "border-zinc-700 bg-zinc-900 text-white"
-                      : "border-zinc-300 text-zinc-700 hover:border-zinc-500"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border text-foreground/85 hover:border-primary/40"
                   }`}
                 >
                   {entry.term}
@@ -337,8 +337,8 @@ const InlineStudyNotes = ({
           </span>
 
           {activeKeyword && (
-            <span className="block mt-2 rounded-md bg-[#F8F6F0] border border-[#ECE7D8] px-3 py-2 text-[12px] leading-6 text-zinc-700">
-              <strong className="font-semibold text-zinc-900">{activeKeyword.term}</strong>
+            <span className="block mt-2 rounded-md bg-muted/40 border border-border/60 px-3 py-2 text-[12px] leading-6 text-foreground/85">
+              <strong className="font-semibold text-foreground">{activeKeyword.term}</strong>
               {activeKeyword.hebrew_greek ? ` (${activeKeyword.hebrew_greek})` : ""}: {shortText(activeKeyword.definition, 180)}
             </span>
           )}

@@ -168,13 +168,13 @@ const UserPanel = ({ open, onClose, onNavigate, defaultTab = "history" }: UserPa
 
   return (
     <>
-      <div className="fixed inset-0 bg-foreground/5 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-lg bg-background border-l border-border z-50 animate-fade-in flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="reader-floating-panel fixed top-0 right-0 h-full w-full max-w-lg bg-background border-l border-border z-50 animate-fade-in flex flex-col overflow-hidden">
+        <div className="reader-panel-header flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-xs tracking-[0.3em] font-sans font-semibold text-foreground">
             MINHA BÍBLIA
           </h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="reader-icon-button">
             <X className="w-4 h-4" />
           </Button>
         </div>

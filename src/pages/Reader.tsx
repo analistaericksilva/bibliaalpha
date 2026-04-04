@@ -215,7 +215,7 @@ const Reader = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="reader-shell min-h-screen flex w-full text-foreground">
         <ReaderSidebar
           onToggleSearch={() => setShowSearch(!showSearch)}
           onToggleBookSelector={() => setShowBooks(!showBooks)}
@@ -234,25 +234,28 @@ const Reader = () => {
 
         <div className="flex-1 flex flex-col min-w-0">
           {/* Compact top bar with sidebar trigger */}
-          <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border h-12 flex items-center px-4 gap-3">
-            <SidebarTrigger className="shrink-0">
-              <Menu className="w-5 h-5" />
+          <header className="reader-topbar sticky top-0 z-40 h-14 flex items-center px-4 md:px-6 gap-3">
+            <SidebarTrigger className="shrink-0 rounded-lg border border-border/60 bg-card/70 hover:bg-muted/80">
+              <Menu className="w-4 h-4" />
             </SidebarTrigger>
-            <div className="flex items-baseline gap-2 overflow-hidden">
-              <span className="text-sm tracking-[0.2em] font-serif font-medium text-foreground truncate">
-                {book?.name}
-              </span>
-              <span className="text-xs font-sans text-muted-foreground shrink-0">
-                Cap. {currentChapter}
-              </span>
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] tracking-[0.28em] font-sans text-muted-foreground uppercase">
+                  Leitura Bíblica
+                </span>
+                <span className="text-sm tracking-[0.12em] font-serif font-medium text-foreground truncate">
+                  {book?.name}
+                </span>
+              </div>
+              <span className="reader-chip shrink-0">Cap. {currentChapter}</span>
             </div>
-            <div className="ml-auto flex items-center gap-1">
+            <div className="ml-auto flex items-center gap-1.5">
               <ReaderSettingsBar />
-              <div className="w-px h-5 bg-border mx-1" />
-              <button onClick={() => navigateChapter(-1)} className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <div className="w-px h-6 bg-border/70 mx-0.5" />
+              <button onClick={() => navigateChapter(-1)} className="reader-icon-button" aria-label="Capítulo anterior">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button onClick={() => navigateChapter(1)} className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <button onClick={() => navigateChapter(1)} className="reader-icon-button" aria-label="Próximo capítulo">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -260,62 +263,62 @@ const Reader = () => {
 
           {/* Reader content */}
           <main className="flex-1 overflow-y-auto">
-            <div className="max-w-3xl mx-auto px-6 md:px-12 pt-8 pb-32">
+            <div className="max-w-5xl mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-24 md:pb-28">
               {/* Daily Verse */}
-              <div className="mb-8 animate-fade-in">
+              <div className="mb-6 md:mb-8 animate-fade-in">
                 <DailyVerse />
               </div>
 
-              <div className="bg-white rounded-none md:rounded-lg p-6 md:p-12 mb-8 animate-fade-in">
+              <div className="reader-main-paper p-5 md:p-10 lg:p-12 mb-8 animate-fade-in">
                 {/* Back button */}
                 {navHistory.length > 0 && (
                   <button
                     onClick={goBack}
-                    className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] font-sans text-primary hover:text-primary/80 transition-colors mb-4"
+                    className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] font-sans text-primary/90 hover:text-primary transition-colors mb-5 rounded-full border border-primary/20 px-3 py-1"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     VOLTAR AO TEXTO ANTERIOR
                   </button>
                 )}
 
-                <div className="text-center mb-12">
-                  <p className="text-[9px] tracking-[0.4em] text-muted-foreground font-sans mb-2">
-                    {book?.testament === "old" ? "ANTIGO TESTAMENTO" : "NOVO TESTAMENTO"}
+                <div className="text-center mb-10 md:mb-12">
+                  <p className="text-[9px] tracking-[0.42em] text-muted-foreground font-sans mb-2 uppercase">
+                    {book?.testament === "old" ? "Antigo Testamento" : "Novo Testamento"}
                   </p>
-                  <h1 className="text-3xl md:text-4xl font-serif font-medium text-foreground mb-1">
+                  <h1 className="text-3xl md:text-4xl lg:text-[2.85rem] font-serif font-medium text-foreground mb-1">
                     {book?.name}
                   </h1>
-                  <p className="text-lg text-muted-foreground font-serif">Capítulo {currentChapter}</p>
+                  <p className="text-base md:text-lg text-muted-foreground font-serif">Capítulo {currentChapter}</p>
                 </div>
 
                 {/* Legend */}
-                <div className="flex flex-wrap items-center justify-center gap-3 mb-8 text-[10px] font-sans tracking-wider">
-                  <span className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center justify-center gap-2.5 mb-7 text-[10px] font-sans tracking-wider">
+                  <span className="reader-pill">
                     <span className="w-2 h-2 rounded-full bg-[hsl(var(--god))]" />
-                    <span className="text-muted-foreground">DEUS FALA</span>
+                    <span>DEUS FALA</span>
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="reader-pill">
                     <span className="w-2 h-2 rounded-full bg-[hsl(var(--jesus))]" />
-                    <span className="text-muted-foreground">JESUS FALA</span>
+                    <span>JESUS FALA</span>
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="reader-pill">
                     <span className="w-2 h-2 rounded-full bg-primary" />
-                    <span className="text-muted-foreground">NOTA DE ESTUDO</span>
+                    <span>NOTA DE ESTUDO</span>
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="reader-pill">
                     <span className="w-2 h-2 rounded-full bg-destructive" />
-                    <span className="text-muted-foreground">FAVORITO</span>
+                    <span>FAVORITO</span>
                   </span>
                 </div>
 
-                <p className="text-[9px] text-center text-muted-foreground font-sans mb-6 tracking-wide">
-                  Clique longo em qualquer versículo para grifar, favoritar ou anotar
+                <p className="text-[10px] text-center text-muted-foreground font-sans mb-6 tracking-wide">
+                  Pressione e segure um versículo para grifar, favoritar ou adicionar nota pessoal
                 </p>
 
                 {/* Chapter Navigation Strip */}
                 <ChapterNavigation bookId={currentBook} chapter={currentChapter} onNavigate={goToChapter} />
 
-                <div className="mt-6"></div>
+                <div className="mt-6" />
 
                 {/* Verses */}
                 {loading ? (
@@ -323,7 +326,7 @@ const Reader = () => {
                     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                   </div>
                 ) : (
-                  <div className="reader-content text-[#222]" style={{ fontSize: `${fontSize}px`, lineHeight: 2.05, letterSpacing: "0.01em" }}>
+                  <div className="reader-content text-foreground/95" style={{ fontSize: `${fontSize}px`, lineHeight: 2.05, letterSpacing: "0.008em" }}>
                     {verses.map((v) => {
                       const speechClass = getSpeechClass(v.text, currentBook);
                       const hasNote = noteVerses.has(v.verse);
@@ -336,10 +339,10 @@ const Reader = () => {
 
                         return (
                         <span key={v.verse}>
-                          <span
-                            ref={(el) => { verseRefs.current[v.verse] = el; }}
-                            className={`cursor-pointer ${hlBg} rounded px-0.5 transition-colors align-baseline`}
-                            onClick={() => handleVerseClick(v.verse)}
+                            <span
+                              ref={(el) => { verseRefs.current[v.verse] = el; }}
+                              className={`reader-verse cursor-pointer ${hlBg} rounded-md px-0.5 md:px-1 transition-colors align-baseline`}
+                              onClick={() => handleVerseClick(v.verse)}
                             onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                             onTouchStart={(e) => {
                               const timer = setTimeout(() => handleVerseLongPress(v.verse, e), 500);
@@ -348,16 +351,15 @@ const Reader = () => {
                               e.currentTarget.addEventListener("touchmove", clear, { once: true });
                             }}
                           >
-                            <sup
-                              className={`verse-number text-[0.58em] align-super mr-0.5 text-[#5A5A5A] ${hasNote ? "!text-primary !font-bold" : ""} ${fav ? "!text-destructive !font-bold" : ""} ${pNote ? "!text-accent !underline" : ""}`}
-                            >
+                              <sup
+                                className={`verse-number text-[0.58em] align-super mr-0.5 text-muted-foreground ${hasNote ? "!text-primary !font-bold" : ""} ${fav ? "!text-destructive !font-bold" : ""} ${pNote ? "!text-accent !underline" : ""}`}
+                              >
                               {v.verse}{fav && "♥"}
                             </sup>
                             <span className={speechClass}>{v.text}</span>
                             {hasCrossRef && (
                               <button
-                                className="ml-1 align-super text-[10px] font-sans underline underline-offset-2 cursor-pointer"
-                                style={{ color: "#4B2E83", textDecorationColor: "#4B2E8388" }}
+                                className="ml-1 align-super text-[10px] font-sans underline underline-offset-2 decoration-primary/50 text-primary/90 hover:text-primary cursor-pointer transition-colors"
                                 onClick={() => handleVerseClick(v.verse)}
                                 aria-label={`Ver referências do versículo ${v.verse}`}
                               >
@@ -386,14 +388,14 @@ const Reader = () => {
                 )}
 
                 {/* Chapter navigation */}
-                <div className="flex items-center justify-between mt-16 pt-8 border-t border-border">
-                  <button onClick={() => navigateChapter(-1)} className="text-[10px] tracking-[0.2em] font-sans text-muted-foreground hover:text-foreground transition-colors">
+                <div className="flex items-center justify-between mt-14 pt-7 border-t border-border/70">
+                  <button onClick={() => navigateChapter(-1)} className="reader-nav-button">
                     ← ANTERIOR
                   </button>
-                  <span className="text-[10px] tracking-[0.2em] font-sans text-muted-foreground">
+                  <span className="reader-chip">
                     {book?.abbrev} {currentChapter}
                   </span>
-                  <button onClick={() => navigateChapter(1)} className="text-[10px] tracking-[0.2em] font-sans text-muted-foreground hover:text-foreground transition-colors">
+                  <button onClick={() => navigateChapter(1)} className="reader-nav-button">
                     PRÓXIMO →
                   </button>
                 </div>

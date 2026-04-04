@@ -73,7 +73,7 @@ const VerseActionMenu = ({
     <>
       <div className="fixed inset-0 z-50" onClick={onClose} />
       <div
-        className="fixed z-50 bg-background border border-border rounded-lg shadow-lg p-3 min-w-[220px] animate-fade-in"
+        className="fixed z-50 bg-background/95 backdrop-blur border border-border/80 rounded-xl shadow-2xl p-3 min-w-[230px] animate-fade-in"
         style={{
           left: Math.min(x, window.innerWidth - 240),
           top: Math.min(y, window.innerHeight - 300),
@@ -83,7 +83,7 @@ const VerseActionMenu = ({
           <span className="text-[10px] font-sans font-semibold text-primary tracking-wider">
             VERSÍCULO {verse}
           </span>
-          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={onClose}>
+          <Button variant="ghost" size="icon" className="reader-icon-button h-6 w-6" onClick={onClose}>
             <X className="w-3 h-3" />
           </Button>
         </div>
