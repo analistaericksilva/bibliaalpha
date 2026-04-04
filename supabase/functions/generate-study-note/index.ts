@@ -55,13 +55,12 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Determine testament for Scofield context
     const otBooks = ['gn','ex','lv','nm','dt','js','jz','rt','1sm','2sm','1rs','2rs','1cr','2cr','ed','ne','et','jo','sl','pv','ec','ct','is','jr','lm','ez','dn','os','jl','am','ob','jn','mq','na','hc','sf','ag','zc','ml']
     const isOT = otBooks.includes(bookId)
 
-    const prompt = `Você é um teólogo evangélico experiente com profundo conhecimento da Scofield Reference Bible (edição revisada de 1917, domínio público) e dos grandes comentaristas reformados e puritanos.
+    const prompt = `Você é um teólogo evangélico reformado com profundo conhecimento dos autores clássicos em domínio público e da Scofield Reference Bible (edição revisada de 1917).
 
-Gere notas de estudo para o versículo abaixo.
+Gere notas de estudo para o versículo abaixo seguindo EXATAMENTE as regras.
 
 Livro: ${bookName}
 Capítulo: ${chapter}
@@ -72,19 +71,29 @@ Testamento: ${isOT ? 'Antigo Testamento' : 'Novo Testamento'}
 Contexto (versículos ao redor):
 ${contextText}
 
-Responda EXATAMENTE no formato JSON abaixo, sem nenhum texto fora do JSON, sem markdown, sem backticks:
-{"matthewHenry":"<nota devocional e prática no estilo de Matthew Henry, 2-3 parágrafos, cite como do Comentário Bíblico de Matthew Henry>","strong":"<nota teológica sistemática no estilo de Augustus Hopkins Strong, 1-2 parágrafos, aborde aspectos doutrinários>","pentecostal":"<nota breve 2-3 frases com perspectiva pentecostal/wesleyana, pode incluir John Wesley, Charles Finney ou R.A. Torrey>","scofield":"<nota no estilo da Scofield Reference Bible 1917. Inclua: (1) explicação dispensacionalista quando pertinente, (2) referências cruzadas importantes, (3) notas sobre tipos e figuras, (4) contexto histórico-profético. TRADUZA TUDO para português brasileiro. 2-3 parágrafos substanciais. Se o versículo não tiver nota relevante no estilo Scofield, escreva 'null'>","reformada":"<nota breve no estilo reformado/puritano, pode referenciar João Calvino, Martinho Lutero, John Owen, Thomas Watson ou Richard Baxter. 2-3 frases com aplicação espiritual prática>","devocional":"<devocional pessoal breve, máximo 5 linhas, reflexão espiritual>","aplicacao":"<aplicação prática direta, máximo 3 linhas, comece com verbo de ação>"}
+BASE TEOLÓGICA:
+- Núcleo (70%): João Calvino, Matthew Henry, Puritanos (John Owen, Thomas Watson, Richard Baxter), Martinho Lutero
+- Complemento (20%): Pais da Igreja (Agostinho, Crisóstomo, Atanásio — com filtro reformado), John Wesley
+- Aplicação (10%): Charles Finney, R. A. Torrey
 
-Instruções:
+REGRAS:
+- Cada nota deve usar no máximo 3 autores
+- Linguagem clara, moderna e edificante
+- Fidelidade total ao texto bíblico
+- Evitar viés católico ou sacramental
+- Parafrasear ideias (não copiar textos)
+- Não usar autores contemporâneos
+- Consistência doutrinária reformada com aplicação espiritual
+
+Responda EXATAMENTE no formato JSON abaixo, sem texto fora do JSON, sem markdown, sem backticks:
+{"explicacao":"<Explicação direta e objetiva do versículo, máximo 4 linhas. Baseada nos autores do núcleo principal>","aplicacao":"<Aplicação prática espiritual, máximo 2 linhas. Comece com verbo de ação>","autores":"<Lista dos autores usados nesta nota, separados por vírgula, máximo 3>","scofield":"<Nota traduzida da Scofield Reference Bible 1917 para português brasileiro. Inclua: dispensação, referências cruzadas, tipos/figuras, contexto profético. 2-3 parágrafos. Se não houver nota relevante, escreva null>","insight":"<Insight teológico breve, máximo 2 linhas. Pode ser omitido se não houver insight relevante, nesse caso escreva null>"}
+
+Instruções finais:
 - Escreva TUDO em português brasileiro
 - Não repita o texto do versículo
 - Tom reverente mas acessível
 - Não use emojis, asteriscos ou markdown
-- Devocional + Aplicação juntos não devem exceder 7 linhas
-- Para a nota Scofield: traduza fielmente o conteúdo e estilo da Scofield Reference Bible 1917 para português. Mantenha as referências cruzadas no formato "Livro Capítulo:Versículo"
-- Para a nota reformada: use apenas autores em domínio público (Calvino, Lutero, Owen, Watson, Baxter, Agostinho com filtro evangélico)
-- Evite viés católico ou sacramental
-- Priorize interpretação bíblica reformada com aplicação espiritual prática
+- Para Scofield: traduza fielmente o estilo e conteúdo da edição 1917. Mantenha referências no formato "Livro Capítulo:Versículo"
 - Responda SOMENTE o JSON, nada mais`
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -98,7 +107,7 @@ Instruções:
         messages: [
           { role: 'user', content: prompt }
         ],
-        max_tokens: 2500,
+        max_tokens: 2000,
         temperature: 0.7,
       }),
     })
@@ -134,9 +143,11 @@ Instruções:
       const jsonMatch = rawContent.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         sections = JSON.parse(jsonMatch[0])
-        // Remove null scofield
-        if (sections?.scofield === 'null' || sections?.scofield === null) {
-          delete sections.scofield
+        // Clean null strings
+        for (const key of Object.keys(sections)) {
+          if (sections[key] === 'null' || sections[key] === null) {
+            delete sections[key]
+          }
         }
       }
     } catch (e) {

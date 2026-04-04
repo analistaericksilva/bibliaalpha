@@ -25,13 +25,17 @@ interface DictEntry {
 }
 
 interface AiSections {
+  explicacao?: string;
+  aplicacao?: string;
+  autores?: string;
+  scofield?: string;
+  insight?: string;
+  // Legacy fields for backward compat
   matthewHenry?: string;
   strong?: string;
   pentecostal?: string;
-  scofield?: string;
   reformada?: string;
   devocional?: string;
-  aplicacao?: string;
 }
 
 interface InlineStudyNotesProps {
@@ -91,21 +95,42 @@ function renderContentWithRefs(
   return parts.length > 0 ? <>{parts}</> : <span>{text}</span>;
 }
 
+// Author → color mapping
+const AUTHOR_COLORS: Record<string, string> = {
+  "calvino": "#1E40AF",
+  "joão calvino": "#1E40AF",
+  "matthew henry": "#B8860B",
+  "john owen": "#6B21A8",
+  "thomas watson": "#6B21A8",
+  "richard baxter": "#6B21A8",
+  "puritanos": "#6B21A8",
+  "lutero": "#047857",
+  "martinho lutero": "#047857",
+  "agostinho": "#6B7280",
+  "crisóstomo": "#6B7280",
+  "atanásio": "#6B7280",
+  "pais da igreja": "#6B7280",
+  "wesley": "#EA580C",
+  "john wesley": "#EA580C",
+  "finney": "#DC2626",
+  "charles finney": "#DC2626",
+  "torrey": "#DC2626",
+  "r. a. torrey": "#DC2626",
+};
+
+function getAuthorColor(author: string): string {
+  const lower = author.trim().toLowerCase();
+  for (const [key, color] of Object.entries(AUTHOR_COLORS)) {
+    if (lower.includes(key)) return color;
+  }
+  return "hsl(var(--muted-foreground))";
+}
+
 const SOURCE_LABELS: Record<string, string> = {
   matthew_henry: "Matthew Henry",
   sermon: "Sermão",
   commentary: "Nota de Estudo",
   concordance: "Concordância",
-};
-
-const AI_SECTION_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  scofield: { label: "Scofield Reference Bible (1917)", color: "#1E40AF", icon: "📘" },
-  reformada: { label: "Nota Reformada / Puritana", color: "#7C3AED", icon: "⛪" },
-  matthewHenry: { label: "Matthew Henry", color: "#047857", icon: "📖" },
-  strong: { label: "Teologia Sistemática", color: "#B45309", icon: "🔬" },
-  pentecostal: { label: "Perspectiva Wesleyana", color: "#DC2626", icon: "🔥" },
-  devocional: { label: "Devocional", color: "#0891B2", icon: "💎" },
-  aplicacao: { label: "Aplicação Prática", color: "#059669", icon: "✅" },
 };
 
 const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: InlineStudyNotesProps) => {
@@ -117,6 +142,7 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
   const [activeTab, setActiveTab] = useState<"notes" | "interlinear">("notes");
   const [aiSections, setAiSections] = useState<AiSections | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [scofieldOpen, setScofieldOpen] = useState(false);
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => {
@@ -128,6 +154,7 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
 
   useEffect(() => {
     setAiSections(null);
+    setScofieldOpen(false);
     const fetchData = async () => {
       setLoading(true);
       const [notesRes, concRes, dictRes] = await Promise.all([
@@ -184,9 +211,8 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
       if (error) throw error;
       if (data?.sections) {
         setAiSections(data.sections);
-        setExpandedSections((prev) => new Set([...prev, "scofield", "reformada"]));
       } else if (data?.note) {
-        setAiSections({ devocional: data.note });
+        setAiSections({ explicacao: data.note });
       } else {
         toast.error("Não foi possível gerar notas.");
       }
@@ -230,6 +256,31 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(n);
   });
+
+  // Parse autores string into colored chips
+  const renderAuthorChips = (autoresStr: string) => {
+    const authors = autoresStr.split(",").map((a) => a.trim()).filter(Boolean);
+    return (
+      <div className="flex flex-wrap gap-1.5 mt-3">
+        {authors.map((author, i) => {
+          const color = getAuthorColor(author);
+          return (
+            <span
+              key={i}
+              className="text-[10px] font-sans font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
+              style={{
+                color,
+                backgroundColor: `${color}15`,
+                border: `1px solid ${color}30`,
+              }}
+            >
+              {author}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="my-4 mx-1 rounded-xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in">
@@ -285,10 +336,10 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
             <div className="px-5 py-3">
               <button
                 onClick={generateAiNotes}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#1E40AF]/10 to-[#7C3AED]/10 border border-[#1E40AF]/20 hover:border-[#1E40AF]/40 text-sm font-sans font-semibold text-foreground transition-all hover:shadow-md cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#1E40AF]/10 to-[#6B21A8]/10 border border-[#1E40AF]/20 hover:border-[#1E40AF]/40 text-sm font-sans font-semibold text-foreground transition-all hover:shadow-md cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-[#1E40AF]" />
-                Gerar Notas — Scofield, Reformada, Puritana e mais
+                Gerar Notas de Estudo
               </button>
             </div>
           )}
@@ -296,56 +347,140 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
           {aiLoading && (
             <div className="px-5 py-6 flex items-center justify-center gap-2 text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm font-sans">Gerando notas de estudo com IA…</span>
+              <span className="text-sm font-sans">Gerando notas de estudo…</span>
             </div>
           )}
 
-          {/* AI Generated Sections */}
-          {aiSections && Object.entries(aiSections).map(([key, content]) => {
-            if (!content || content === "null") return null;
-            const config = AI_SECTION_CONFIG[key];
-            if (!config) return null;
-            const isExpanded = expandedSections.has(key);
-            return (
-              <div key={key}>
-                <button
-                  onClick={() => toggleSection(key)}
-                  className="w-full flex items-center gap-2.5 px-5 py-3.5 hover:bg-muted/30 transition-colors cursor-pointer"
-                >
-                  <span className="text-base">{config.icon}</span>
-                  <span
-                    className="text-xs tracking-wider font-sans font-bold uppercase flex-1 text-left"
-                    style={{ color: config.color }}
-                  >
-                    {config.label}
-                  </span>
-                  <span className="text-[9px] font-sans text-muted-foreground/60 bg-muted/40 rounded px-1.5 py-0.5">IA</span>
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </button>
-                {isExpanded && (
-                  <div className="px-5 pb-5">
-                    <div
-                      className="p-4 rounded-xl border"
-                      style={{
-                        backgroundColor: `${config.color}08`,
-                        borderColor: `${config.color}25`,
-                      }}
-                    >
-                      <div className="text-base font-serif leading-[2.1] whitespace-pre-line text-left text-foreground/90">
-                        {renderContentWithRefs(content, onNavigate ? handleNav : undefined)}
-                      </div>
+          {/* AI Generated — Modern Study Bible Layout */}
+          {aiSections && (
+            <div className="px-5 py-5 space-y-4">
+              {/* Main explanation card */}
+              {aiSections.explicacao && (
+                <div className="rounded-xl border border-border/40 bg-card">
+                  <div className="px-5 py-4">
+                    <p className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-muted-foreground/70 mb-2.5">
+                      Explicação
+                    </p>
+                    <div className="text-[15px] font-serif leading-[1.9] text-foreground/90">
+                      {renderContentWithRefs(aiSections.explicacao, onNavigate ? handleNav : undefined)}
                     </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
 
-          {/* Empty state (only if no DB notes AND no AI notes) */}
+                  {/* Application — subtle highlight */}
+                  {aiSections.aplicacao && (
+                    <div className="mx-4 mb-4 px-4 py-3 rounded-lg bg-primary/5 border-l-2 border-primary/40">
+                      <p className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-primary/60 mb-1.5">
+                        Aplicação
+                      </p>
+                      <div className="text-sm font-sans leading-[1.8] text-foreground/80">
+                        {renderContentWithRefs(aiSections.aplicacao, onNavigate ? handleNav : undefined)}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Insight — optional small block */}
+                  {aiSections.insight && (
+                    <div className="mx-4 mb-4 px-4 py-3 rounded-lg bg-muted/30">
+                      <p className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-muted-foreground/60 mb-1.5">
+                        Insight Teológico
+                      </p>
+                      <div className="text-sm font-sans leading-[1.8] text-foreground/70 italic">
+                        {renderContentWithRefs(aiSections.insight, onNavigate ? handleNav : undefined)}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Author chips */}
+                  {aiSections.autores && (
+                    <div className="px-5 pb-4">
+                      {renderAuthorChips(aiSections.autores)}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Scofield collapsible */}
+              {aiSections.scofield && (
+                <div className="rounded-xl border overflow-hidden" style={{ borderColor: "#1E40AF30" }}>
+                  <button
+                    onClick={() => setScofieldOpen(!scofieldOpen)}
+                    className="w-full flex items-center gap-2.5 px-5 py-3 hover:bg-[#1E40AF]/5 transition-colors cursor-pointer"
+                  >
+                    <span className="text-base">📘</span>
+                    <span
+                      className="text-[11px] tracking-wider font-sans font-bold uppercase flex-1 text-left"
+                      style={{ color: "#1E40AF" }}
+                    >
+                      Scofield Reference Bible (1917)
+                    </span>
+                    <span className="text-[9px] font-sans text-muted-foreground/60 bg-muted/40 rounded px-1.5 py-0.5">
+                      Traduzido
+                    </span>
+                    {scofieldOpen ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </button>
+                  {scofieldOpen && (
+                    <div className="px-5 pb-5">
+                      <div
+                        className="p-4 rounded-lg border"
+                        style={{ backgroundColor: "#1E40AF08", borderColor: "#1E40AF20" }}
+                      >
+                        <div className="text-[15px] font-serif leading-[1.9] whitespace-pre-line text-foreground/85">
+                          {renderContentWithRefs(aiSections.scofield, onNavigate ? handleNav : undefined)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Legacy AI sections (backward compat for old format) */}
+              {(aiSections.matthewHenry || aiSections.reformada || aiSections.strong || aiSections.pentecostal || aiSections.devocional) && (
+                <>
+                  {[
+                    { key: "matthewHenry", label: "Matthew Henry", color: "#B8860B", icon: "📖" },
+                    { key: "reformada", label: "Nota Reformada / Puritana", color: "#6B21A8", icon: "⛪" },
+                    { key: "strong", label: "Teologia Sistemática", color: "#B45309", icon: "🔬" },
+                    { key: "pentecostal", label: "Perspectiva Wesleyana", color: "#DC2626", icon: "🔥" },
+                    { key: "devocional", label: "Devocional", color: "#0891B2", icon: "💎" },
+                  ].map(({ key, label, color, icon }) => {
+                    const content = (aiSections as any)[key];
+                    if (!content || content === "null") return null;
+                    const isExpanded = expandedSections.has(key);
+                    return (
+                      <div key={key} className="rounded-xl border overflow-hidden" style={{ borderColor: `${color}30` }}>
+                        <button
+                          onClick={() => toggleSection(key)}
+                          className="w-full flex items-center gap-2.5 px-5 py-3 transition-colors cursor-pointer"
+                          style={{ backgroundColor: isExpanded ? `${color}08` : undefined }}
+                        >
+                          <span className="text-base">{icon}</span>
+                          <span className="text-[11px] tracking-wider font-sans font-bold uppercase flex-1 text-left" style={{ color }}>
+                            {label}
+                          </span>
+                          {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                        </button>
+                        {isExpanded && (
+                          <div className="px-5 pb-5">
+                            <div className="p-4 rounded-lg border" style={{ backgroundColor: `${color}08`, borderColor: `${color}20` }}>
+                              <div className="text-[15px] font-serif leading-[1.9] whitespace-pre-line text-foreground/85">
+                                {renderContentWithRefs(content, onNavigate ? handleNav : undefined)}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Empty state */}
           {!hasContent && !aiSections && !aiLoading && (
             <div className="py-4 px-5">
               <p className="text-sm text-muted-foreground font-sans italic">Sem notas pré-cadastradas. Clique acima para gerar.</p>
@@ -409,19 +544,39 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
               {expandedSections.has(type) && (
                 <div className="px-5 pb-5 space-y-4">
                   {typeNotes.map((note) => (
-                    <div key={note.id} className="p-5 rounded-xl border" style={note.color ? { backgroundColor: `${note.color}15`, borderColor: `${note.color}4d` } : { backgroundColor: 'hsl(var(--muted) / 0.2)', borderColor: 'hsl(var(--border) / 0.3)' }}>
+                    <div
+                      key={note.id}
+                      className="p-5 rounded-xl border"
+                      style={
+                        note.color
+                          ? { backgroundColor: `${note.color}10`, borderColor: `${note.color}30` }
+                          : { backgroundColor: "hsl(var(--muted) / 0.15)", borderColor: "hsl(var(--border) / 0.3)" }
+                      }
+                    >
                       {note.title && (
-                        <p className="text-sm font-sans font-bold mb-3 pb-2 border-b" style={note.color ? { color: note.color, borderColor: `${note.color}4d` } : {}}>
+                        <p
+                          className="text-xs font-sans font-bold mb-3 pb-2 border-b uppercase tracking-wider"
+                          style={note.color ? { color: note.color, borderColor: `${note.color}30` } : {}}
+                        >
                           {note.title}
                         </p>
                       )}
-                      <div className="text-base font-serif leading-[2.1] whitespace-pre-line text-left" style={note.color ? { color: note.color } : {}}>
+                      <div className="text-[15px] font-serif leading-[1.9] whitespace-pre-line text-left text-foreground/85">
                         {renderContentWithRefs(note.content, onNavigate ? handleNav : undefined)}
                       </div>
                       {note.source && (
-                        <p className="text-[10px] font-sans mt-3 pt-2 border-t uppercase tracking-wider" style={note.color ? { color: `${note.color}b3`, borderColor: `${note.color}33` } : { color: 'hsl(var(--muted-foreground) / 0.6)' }}>
-                          Fonte: {SOURCE_LABELS[note.source] || note.source}
-                        </p>
+                        <div className="mt-3 pt-2 border-t" style={{ borderColor: note.color ? `${note.color}25` : "hsl(var(--border) / 0.2)" }}>
+                          <span
+                            className="text-[10px] font-sans font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                            style={
+                              note.color
+                                ? { color: note.color, backgroundColor: `${note.color}12` }
+                                : { color: "hsl(var(--muted-foreground) / 0.6)" }
+                            }
+                          >
+                            {SOURCE_LABELS[note.source] || note.source}
+                          </span>
+                        </div>
                       )}
                     </div>
                   ))}
