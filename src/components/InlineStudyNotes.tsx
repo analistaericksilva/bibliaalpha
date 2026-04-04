@@ -250,9 +250,10 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
     );
   }
 
-  // Group notes by type
+  // Group notes by type (máximo de 2 notas explicativas por versículo)
+  const limitedNotes = notes.slice(0, 2);
   const grouped: Record<string, StudyNote[]> = {};
-  notes.forEach((n) => {
+  limitedNotes.forEach((n) => {
     const key = n.note_type || "commentary";
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(n);
@@ -282,6 +283,24 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
       </div>
     );
   };
+
+  const truncateExplanatory = (content: string, maxLines = 5, maxChars = 320) => {
+    const lines = content.split("\n");
+    const sliced = lines.slice(0, maxLines).join("\n");
+    const base = lines.length > maxLines ? sliced + "…" : sliced;
+    return base.length > maxChars ? base.slice(0, maxChars).trimEnd() + "…" : base;
+  };
+
+  const uniqueCrossRefs = Array.from(
+    new Set(
+      concordance
+        .flatMap((ref) => ref.content.split(";"))
+        .map((r) => r.trim())
+        .filter(Boolean)
+    )
+  ).slice(0, 10);
+
+  const compactDictEntries = dictEntries.slice(0, 2);
 
   return (
     <div className="my-4 mx-1 rounded-xl border border-primary/20 bg-card shadow-lg overflow-hidden animate-fade-in">
@@ -488,69 +507,6 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
             </div>
           )}
 
-          {/* Dictionary / Original Words */}
-          {dictEntries.length > 0 && (
-            <div className="px-5 pt-2 pb-3">
-              <p className="text-[11px] font-sans tracking-wide mb-2" style={{ color: "#4B2E83" }}>
-                <span className="font-semibold">Concordância exaustiva:</span>
-              </p>
-
-              <div className="space-y-2">
-                {dictEntries.map((entry) => (
-                  <div key={entry.id} className="text-[13px] font-serif leading-[1.75] text-foreground/85">
-                    <span className="font-semibold" style={{ color: "#4B2E83" }}>
-                      {entry.term}
-                    </span>
-                    {entry.hebrew_greek && (
-                      <span className="ml-1 text-[11px] font-mono text-muted-foreground/80">
-                        ({entry.hebrew_greek})
-                      </span>
-                    )}
-                    <span className="ml-1">{entry.definition}</span>
-
-                    {Array.isArray(entry.references_list) && entry.references_list.length > 0 && (
-                      <span className="ml-2 inline-flex flex-wrap gap-1 align-middle">
-                        {(entry.references_list as string[]).slice(0, 6).map((refStr, i) => {
-                          const cleanRef = refStr.trim();
-                          const parsed = parseReference(cleanRef);
-                          if (parsed && onNavigate) {
-                            return (
-                              <button
-                                key={entry.id + "-" + i}
-                                className="rounded px-1.5 py-0.5 text-[10px] font-sans transition-colors cursor-pointer"
-                                style={{
-                                  color: "#4B2E83",
-                                  backgroundColor: "#4B2E8312",
-                                  border: "1px solid #4B2E8328",
-                                }}
-                                onClick={() => handleNav(parsed.bookId, parsed.chapter, parsed.verse)}
-                              >
-                                {cleanRef}
-                              </button>
-                            );
-                          }
-                          return (
-                            <span
-                              key={entry.id + "-" + i}
-                              className="rounded px-1.5 py-0.5 text-[10px] font-sans"
-                              style={{
-                                color: "#4B2E83",
-                                backgroundColor: "#4B2E830D",
-                                border: "1px solid #4B2E8322",
-                              }}
-                            >
-                              {cleanRef}
-                            </span>
-                          );
-                        })}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Study notes by type */}
           {Object.entries(grouped).map(([type, typeNotes]) => (
             <div key={type}>
@@ -589,8 +545,52 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
                         </p>
                       )}
                       <div className="text-[15px] font-serif leading-[1.9] whitespace-pre-line text-left text-foreground/85">
-                        {renderContentWithRefs(note.content, onNavigate ? handleNav : undefined)}
+                        {renderContentWithRefs(truncateExplanatory(note.content), onNavigate ? handleNav : undefined)}
                       </div>
+
+                      {uniqueCrossRefs.length > 0 && (
+                        <p className="mt-2 text-[12px] font-serif leading-[1.7] text-foreground/75">
+                          <span className="font-semibold" style={{ color: "#4B2E83" }}>Referências: </span>
+                          {uniqueCrossRefs.map((refText, refIdx) => {
+                            const parsed = parseReference(refText);
+                            if (parsed && onNavigate) {
+                              return (
+                                <button
+                                  key={note.id + "-ref-" + refIdx}
+                                  className="inline text-[12px] font-serif underline underline-offset-2 cursor-pointer"
+                                  style={{ color: "#4B2E83", textDecorationColor: "#4B2E8388" }}
+                                  onClick={() => handleNav(parsed.bookId, parsed.chapter, parsed.verse)}
+                                >
+                                  {refIdx > 0 ? " • " : ""}{refText}
+                                </button>
+                              );
+                            }
+                            return (
+                              <span key={note.id + "-ref-" + refIdx} style={{ color: "#4B2E83" }}>
+                                {refIdx > 0 ? " • " : ""}{refText}
+                              </span>
+                            );
+                          })}
+                        </p>
+                      )}
+
+                      {compactDictEntries.length > 0 && (
+                        <p className="mt-1 text-[12px] font-serif leading-[1.7] text-foreground/75">
+                          <span className="font-semibold" style={{ color: "#4B2E83" }}>Concordância: </span>
+                          {compactDictEntries.map((entry, entryIdx) => {
+                            const shortDef = truncateExplanatory(entry.definition, 1, 110);
+                            return (
+                              <span key={note.id + "-dict-" + entry.id}>
+                                {entryIdx > 0 ? " • " : ""}
+                                <span style={{ color: "#4B2E83" }}>{entry.term}</span>
+                                {entry.hebrew_greek ? " (" + entry.hebrew_greek + ")" : ""}
+                                {": " + shortDef}
+                              </span>
+                            );
+                          })}
+                        </p>
+                      )}
+
                       {note.source && (
                         <div className="mt-3 pt-2 border-t" style={{ borderColor: note.color ? `${note.color}25` : "hsl(var(--border) / 0.2)" }}>
                           <span
@@ -611,54 +611,6 @@ const InlineStudyNotes = ({ bookId, chapter, verse, onNavigate, onClose }: Inlin
               )}
             </div>
           ))}
-
-          {/* Concordance / Cross References */}
-          {concordance.length > 0 && (
-            <div className="px-5 pt-1 pb-3">
-              <p className="text-[11px] font-sans tracking-wide mb-2" style={{ color: "#4B2E83" }}>
-                <span className="font-semibold">Referências cruzadas:</span>
-              </p>
-
-              <div className="flex flex-wrap gap-1.5">
-                {concordance.map((ref) => (
-                  ref.content.split(";").map((r, i) => {
-                    const cleanRef = r.trim();
-                    if (!cleanRef) return null;
-                    const parsed = parseReference(cleanRef);
-                    if (parsed && onNavigate) {
-                      return (
-                        <button
-                          key={ref.id + "-" + i}
-                          className="rounded px-2 py-0.5 text-[11px] font-sans transition-colors cursor-pointer"
-                          style={{
-                            color: "#4B2E83",
-                            backgroundColor: "#4B2E8312",
-                            border: "1px solid #4B2E8330",
-                          }}
-                          onClick={() => handleNav(parsed.bookId, parsed.chapter, parsed.verse)}
-                        >
-                          {cleanRef}
-                        </button>
-                      );
-                    }
-                    return (
-                      <span
-                        key={ref.id + "-" + i}
-                        className="rounded px-2 py-0.5 text-[11px] font-sans"
-                        style={{
-                          color: "#4B2E83",
-                          backgroundColor: "#4B2E830D",
-                          border: "1px solid #4B2E8322",
-                        }}
-                      >
-                        {cleanRef}
-                      </span>
-                    );
-                  })
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
