@@ -178,7 +178,7 @@ const Reader = () => {
   };
 
   const handleVerseClick = (verseNum: number) => {
-    // Toggle inline notes for this verse
+    // Abre notas manualmente para versos sem referências pré-carregadas
     setSelectedVerse((prev) => (prev === verseNum ? null : verseNum));
   };
 
@@ -327,6 +327,8 @@ const Reader = () => {
                     {verses.map((v) => {
                       const speechClass = getSpeechClass(v.text, currentBook);
                       const hasNote = noteVerses.has(v.verse);
+                      const hasCrossRef = crossRefVerses.has(v.verse);
+                      const shouldShowInlineNotes = hasNote || hasCrossRef || selectedVerse === v.verse;
                       const hlColor = getHighlightColor(v.verse);
                       const fav = isFavorite(v.verse);
                       const pNote = hasPersonalNote(v.verse);
@@ -353,7 +355,7 @@ const Reader = () => {
                             </sup>
                             <span className={speechClass}>{v.text}</span>{" "}
                           </span>
-                          {selectedVerse === v.verse && (
+                          {shouldShowInlineNotes && (
                             <InlineStudyNotes
                               bookId={currentBook}
                               chapter={currentChapter}
