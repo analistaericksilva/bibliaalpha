@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { bibleBooks } from "@/data/bibleBooks";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 
 interface StudyNote {
   id: string;
@@ -127,6 +127,7 @@ const InlineStudyNotes = ({
   const [keywords, setKeywords] = useState<DictEntry[]>([]);
   const [openCommentId, setOpenCommentId] = useState<string | null>(null);
   const [openKeywordId, setOpenKeywordId] = useState<string | null>(null);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -212,6 +213,10 @@ const InlineStudyNotes = ({
     [keywords, openKeywordId]
   );
 
+  useEffect(() => {
+    setIsMinimized(false);
+  }, [bookId, chapter, verse]);
+
   if (loading) {
     return (
       <span className="inline-flex items-center gap-2 ml-2 text-[12px] text-muted-foreground align-middle">
@@ -246,16 +251,31 @@ const InlineStudyNotes = ({
     <span className="block mt-2 mb-5 rounded-xl border border-border/70 bg-card/85 px-4 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
       <span className="mb-2 flex items-center justify-between">
         <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Verso {verse}</span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
-          aria-label="Fechar notas"
-        >
-          <X className="w-3.5 h-3.5 mx-auto" />
-        </button>
+        <span className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setIsMinimized((prev) => !prev)}
+            className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+            aria-label={isMinimized ? "Expandir notas" : "Minimizar notas"}
+            title={isMinimized ? "Expandir notas" : "Minimizar notas"}
+          >
+            {isMinimized ? <ChevronDown className="w-3.5 h-3.5 mx-auto" /> : <ChevronUp className="w-3.5 h-3.5 mx-auto" />}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+            aria-label="Fechar notas"
+          >
+            <X className="w-3.5 h-3.5 mx-auto" />
+          </button>
+        </span>
       </span>
 
+      {isMinimized ? (
+        <span className="block text-[12px] text-muted-foreground italic">Notas minimizadas para este versículo.</span>
+      ) : (
+      <>
       {comments.length > 0 && (
         <span className="flex flex-col gap-2">
           {comments.map((note, index) => {
@@ -343,6 +363,8 @@ const InlineStudyNotes = ({
             </span>
           )}
         </span>
+      )}
+      </>
       )}
     </span>
   );
