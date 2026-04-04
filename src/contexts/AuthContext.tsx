@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -32,50 +32,107 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isApproved, setIsApproved] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-    
+  const clearAuthState = useCallback(() => {
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setIsAdmin(false);
+    setIsApproved(false);
+  }, []);
+
+  const fetchProfileAndRole = useCallback(async (userId: string) => {
+    const [profileRes, adminRes] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase.rpc("has_role", {
+        _user_id: userId,
+        _role: "admin",
+      }),
+    ]);
+
+    if (profileRes.error) {
+      console.error("Erro ao buscar perfil:", profileRes.error.message);
+    }
+
+    if (adminRes.error) {
+      console.error("Erro ao verificar role admin:", adminRes.error.message);
+    }
+
+    const profileData = profileRes.data ?? null;
+
     setProfile(profileData);
     setIsApproved(profileData?.status === "approved");
+    setIsAdmin(adminRes.data === true);
+  }, []);
 
-    const { data: adminCheck } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
-    setIsAdmin(adminCheck === true);
-  };
+  const hydrateFromSession = useCallback(
+    async (nextSession: Session) => {
+      setSession(nextSession);
+      setUser(nextSession.user ?? null);
+
+      if (nextSession.user) {
+        await fetchProfileAndRole(nextSession.user.id);
+      } else {
+        setProfile(null);
+        setIsAdmin(false);
+        setIsApproved(false);
+      }
+    },
+    [fetchProfileAndRole]
+  );
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
-        } else {
-          setProfile(null);
-          setIsAdmin(false);
-          setIsApproved(false);
-        }
-        setLoading(false);
-      }
-    );
+    let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
+    const initAuth = async () => {
+      setLoading(true);
+
+      const { data, error } = await supabase.auth.getSession();
+      if (!mounted) return;
+
+      if (error || !data.session) {
+        clearAuthState();
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      await hydrateFromSession(data.session);
+      if (mounted) setLoading(false);
+    };
+
+    initAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      if (!mounted) return;
+
+      if (!nextSession || event === "SIGNED_OUT") {
+        clearAuthState();
+        setLoading(false);
+        return;
+      }
+
+      // Atualizações de token não devem quebrar a experiência com loading longo
+      if (event === "TOKEN_REFRESHED") {
+        setSession(nextSession);
+        setUser(nextSession.user ?? null);
+        return;
+      }
+
+      setLoading(true);
+      await hydrateFromSession(nextSession);
+      if (mounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [clearAuthState, hydrateFromSession]);
 
   const signOut = async () => {
     await supabase.auth.signOut();

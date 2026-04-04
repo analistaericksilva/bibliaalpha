@@ -36,7 +36,7 @@ interface UserProfile {
 }
 
 const Admin = () => {
-  const { isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
@@ -47,10 +47,17 @@ const Admin = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   useEffect(() => {
-    if (!loading && !isAdmin) {
-      navigate("/");
+    if (loading) return;
+
+    if (!user) {
+      navigate("/login");
+      return;
     }
-  }, [isAdmin, loading, navigate]);
+
+    if (!isAdmin) {
+      navigate("/biblia");
+    }
+  }, [user, isAdmin, loading, navigate]);
 
   const fetchUsers = async () => {
     const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
@@ -129,7 +136,7 @@ const Admin = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 w-full h-16 bg-background/95 backdrop-blur-sm border-b border-border z-50 flex items-center justify-between px-4 md:px-8">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/biblia")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <img src={logoSrc} alt="Admin" className="w-6 h-6" width={24} height={24} />

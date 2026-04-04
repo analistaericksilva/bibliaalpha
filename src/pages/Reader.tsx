@@ -29,6 +29,15 @@ interface Verse {
   text: string;
 }
 
+interface LastReadingState {
+  bookId: string;
+  chapter: number;
+  verse?: number;
+  selectedVerse?: number | null;
+  scrollTop?: number;
+  savedAt: string;
+}
+
 type UserPanelTab = "goto" | "history" | "favorites" | "data";
 
 const godSpeechPatterns = [
@@ -78,19 +87,53 @@ const Reader = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { fontSize } = useReaderSettings();
-  const [currentBook, setCurrentBook] = useState(searchParams.get("book") || "gn");
-  const [currentChapter, setCurrentChapter] = useState(Number(searchParams.get("chapter")) || 1);
+
+  const hasQueryBook = Boolean(searchParams.get("book"));
+  const hasQueryChapter = Boolean(searchParams.get("chapter"));
+  const shouldUseQueryLocation = hasQueryBook || hasQueryChapter;
+  const lastReadingKey = user ? `biblia-alpha:last-reading:${user.id}` : null;
+
+  const getStoredReading = (): LastReadingState | null => {
+    if (!lastReadingKey || shouldUseQueryLocation) return null;
+
+    try {
+      const raw = localStorage.getItem(lastReadingKey);
+      if (!raw) return null;
+
+      const parsed = JSON.parse(raw) as LastReadingState;
+      const hasBook = typeof parsed.bookId === "string" && parsed.bookId.length > 0;
+      const hasChapter = typeof parsed.chapter === "number" && parsed.chapter > 0;
+      if (!hasBook || !hasChapter) return null;
+
+      const bookMeta = bibleBooks.find((b) => b.id === parsed.bookId);
+      if (!bookMeta) return null;
+
+      return {
+        ...parsed,
+        chapter: Math.min(Math.max(parsed.chapter, 1), bookMeta.chapters),
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  const storedReadingRef = useRef<LastReadingState | null>(getStoredReading());
+  const storedReading = storedReadingRef.current;
+
+  const [currentBook, setCurrentBook] = useState(searchParams.get("book") || storedReading?.bookId || "gn");
+  const [currentChapter, setCurrentChapter] = useState(Number(searchParams.get("chapter")) || storedReading?.chapter || 1);
   const [showBooks, setShowBooks] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showDictionary, setShowDictionary] = useState(false);
   const [showUserPanel, setShowUserPanel] = useState(false);
   const [showMap, setShowMap] = useState(false);
-  
+
   const [showLexicon, setShowLexicon] = useState(false);
   const [showPeople, setShowPeople] = useState(false);
   const [userPanelTab, setUserPanelTab] = useState<UserPanelTab>("history");
-  const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
+  const [selectedVerse, setSelectedVerse] = useState<number | null>(storedReading?.selectedVerse ?? null);
+  const [lastFocusedVerse, setLastFocusedVerse] = useState<number | null>(storedReading?.verse ?? storedReading?.selectedVerse ?? null);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const [noteVerses, setNoteVerses] = useState<Set<number>>(new Set());
@@ -98,6 +141,15 @@ const Reader = () => {
   const [actionMenu, setActionMenu] = useState<{ verse: number; x: number; y: number } | null>(null);
   const [navHistory, setNavHistory] = useState<Array<{ bookId: string; chapter: number; verse?: number }>>([]);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
+  const readingContainerRef = useRef<HTMLElement | null>(null);
+  const restoreTargetRef = useRef<{ verse?: number; scrollTop?: number } | null>(
+    storedReading
+      ? {
+          verse: storedReading.verse ?? storedReading.selectedVerse ?? undefined,
+          scrollTop: storedReading.scrollTop,
+        }
+      : null
+  );
 
   const book = bibleBooks.find((b) => b.id === currentBook);
 
@@ -105,6 +157,53 @@ const Reader = () => {
     highlights, personalNotes, favorites,
     toggleHighlight, toggleFavorite, savePersonalNote, recordReading,
   } = useUserAnnotations(currentBook, currentChapter);
+
+  const getClosestVisibleVerse = useCallback(() => {
+    const container = readingContainerRef.current;
+    if (!container) return null;
+
+    const containerTop = container.getBoundingClientRect().top;
+    let closestVerse: number | null = null;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    Object.entries(verseRefs.current).forEach(([verseKey, element]) => {
+      if (!element) return;
+      const distance = Math.abs(element.getBoundingClientRect().top - containerTop);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestVerse = Number(verseKey);
+      }
+    });
+
+    return closestVerse;
+  }, []);
+
+  const persistLastReading = useCallback((override: Partial<LastReadingState> = {}) => {
+    if (!lastReadingKey) return;
+
+    const container = readingContainerRef.current;
+    const fallbackVerse = lastFocusedVerse ?? selectedVerse ?? getClosestVisibleVerse() ?? undefined;
+
+    const payload: LastReadingState = {
+      bookId: override.bookId ?? currentBook,
+      chapter: override.chapter ?? currentChapter,
+      verse: override.verse ?? fallbackVerse,
+      selectedVerse: override.selectedVerse ?? selectedVerse,
+      scrollTop: override.scrollTop ?? (container ? container.scrollTop : window.scrollY),
+      savedAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(lastReadingKey, JSON.stringify(payload));
+  }, [lastReadingKey, currentBook, currentChapter, lastFocusedVerse, selectedVerse, getClosestVisibleVerse]);
+
+  const scrollReaderToTop = useCallback(() => {
+    const container = readingContainerRef.current;
+    if (container) {
+      container.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, []);
 
   const fetchVerses = async (bookId: string, chapter: number) => {
     setLoading(true);
@@ -129,21 +228,78 @@ const Reader = () => {
     if (!loading && verses.length > 0) recordReading();
   }, [currentBook, currentChapter, loading, verses.length, recordReading]);
 
+  useEffect(() => {
+    if (!lastReadingKey) return;
+    persistLastReading();
+  }, [lastReadingKey, currentBook, currentChapter, selectedVerse, lastFocusedVerse, persistLastReading]);
+
+  useEffect(() => {
+    if (!lastReadingKey) return;
+
+    const handleBeforeUnload = () => {
+      persistLastReading();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [lastReadingKey, persistLastReading]);
+
+  useEffect(() => {
+    const container = readingContainerRef.current;
+    if (!container || !lastReadingKey) return;
+
+    let scrollTimer: number | undefined;
+    const onScroll = () => {
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => persistLastReading(), 180);
+    };
+
+    container.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.clearTimeout(scrollTimer);
+      container.removeEventListener("scroll", onScroll);
+    };
+  }, [lastReadingKey, currentBook, currentChapter, persistLastReading]);
+
+  useEffect(() => {
+    if (loading || verses.length === 0) return;
+
+    const target = restoreTargetRef.current;
+    if (!target) return;
+
+    const container = readingContainerRef.current;
+    const timeout = window.setTimeout(() => {
+      if (target.verse && verseRefs.current[target.verse]) {
+        verseRefs.current[target.verse]?.scrollIntoView({ behavior: "auto", block: "center" });
+      } else if (container && typeof target.scrollTop === "number") {
+        container.scrollTo({ top: target.scrollTop, behavior: "auto" });
+      }
+
+      restoreTargetRef.current = null;
+    }, 60);
+
+    return () => window.clearTimeout(timeout);
+  }, [loading, verses.length, currentBook, currentChapter]);
+
   const goToChapter = useCallback((bookId: string, chapter: number, verse?: number) => {
     if (bookId !== currentBook || chapter !== currentChapter) {
       setNavHistory((prev) => [...prev, { bookId: currentBook, chapter: currentChapter }]);
     }
+
     setCurrentBook(bookId);
     setCurrentChapter(chapter);
+
     if (verse) {
+      setLastFocusedVerse(verse);
       setTimeout(() => {
         const el = verseRefs.current[verse];
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 500);
     } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollReaderToTop();
     }
-  }, [currentBook, currentChapter]);
+  }, [currentBook, currentChapter, scrollReaderToTop]);
 
   const goBack = () => {
     if (navHistory.length === 0) return;
@@ -151,13 +307,15 @@ const Reader = () => {
     setNavHistory((h) => h.slice(0, -1));
     setCurrentBook(prev.bookId);
     setCurrentChapter(prev.chapter);
+
     if (prev.verse) {
+      setLastFocusedVerse(prev.verse);
       setTimeout(() => {
         const el = verseRefs.current[prev.verse!];
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 500);
     } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollReaderToTop();
     }
   };
 
@@ -179,11 +337,13 @@ const Reader = () => {
 
   const handleVerseClick = (verseNum: number) => {
     // Abre notas manualmente para versos sem referências pré-carregadas
+    setLastFocusedVerse(verseNum);
     setSelectedVerse((prev) => (prev === verseNum ? null : verseNum));
   };
 
   const handleVerseLongPress = (verseNum: number, e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
+    setLastFocusedVerse(verseNum);
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
     const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
     setActionMenu({ verse: verseNum, x: clientX, y: clientY });
@@ -262,7 +422,7 @@ const Reader = () => {
           </header>
 
           {/* Reader content */}
-          <main className="flex-1 overflow-y-auto">
+          <main ref={readingContainerRef} className="flex-1 overflow-y-auto">
             <div className="max-w-5xl mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-24 md:pb-28">
               {/* Daily Verse */}
               <div className="mb-6 md:mb-8 animate-fade-in">
