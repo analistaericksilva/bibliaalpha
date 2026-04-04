@@ -50,6 +50,14 @@
 - Políticas RLS em todas as tabelas
 - Painel administrativo para gestão de usuários
 
+### 🧠 Upgrade 66 Livros (Stack Inteligente)
+- **Inteligência Bíblica 66X** no leitor (painel com referências, semântica e proveniência)
+- **Camada linguística MACULA** (hebraico + grego): morfologia, sintaxe e papéis semânticos
+- **Grafo de referências cruzadas** (`verse_cross_reference_edges`) para escalar para +500k conexões
+- **Catálogo de datasets** com proveniência e licenças (`bible_dataset_sources`)
+- **Função unificada de insights** (`get_verse_super_insights`) para entregar contexto rico por versículo
+- **Cobertura por livro** (`book_resource_coverage`) para monitorar evolução dos 66 livros
+
 ---
 
 ## 🏗️ Arquitetura
@@ -69,6 +77,7 @@ src/
 │   ├── InterlinearView.tsx    # Vista interlinear
 │   ├── BibleMapPanel.tsx      # Mapa bíblico
 │   ├── PeoplePanel.tsx        # Personagens bíblicos
+│   ├── VerseIntelligencePanel.tsx # Insights avançados (MACULA + cross refs)
 │   ├── VerseActionMenu.tsx    # Menu de ações por versículo
 │   ├── OnboardingTour.tsx     # Tour de primeiro acesso
 │   └── ReaderSettingsBar.tsx  # Controles de tema e fonte
@@ -103,9 +112,36 @@ supabase/
 │   ├── bible-api/       # API de texto bíblico
 │   ├── generate-study-note/    # Geração de notas com IA
 │   ├── translate-interlinear/  # Tradução interlinear
+│   ├── verse-intelligence/     # API consolidada de insights por versículo
 │   └── delete-user/     # Exclusão de conta
 └── config.toml          # Configuração do projeto
 ```
+
+### Pipeline de dados (novo)
+```bash
+scripts/bible-intelligence/
+├── build-resource-manifest.mjs   # Descobre links dos hubs awesome-*
+├── import-crossrefs-json.mjs     # Converte JSON de refs em grafo SQL/CSV
+├── import-macula-tsv.mjs         # Converte TSV MACULA em tabelas normalizadas
+└── book-id-map.mjs               # Mapeamento OSIS -> IDs internos
+```
+
+---
+
+## ⚙️ Executando o upgrade 66X
+
+```bash
+# 1) Catálogo de datasets (hubs awesome-*)
+npm run upgrade:resources:manifest
+
+# 2) Preparar base de referências cruzadas (grafo)
+npm run upgrade:crossrefs:prepare -- ../crossrefs-json
+
+# 3) Preparar base MACULA (hebraico + grego)
+npm run upgrade:macula:prepare -- --hebrew ../macula-hebrew/WLC/tsv/macula-hebrew.tsv --greek-nestle ../macula-greek/Nestle1904/tsv/macula-greek-Nestle1904.tsv --greek-sbl ../macula-greek/SBLGNT/tsv/macula-greek-SBLGNT.tsv
+```
+
+Depois aplique a migration SQL `20260406090000_bible_intelligence_stack.sql` e importe os CSVs gerados em `data/bible-intelligence/`.
 
 ---
 

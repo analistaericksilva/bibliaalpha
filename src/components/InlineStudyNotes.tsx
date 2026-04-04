@@ -219,7 +219,7 @@ const InlineStudyNotes = ({
 
   if (loading) {
     return (
-      <span className="inline-flex items-center gap-2 ml-2 text-[12px] text-muted-foreground align-middle">
+      <span className="inline-flex items-center gap-2 ml-2 text-[12px] menu-strong align-middle">
         <Loader2 className="w-3.5 h-3.5 animate-spin" />
         carregando notas
       </span>
@@ -232,17 +232,17 @@ const InlineStudyNotes = ({
     return (
       <span className="block mt-2 mb-5 rounded-xl border border-border/70 bg-card/80 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
         <span className="flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Verso {verse}</span>
+          <span className="text-[10px] uppercase tracking-[0.22em] menu-strong">Verso {verse}</span>
           <button
             type="button"
             onClick={onClose}
-            className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+            className="h-6 w-6 rounded-full text-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
             aria-label="Fechar notas"
           >
             <X className="w-3.5 h-3.5 mx-auto" />
           </button>
         </span>
-        <span className="mt-2 block text-[13px] text-muted-foreground">Sem comentários ou referências para este versículo.</span>
+        <span className="mt-2 block text-[13px] comment-strong">Sem comentários ou referências para este versículo.</span>
       </span>
     );
   }
@@ -250,12 +250,12 @@ const InlineStudyNotes = ({
   return (
     <span className="block mt-2 mb-5 rounded-xl border border-border/70 bg-card/85 px-4 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
       <span className="mb-2 flex items-center justify-between">
-        <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Verso {verse}</span>
+        <span className="text-[10px] uppercase tracking-[0.22em] menu-strong">Verso {verse}</span>
         <span className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setIsMinimized((prev) => !prev)}
-            className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+            className="h-6 w-6 rounded-full text-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
             aria-label={isMinimized ? "Expandir notas" : "Minimizar notas"}
             title={isMinimized ? "Expandir notas" : "Minimizar notas"}
           >
@@ -264,7 +264,7 @@ const InlineStudyNotes = ({
           <button
             type="button"
             onClick={onClose}
-            className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+            className="h-6 w-6 rounded-full text-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
             aria-label="Fechar notas"
           >
             <X className="w-3.5 h-3.5 mx-auto" />
@@ -273,7 +273,7 @@ const InlineStudyNotes = ({
       </span>
 
       {isMinimized ? (
-        <span className="block text-[12px] text-muted-foreground italic">Notas minimizadas para este versículo.</span>
+        <span className="block text-[12px] comment-strong italic">Notas minimizadas para este versículo.</span>
       ) : (
       <>
       {comments.length > 0 && (
@@ -289,11 +289,11 @@ const InlineStudyNotes = ({
                   onClick={() => setOpenCommentId((prev) => (prev === note.id ? null : note.id))}
                   className="w-full text-left"
                 >
-                  <span className="block text-[11px] tracking-[0.12em] uppercase text-muted-foreground">
+                  <span className="block text-[11px] tracking-[0.12em] uppercase menu-strong">
                     Comentário {index + 1}
                     {sourceLabel ? ` · ${sourceLabel}` : ""}
                   </span>
-                  <span className="block mt-1 text-[14px] leading-6 text-foreground/90">
+                  <span className="block mt-1 text-[14px] leading-6 comment-strong">
                     {expanded ? renderContentWithRefs(note.content, onNavigate) : shortText(note.content, 140)}
                   </span>
                 </button>
@@ -305,7 +305,7 @@ const InlineStudyNotes = ({
 
       {crossRefs.length > 0 && (
         <span className="block mt-3">
-          <span className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Referências cruzadas</span>
+          <span className="block text-[10px] uppercase tracking-[0.2em] menu-strong mb-1">Referências cruzadas</span>
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] leading-6">
             {crossRefs.map((ref, idx) => {
               const parsed = parseReference(ref);
@@ -323,7 +323,7 @@ const InlineStudyNotes = ({
               }
 
               return (
-                <span key={`${ref}-${idx}`} className="text-muted-foreground">
+                <span key={`${ref}-${idx}`} className="comment-strong">
                   {ref}
                 </span>
               );
@@ -334,7 +334,7 @@ const InlineStudyNotes = ({
 
       {keywords.length > 0 && (
         <span className="block mt-3">
-          <span className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Palavras‑chave</span>
+          <span className="block text-[10px] uppercase tracking-[0.2em] menu-strong mb-1">Palavras‑chave</span>
 
           <span className="flex flex-wrap items-center gap-2">
             {keywords.map((entry) => {

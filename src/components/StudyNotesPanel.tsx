@@ -111,7 +111,7 @@ function renderClickableRefs(
     if (parsed) {
       return (
         <span key={gi}>
-          {gi > 0 && <span className="text-muted-foreground">; </span>}
+          {gi > 0 && <span className="text-foreground">; </span>}
           <button
             className="text-primary hover:underline cursor-pointer font-serif"
             onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
@@ -123,7 +123,7 @@ function renderClickableRefs(
     }
     return (
       <span key={gi}>
-        {gi > 0 && <span className="text-muted-foreground">; </span>}
+        {gi > 0 && <span className="text-foreground">; </span>}
         <span className="font-serif">{group}</span>
       </span>
     );
@@ -267,16 +267,16 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="w-4 h-4 text-primary" />
-              <h2 className="text-xs tracking-[0.2em] font-sans font-bold text-foreground uppercase">
+              <h2 className="text-xs tracking-[0.2em] title-strong uppercase">
                 NOTAS DE ESTUDO
               </h2>
             </div>
-            <p className="text-sm font-serif text-foreground/80">
+            <p className="text-sm comment-strong">
               {selectedVerse
                 ? `${bookName} ${chapter}:${selectedVerse}`
                 : `${bookName} — Capítulo ${chapter}`}
             </p>
-            <p className="text-[10px] font-sans text-muted-foreground mt-1">
+            <p className="text-[10px] font-sans text-foreground mt-1">
               {selectedVerse ? "Comentários, referências e léxico do versículo" : "Visão geral do capítulo"}
             </p>
           </div>
@@ -289,12 +289,12 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
           <div className="p-5 space-y-5">
             {loading && (
               <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                <Loader2 className="w-5 h-5 animate-spin text-foreground" />
               </div>
             )}
 
             {!loading && !hasContent && (
-              <p className="text-sm text-muted-foreground text-center py-16 font-sans">
+              <p className="text-sm text-foreground text-center py-16 font-sans">
                 Nenhuma nota ou referência disponível para {selectedVerse ? "este versículo" : "este capítulo"}.
               </p>
             )}
@@ -308,10 +308,10 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                       <Languages className="w-3.5 h-3.5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
+                      <h3 className="text-[10px] tracking-[0.25em] title-strong uppercase">
                         PALAVRAS ORIGINAIS
                       </h3>
-                      <p className="text-[10px] font-sans text-muted-foreground">
+                      <p className="text-[10px] font-sans text-foreground">
                         Hebraico & Grego — Léxico de Strong
                       </p>
                     </div>
@@ -326,11 +326,11 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                         </span>
                       </div>
                       {entry.hebrew_greek && (
-                        <p className="text-[11px] font-mono text-muted-foreground mb-1.5">
+                        <p className="text-[11px] font-mono text-foreground mb-1.5">
                           {entry.hebrew_greek}
                         </p>
                       )}
-                      <p className="text-[13px] font-serif leading-[1.8] text-foreground/90">
+                      <p className="text-[13px] comment-strong leading-[1.8]">
                         {entry.definition}
                       </p>
                       {/* Render references as clickable */}
@@ -350,7 +350,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                               );
                             }
                             return (
-                              <span key={i} className="text-[10px] font-sans text-muted-foreground bg-muted rounded px-1.5 py-0.5">
+                              <span key={i} className="text-[10px] font-sans text-foreground bg-muted rounded px-1.5 py-0.5">
                                 {ref}
                               </span>
                             );
@@ -385,10 +385,10 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                             <BookOpen className="w-3.5 h-3.5 text-primary" />
                           </div>
                           <div>
-                            <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
+                            <h3 className="text-[10px] tracking-[0.25em] title-strong uppercase">
                               {source.toUpperCase()}
                             </h3>
-                            <p className="text-[10px] font-sans text-muted-foreground">Pregação Clássica</p>
+                            <p className="text-[10px] font-sans text-foreground">Pregação Clássica</p>
                           </div>
                         </div>
                       </div>
@@ -405,7 +405,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                                 </span>
                               )}
                             </div>
-                            <div className="text-[13px] font-serif leading-[1.8] text-foreground/90 whitespace-pre-line">
+                            <div className="text-[13px] comment-strong leading-[1.8] whitespace-pre-line">
                               {renderContentWithRefs(note.content, onNavigate ? handleNavigate : undefined)}
                             </div>
                           </div>
@@ -418,11 +418,11 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                 return (
                   <div key={type} className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
                     <div className="px-5 pt-4 pb-3 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
-                      <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
+                      <h3 className="text-[10px] tracking-[0.25em] title-strong uppercase">
                         {config.label}
                       </h3>
                       {config.subtitle && (
-                        <p className="text-[10px] font-sans text-muted-foreground mt-0.5">{config.subtitle}</p>
+                        <p className="text-[10px] font-sans text-foreground mt-0.5">{config.subtitle}</p>
                       )}
                     </div>
                     <div className="px-5 py-4 space-y-4">
@@ -453,7 +453,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                               )}
                             </div>
                           </div>
-                          <div className="text-[13px] font-serif leading-[1.8] text-foreground/90 whitespace-pre-line">
+                          <div className="text-[13px] comment-strong leading-[1.8] whitespace-pre-line">
                             {renderContentWithRefs(note.content, onNavigate ? handleNavigate : undefined)}
                           </div>
                         </div>
@@ -472,10 +472,10 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                       <Link2 className="w-3.5 h-3.5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-[10px] tracking-[0.25em] font-sans font-bold text-foreground uppercase">
+                      <h3 className="text-[10px] tracking-[0.25em] title-strong uppercase">
                         CONCORDÂNCIA EXAUSTIVA
                       </h3>
-                      <p className="text-[10px] font-sans text-muted-foreground">Referências Cruzadas</p>
+                      <p className="text-[10px] font-sans text-foreground">Referências Cruzadas</p>
                     </div>
                   </div>
                 </div>

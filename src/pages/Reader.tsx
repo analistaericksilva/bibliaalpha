@@ -17,6 +17,7 @@ import ChapterNavigation from "@/components/ChapterNavigation";
 
 import LexiconPanel from "@/components/LexiconPanel";
 import PeoplePanel from "@/components/PeoplePanel";
+import VerseIntelligencePanel from "@/components/VerseIntelligencePanel";
 import DailyVerse from "@/components/DailyVerse";
 import OnboardingTour from "@/components/OnboardingTour";
 import { useUserAnnotations } from "@/hooks/useUserAnnotations";
@@ -132,6 +133,7 @@ const Reader = () => {
 
   const [showLexicon, setShowLexicon] = useState(false);
   const [showPeople, setShowPeople] = useState(false);
+  const [showIntelligence, setShowIntelligence] = useState(false);
   const [userPanelTab, setUserPanelTab] = useState<UserPanelTab>("history");
   const [selectedVerse, setSelectedVerse] = useState<number | null>(storedReading?.selectedVerse ?? null);
   const [lastFocusedVerse, setLastFocusedVerse] = useState<number | null>(storedReading?.verse ?? storedReading?.selectedVerse ?? null);
@@ -392,6 +394,17 @@ const Reader = () => {
     setShowUserPanel(true);
   };
 
+  const toggleIntelligencePanel = () => {
+    if (!selectedVerse && !lastFocusedVerse) {
+      const firstVerse = verses[0]?.verse || null;
+      if (firstVerse) {
+        setSelectedVerse(firstVerse);
+        setLastFocusedVerse(firstVerse);
+      }
+    }
+    setShowIntelligence((prev) => !prev);
+  };
+
   const handleShareChapter = async () => {
     const shareText = `📖 ${book?.name} ${currentChapter} — Bíblia Alpha`;
     const shareUrl = `${window.location.origin}/?book=${currentBook}&chapter=${currentChapter}`;
@@ -423,6 +436,7 @@ const Reader = () => {
           
           onToggleLexicon={() => setShowLexicon(!showLexicon)}
           onTogglePeople={() => setShowPeople(!showPeople)}
+          onToggleIntelligence={toggleIntelligencePanel}
         />
 
         <div className="flex-1 flex flex-col min-w-0">
@@ -433,7 +447,7 @@ const Reader = () => {
             </SidebarTrigger>
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="flex flex-col min-w-0">
-                <span className="text-[10px] tracking-[0.28em] font-sans text-muted-foreground uppercase">
+                <span className="text-[10px] tracking-[0.28em] menu-strong uppercase">
                   Leitura Bíblica
                 </span>
                 <span className="text-sm tracking-[0.12em] font-serif font-medium text-foreground truncate">
@@ -475,13 +489,13 @@ const Reader = () => {
                 )}
 
                 <div className="text-center mb-10 md:mb-12">
-                  <p className="text-[9px] tracking-[0.42em] text-muted-foreground font-sans mb-2 uppercase">
+                  <p className="text-[9px] tracking-[0.42em] menu-strong mb-2 uppercase">
                     {book?.testament === "old" ? "Antigo Testamento" : "Novo Testamento"}
                   </p>
-                  <h1 className="text-3xl md:text-4xl lg:text-[2.85rem] font-serif font-medium text-foreground mb-1">
+                  <h1 className="text-3xl md:text-4xl lg:text-[2.85rem] title-strong mb-1">
                     {book?.name}
                   </h1>
-                  <p className="text-base md:text-lg text-muted-foreground font-serif">Capítulo {currentChapter}</p>
+                  <p className="text-base md:text-lg comment-strong">Capítulo {currentChapter}</p>
                 </div>
 
                 {/* Legend */}
@@ -504,7 +518,7 @@ const Reader = () => {
                   </span>
                 </div>
 
-                <p className="text-[10px] text-center text-muted-foreground font-sans mb-6 tracking-wide">
+                <p className="text-[10px] text-center menu-strong mb-6 tracking-wide">
                   Pressione e segure um versículo para grifar, favoritar ou adicionar nota pessoal
                 </p>
 
@@ -516,7 +530,7 @@ const Reader = () => {
                 {/* Verses */}
                 {loading ? (
                   <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="w-5 h-5 animate-spin text-foreground" />
                   </div>
                 ) : (
                   <div className="reader-content text-foreground/95" style={{ fontSize: `${fontSize}px`, lineHeight: 2.05, letterSpacing: "0.008em" }}>
@@ -545,7 +559,7 @@ const Reader = () => {
                             }}
                           >
                               <sup
-                                className={`verse-number text-[0.58em] align-super mr-0.5 text-muted-foreground ${hasNote ? "!text-primary !font-bold" : ""} ${fav ? "!text-destructive !font-bold" : ""} ${pNote ? "!text-accent !underline" : ""}`}
+                                className={`verse-number text-[0.58em] align-super mr-0.5 text-foreground ${hasNote ? "!text-primary !font-bold" : ""} ${fav ? "!text-destructive !font-bold" : ""} ${pNote ? "!text-accent !underline" : ""}`}
                               >
                               {v.verse}{fav && "♥"}
                             </sup>
@@ -573,7 +587,7 @@ const Reader = () => {
                       );
                     })}
                     {verses.length === 0 && (
-                      <p className="text-center text-muted-foreground font-sans text-sm">
+                      <p className="text-center text-foreground font-sans text-sm">
                         Nenhum versículo encontrado.
                       </p>
                     )}
@@ -626,6 +640,14 @@ const Reader = () => {
       
       <LexiconPanel open={showLexicon} onClose={() => setShowLexicon(false)} />
       <PeoplePanel open={showPeople} onClose={() => setShowPeople(false)} />
+      <VerseIntelligencePanel
+        open={showIntelligence}
+        onClose={() => setShowIntelligence(false)}
+        bookId={currentBook}
+        chapter={currentChapter}
+        verse={selectedVerse ?? lastFocusedVerse ?? verses[0]?.verse ?? null}
+        onNavigate={goToChapter}
+      />
       <OnboardingTour />
     </SidebarProvider>
   );
