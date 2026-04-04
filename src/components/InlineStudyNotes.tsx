@@ -222,7 +222,25 @@ const InlineStudyNotes = ({
   }
 
   const hasAnyContent = comments.length > 0 || crossRefs.length > 0 || keywords.length > 0;
-  if (!hasAnyContent) return null;
+
+  if (!hasAnyContent) {
+    return (
+      <span className="block mt-2 mb-5 rounded-xl border border-zinc-200 bg-white px-4 py-3">
+        <span className="flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-500">Verso {verse}</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-6 w-6 rounded-full text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+            aria-label="Fechar notas"
+          >
+            <X className="w-3.5 h-3.5 mx-auto" />
+          </button>
+        </span>
+        <span className="mt-2 block text-[13px] text-zinc-600">Sem comentários ou referências para este versículo.</span>
+      </span>
+    );
+  }
 
   return (
     <span className="block mt-2 mb-5 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.05)]">
