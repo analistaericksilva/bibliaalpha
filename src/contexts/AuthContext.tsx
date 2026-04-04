@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!mounted) return;
 
       if (!nextSession || event === "SIGNED_OUT") {
@@ -135,14 +135,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Importante: não chamar consultas Supabase diretamente dentro do callback
+      // para evitar travamentos no fluxo de autenticação.
+      setSession(nextSession);
+      setUser(nextSession.user ?? null);
       setLoading(true);
-      try {
-        await hydrateFromSession(nextSession);
-      } catch (error) {
-        console.error("Falha ao processar mudança de autenticação:", error);
-      } finally {
-        if (mounted) setLoading(false);
-      }
+
+      const sessionSnapshot = nextSession;
+      window.setTimeout(() => {
+        if (!mounted) return;
+
+        hydrateFromSession(sessionSnapshot)
+          .catch((error) => {
+            console.error("Falha ao processar mudança de autenticação:", error);
+          })
+          .finally(() => {
+            if (mounted) setLoading(false);
+          });
+      }, 0);
     });
 
     return () => {
