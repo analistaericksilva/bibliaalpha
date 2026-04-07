@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
 import { bibleBooks } from "@/data/bibleBooks";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,11 @@ import { useUserAnnotations } from "@/hooks/useUserAnnotations";
 import ReaderSettingsBar from "@/components/ReaderSettingsBar";
 import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
 import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu } from "lucide-react";
+
+const CrossRefsPanel = lazy(() => import("@/components/CrossRefsPanel"));
+const MedievalTheologiansPanel = lazy(() => import("@/components/MedievalTheologiansPanel"));
+const NotebookPanel = lazy(() => import("@/components/NotebookPanel"));
+const InterlinearView = lazy(() => import("@/components/InterlinearView"));
 
 interface Verse {
   verse: number;
