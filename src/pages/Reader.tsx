@@ -17,7 +17,6 @@ import ChapterNavigation from "@/components/ChapterNavigation";
 
 import LexiconPanel from "@/components/LexiconPanel";
 import PeoplePanel from "@/components/PeoplePanel";
-import VerseIntelligencePanel from "@/components/VerseIntelligencePanel";
 import DailyVerse from "@/components/DailyVerse";
 import OnboardingTour from "@/components/OnboardingTour";
 import { useUserAnnotations } from "@/hooks/useUserAnnotations";
@@ -144,7 +143,6 @@ const Reader = () => {
 
   const [showLexicon, setShowLexicon] = useState(false);
   const [showPeople, setShowPeople] = useState(false);
-  const [showIntelligence, setShowIntelligence] = useState(false);
   const [userPanelTab, setUserPanelTab] = useState<UserPanelTab>("history");
   const [selectedVerse, setSelectedVerse] = useState<number | null>(storedReading?.selectedVerse ?? null);
   const [lastFocusedVerse, setLastFocusedVerse] = useState<number | null>(storedReading?.verse ?? storedReading?.selectedVerse ?? null);
@@ -482,7 +480,6 @@ const Reader = () => {
           
           onToggleLexicon={() => setShowLexicon(!showLexicon)}
           onTogglePeople={() => setShowPeople(!showPeople)}
-          onToggleIntelligence={toggleIntelligencePanel}
         />
 
         <div className="flex-1 flex flex-col min-w-0">
@@ -687,14 +684,6 @@ const Reader = () => {
       
       <LexiconPanel open={showLexicon} onClose={() => setShowLexicon(false)} />
       <PeoplePanel open={showPeople} onClose={() => setShowPeople(false)} />
-      <VerseIntelligencePanel
-        open={showIntelligence}
-        onClose={() => setShowIntelligence(false)}
-        bookId={currentBook}
-        chapter={currentChapter}
-        verse={selectedVerse ?? lastFocusedVerse ?? verses[0]?.verse ?? null}
-        onNavigate={goToChapter}
-      />
       <OnboardingTour />
     </SidebarProvider>
   );
