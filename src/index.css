@@ -305,6 +305,18 @@
     radial-gradient(circle at bottom right, hsl(var(--accent) / 0.1), transparent 35%);
 }
 
+.reader-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(transparent 96%, hsl(var(--border) / 0.08) 100%),
+    linear-gradient(90deg, transparent 96%, hsl(var(--border) / 0.05) 100%);
+  background-size: 100% 36px, 36px 100%;
+  opacity: 0.28;
+}
+
 .reader-topbar {
   background: hsl(var(--background) / 0.85);
   backdrop-filter: blur(12px) saturate(120%);
@@ -313,9 +325,12 @@
 }
 
 .reader-main-paper {
-  background: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-  border-radius: 1rem;
+  background: linear-gradient(180deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.88));
+  border: 1px solid hsl(var(--border) / 0.9);
+  border-radius: 1.1rem;
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  box-shadow: 0 24px 64px -46px hsl(var(--foreground) / 0.72);
 }
 
 .reader-surface {
@@ -589,9 +604,11 @@
 }
 
 .browseros-header-shell {
-  backdrop-filter: blur(14px) saturate(130%);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
-  background: linear-gradient(180deg, hsl(var(--card) / 0.92), hsl(var(--card) / 0.82));
+  backdrop-filter: blur(16px) saturate(135%);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  background: linear-gradient(180deg, hsl(var(--card) / 0.94), hsl(var(--card) / 0.82));
+  border: 1px solid hsl(var(--border) / 0.75);
+  box-shadow: 0 18px 40px -34px hsl(var(--foreground) / 0.55);
 }
 
 .browseros-menu-chip {
