@@ -39,6 +39,7 @@ import {
 
 import CrossReferenceLink from "@/components/CrossReferenceLink";
 import BibleApplications from "@/components/BibleApplications";
+import { githubBibleService, type ExternalBibleVersion } from "@/services/githubBibleService";
 
 interface Verse {
   verse: number;
@@ -55,6 +56,9 @@ interface LastReadingState {
 }
 
 type UserPanelTab = "goto" | "history" | "favorites" | "data";
+
+const BASE_TRANSLATION_KEY = "local:base";
+const TRANSLATION_STORAGE_KEY = "biblia-alpha-text-translation";
 
 const godSpeechPatterns = [
   /^Disse (?:mais )?(?:o )?(?:Senhor|Deus|SENHOR|Jeová)/i,
@@ -170,6 +174,9 @@ const Reader = () => {
   const [userPanelTab, setUserPanelTab] = useState<UserPanelTab>("history");
   const [selectedVerse, setSelectedVerse] = useState<number | null>(storedReading?.selectedVerse ?? null);
   const [lastFocusedVerse, setLastFocusedVerse] = useState<number | null>(storedReading?.verse ?? storedReading?.selectedVerse ?? null);
+  const [selectedTranslation, setSelectedTranslation] = useState<string>(() => localStorage.getItem(TRANSLATION_STORAGE_KEY) || BASE_TRANSLATION_KEY);
+  const [availableTranslations, setAvailableTranslations] = useState<ExternalBibleVersion[]>([]);
+  const [translationWarning, setTranslationWarning] = useState<string | null>(null);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
   const [noteVerses, setNoteVerses] = useState<Set<number>>(new Set());
@@ -188,6 +195,12 @@ const Reader = () => {
   );
 
   const book = bibleBooks.find((b) => b.id === currentBook);
+
+  const selectedTranslationLabel = useMemo(() => {
+    if (selectedTranslation === BASE_TRANSLATION_KEY) return "Bíblia Alpha (Base)";
+    const found = availableTranslations.find((item) => item.key === selectedTranslation);
+    return found?.label || selectedTranslation.toUpperCase();
+  }, [selectedTranslation, availableTranslations]);
 
   const jesusSpeechVerses = useMemo(() => {
     if (!ntBooks.has(currentBook) || verses.length === 0) return new Set<number>();
@@ -290,18 +303,73 @@ const Reader = () => {
     }
   }, [isContainerScrollable]);
 
+  useEffect(() => {
+    let active = true;
+
+    githubBibleService
+      .getSupportedVersions()
+      .then((versions) => {
+        if (active) setAvailableTranslations(versions);
+      })
+      .catch((err) => {
+        console.error("Falha ao carregar traduções externas:", err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(TRANSLATION_STORAGE_KEY, selectedTranslation);
+  }, [selectedTranslation]);
+
   const fetchVerses = async (bookId: string, chapter: number) => {
     setLoading(true);
-    const [versesRes, notesRes, crossRefsRes] = await Promise.all([
-      supabase.from("bible_verses").select("verse_number, text").eq("book_id", bookId).eq("chapter", chapter).order("verse_number"),
-      supabase.from("study_notes").select("verse_start").eq("book_id", bookId).eq("chapter", chapter),
-      supabase.from("bible_cross_references").select("verse").eq("book_id", bookId).eq("chapter", chapter),
-    ]);
-    if (versesRes.data && !versesRes.error) {
-      setVerses(versesRes.data.map((v) => ({ verse: v.verse_number, text: v.text })));
+
+    const notesPromise = supabase.from("study_notes").select("verse_start").eq("book_id", bookId).eq("chapter", chapter);
+    const crossRefsPromise = supabase.from("bible_cross_references").select("verse").eq("book_id", bookId).eq("chapter", chapter);
+
+    let resolvedVerses: Verse[] = [];
+
+    if (selectedTranslation === BASE_TRANSLATION_KEY) {
+      const versesRes = await supabase
+        .from("bible_verses")
+        .select("verse_number, text")
+        .eq("book_id", bookId)
+        .eq("chapter", chapter)
+        .order("verse_number");
+
+      if (versesRes.data && !versesRes.error) {
+        resolvedVerses = versesRes.data.map((v) => ({ verse: v.verse_number, text: v.text }));
+      }
+      setTranslationWarning(null);
     } else {
-      setVerses([]);
+      try {
+        resolvedVerses = await githubBibleService.getChapter(selectedTranslation, bookId, chapter);
+        setTranslationWarning(null);
+      } catch (externalErr) {
+        console.error("Falha na fonte externa, voltando para base local:", externalErr);
+
+        const fallback = await supabase
+          .from("bible_verses")
+          .select("verse_number, text")
+          .eq("book_id", bookId)
+          .eq("chapter", chapter)
+          .order("verse_number");
+
+        if (fallback.data && !fallback.error) {
+          resolvedVerses = fallback.data.map((v) => ({ verse: v.verse_number, text: v.text }));
+        }
+
+        setTranslationWarning("A tradução externa não respondeu para este trecho. Exibindo base local.");
+      }
     }
+
+    const [notesRes, crossRefsRes] = await Promise.all([notesPromise, crossRefsPromise]);
+
+    setVerses(resolvedVerses);
+
     if (notesRes.data) {
       const verseStarts = notesRes.data
         .map((n) => n.verse_start)
@@ -314,10 +382,11 @@ const Reader = () => {
         .filter((value): value is number => typeof value === "number");
       setCrossRefVerses(new Set(crossRefVerseNumbers));
     }
+
     setLoading(false);
   };
 
-  useEffect(() => { fetchVerses(currentBook, currentChapter); }, [currentBook, currentChapter]);
+  useEffect(() => { fetchVerses(currentBook, currentChapter); }, [currentBook, currentChapter, selectedTranslation]);
 
   useEffect(() => {
     setShowVerseCommentPopup(false);
@@ -665,14 +734,30 @@ const Reader = () => {
                     <p className="text-sm font-semibold truncate">Bíblia Alpha</p>
                     <p className="text-[11px] text-muted-foreground truncate">{book?.name} {currentChapter} • leitura inteligente</p>
                   </div>
-                  <button
-                    onClick={() => setCommandOpen(true)}
-                    className="ml-auto hidden md:inline-flex items-center gap-1.5 text-[11px] px-2.5 h-7 rounded-full border border-border bg-background/80 text-muted-foreground hover:text-foreground hover:border-primary/40"
-                    type="button"
-                  >
-                    <Keyboard className="w-3.5 h-3.5" />
-                    Ctrl+K
-                  </button>
+                  <div className="ml-auto flex items-center gap-2">
+                    <select
+                      value={selectedTranslation}
+                      onChange={(e) => setSelectedTranslation(e.target.value)}
+                      className="h-8 max-w-[210px] rounded-md border border-border bg-background/85 px-2 text-[11px] text-foreground"
+                      title="Escolher tradução bíblica"
+                    >
+                      <option value={BASE_TRANSLATION_KEY}>BASE • Bíblia Alpha</option>
+                      {availableTranslations.map((version) => (
+                        <option key={version.key} value={version.key}>
+                          {version.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      onClick={() => setCommandOpen(true)}
+                      className="hidden md:inline-flex items-center gap-1.5 text-[11px] px-2.5 h-7 rounded-full border border-border bg-background/80 text-muted-foreground hover:text-foreground hover:border-primary/40"
+                      type="button"
+                    >
+                      <Keyboard className="w-3.5 h-3.5" />
+                      Ctrl+K
+                    </button>
+                  </div>
                   <ReaderSettingsBar />
                 </div>
 
@@ -758,6 +843,9 @@ const Reader = () => {
                 <h1 className="text-2xl font-semibold text-foreground">
                   {book?.name} <span className="text-muted-foreground font-normal">{currentChapter}</span>
                 </h1>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Tradução ativa: {selectedTranslationLabel}
+                </p>
               </div>
 
               <div className="mb-6">
@@ -779,6 +867,12 @@ const Reader = () => {
                   {showCompareMode && (
                     <div className="reader-surface p-3 text-xs text-muted-foreground">
                       Modo comparar ativado. A segunda tradução será liberada assim que houver múltiplas versões no banco.
+                    </div>
+                  )}
+
+                  {translationWarning && (
+                    <div className="reader-surface p-3 text-xs text-amber-700 bg-amber-100/60 border border-amber-300/40 rounded-lg">
+                      {translationWarning}
                     </div>
                   )}
 

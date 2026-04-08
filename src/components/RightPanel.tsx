@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import TranslatableText from "@/components/TranslatableText";
 
 interface RightPanelProps {
   open: boolean;
@@ -301,9 +302,11 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
                               </span>
                             </div>
                           </div>
-                          <p className="text-sm font-serif text-foreground/85 leading-relaxed line-clamp-[7]">
-                            {note.content}
-                          </p>
+                          <TranslatableText
+                            text={note.content}
+                            className="text-sm font-serif text-foreground/85 leading-relaxed line-clamp-[7]"
+                            showOriginalToggle={false}
+                          />
                         </div>
                       ))
                     )}

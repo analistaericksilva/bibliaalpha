@@ -31,6 +31,7 @@ import {
   TooltipTrigger
 } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TranslatableText from "@/components/TranslatableText";
 
 interface MedievalNote {
   id: string;
@@ -571,9 +572,11 @@ const MedievalTheologiansPanel = ({
                             </h4>
                           )}
 
-                          <p className={`text-sm comment-strong leading-relaxed ${!isExpanded ? "line-clamp-3" : ""}`}>
-                            {note.content}
-                          </p>
+                          <TranslatableText
+                            text={note.content}
+                            className={`text-sm comment-strong leading-relaxed ${!isExpanded ? "line-clamp-3" : ""}`}
+                            showOriginalToggle={false}
+                          />
 
                           {note.content.length > 200 && (
                             <Button

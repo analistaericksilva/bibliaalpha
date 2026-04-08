@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown, ChevronRight, MessageCircle, X } from "lucide-react";
+import TranslatableText from "@/components/TranslatableText";
 
 interface CommentsSidebarProps {
   bookId: string;
@@ -158,9 +159,11 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
                               </span>
                             )}
                           </div>
-                          <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-line">
-                            {note.content.length > 300 ? note.content.slice(0, 300) + "..." : note.content}
-                          </p>
+                          <TranslatableText
+                            text={note.content.length > 300 ? note.content.slice(0, 300) + "..." : note.content}
+                            className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-line"
+                            showOriginalToggle={false}
+                          />
                         </div>
                       ))}
                     </div>

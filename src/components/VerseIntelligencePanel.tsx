@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { bibleBooks } from "@/data/bibleBooks";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import TranslatableText from "@/components/TranslatableText";
 
 interface VerseIntelligencePanelProps {
   open: boolean;
@@ -259,7 +260,11 @@ const VerseIntelligencePanel = ({ open, onClose, bookId, chapter, verse, onNavig
                           <p className="text-[10px] menu-strong uppercase tracking-wider mb-1">
                             {note.title || note.source || "Nota de estudo"}
                           </p>
-                          <p className="text-sm leading-6">{compact(note.content, 320)}</p>
+                          <TranslatableText
+                            text={compact(note.content, 320)}
+                            className="text-sm leading-6"
+                            showOriginalToggle={false}
+                          />
                         </article>
                       ))}
 
@@ -268,7 +273,11 @@ const VerseIntelligencePanel = ({ open, onClose, bookId, chapter, verse, onNavig
                           <p className="text-[10px] menu-strong uppercase tracking-wider mb-1">
                             {note.title || note.author || note.source_dataset}
                           </p>
-                          <p className="text-sm leading-6">{compact(note.content, 320)}</p>
+                          <TranslatableText
+                            text={compact(note.content, 320)}
+                            className="text-sm leading-6"
+                            showOriginalToggle={false}
+                          />
                         </article>
                       ))}
                     </div>

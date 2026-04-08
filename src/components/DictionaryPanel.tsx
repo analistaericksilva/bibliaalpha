@@ -4,6 +4,7 @@ import { X, Search, Loader2, BookText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import TranslatableText from "@/components/TranslatableText";
 
 interface DictEntry {
   id: string;
@@ -152,9 +153,11 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
                           {entry.hebrew_greek}
                         </p>
                       )}
-                      <p className="text-sm font-serif leading-relaxed text-foreground/90 mt-2 whitespace-pre-line">
-                        {entry.definition}
-                      </p>
+                      <TranslatableText
+                        text={entry.definition}
+                        className="text-sm font-serif leading-relaxed text-foreground/90 mt-2 whitespace-pre-line"
+                        showOriginalToggle={false}
+                      />
                       {entry.references_list.length > 0 && (
                         <div className="mt-3">
                           <p className="text-[10px] tracking-[0.2em] font-sans text-muted-foreground mb-1">

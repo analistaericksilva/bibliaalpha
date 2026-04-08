@@ -102,10 +102,12 @@ const TranslatableText = ({
   }
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <div className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-sans uppercase tracking-wide text-primary">
-        <Languages className="w-3 h-3" /> Tradução automática
-      </div>
+    <div className={cn(showOriginalToggle ? "space-y-2" : "", className)}>
+      {showOriginalToggle && (
+        <div className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-sans uppercase tracking-wide text-primary">
+          <Languages className="w-3 h-3" /> Tradução automática
+        </div>
+      )}
 
       <div>{render(translatedText)}</div>
 
