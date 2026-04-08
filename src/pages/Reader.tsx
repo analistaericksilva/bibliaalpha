@@ -610,22 +610,20 @@ const Reader = () => {
                   </div>
                 )}
 
-                {/* Chapter navigation */}
-                <div className="flex items-center justify-between mt-14 pt-7 border-t border-border/70">
-                  <button onClick={() => navigateChapter(-1)} className="reader-nav-button">
-                    ← ANTERIOR
-                  </button>
-                  <span className="reader-chip">
-                    {book?.abbrev} {currentChapter}
-                  </span>
-                  <button onClick={() => navigateChapter(1)} className="reader-nav-button">
-                    PRÓXIMO →
-                  </button>
-                </div>
-                </div>
+              {/* Chapter navigation */}
+              <div className="flex items-center justify-between mt-12 pt-6 border-t border-border">
+                <button onClick={() => navigateChapter(-1)} className="reader-nav-button">
+                  ← Anterior
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  {book?.abbrev} {currentChapter}
+                </span>
+                <button onClick={() => navigateChapter(1)} className="reader-nav-button">
+                  Próximo →
+                </button>
               </div>
-              </main>
             </div>
+          </main>
 
             {/* Persistent Comments Sidebar */}
             <CommentsSidebar
