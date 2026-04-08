@@ -489,8 +489,8 @@ const Reader = () => {
           onToggleNotepad={() => setShowNotepad(!showNotepad)}
         />
 
-        <div className={`flex-1 flex min-w-0 transition-all duration-300 ${showRightPanel ? 'mr-0' : ''}`}>
-          <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${showRightPanel ? 'lg:mr-96' : ''}`}>
+        <div className="flex-1 flex min-w-0">
+          <div className="flex-1 flex flex-col min-w-0">
             {/* Compact top bar with sidebar trigger */}
             <header className="reader-topbar sticky top-0 z-40 h-14 flex items-center px-4 md:px-6 gap-3">
               <SidebarTrigger className="shrink-0 rounded-lg border border-border/60 bg-card/70 hover:bg-muted/80">
@@ -633,16 +633,8 @@ const Reader = () => {
                               >
                                 ↗
                               </button>
-                            )}{" "}
+                            )}
                           </span>
-                          {shouldShowInlineNotes && (
-                            <InlineStudyNotes
-                              bookId={currentBook}
-                              chapter={currentChapter}
-                              verse={v.verse}
-                              onNavigate={goToChapter}
-                            />
-                          )}
                         </span>
                       );
                     })}
