@@ -8,23 +8,22 @@ import ReaderSidebar from "@/components/ReaderSidebar";
 import BookSelector from "@/components/BookSelector";
 import SearchPanel from "@/components/SearchPanel";
 import StudyNotesPanel from "@/components/StudyNotesPanel";
-import InlineStudyNotes from "@/components/InlineStudyNotes";
 import DictionaryPanel from "@/components/DictionaryPanel";
 import UserPanel from "@/components/UserPanel";
 import BibleMapPanel from "@/components/BibleMapPanel";
 import VerseActionMenu from "@/components/VerseActionMenu";
 import ChapterNavigation from "@/components/ChapterNavigation";
+import CommentsSidebar from "@/components/CommentsSidebar";
 
 import LexiconPanel from "@/components/LexiconPanel";
 import PeoplePanel from "@/components/PeoplePanel";
 import DailyVerse from "@/components/DailyVerse";
 import OnboardingTour from "@/components/OnboardingTour";
 import Notepad from "@/components/Notepad";
-import RightPanel from "@/components/RightPanel";
 import { useUserAnnotations } from "@/hooks/useUserAnnotations";
 import ReaderSettingsBar from "@/components/ReaderSettingsBar";
 import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
-import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, PanelRightOpen, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle } from "lucide-react";
 
 const CrossRefsPanel = lazy(() => import("@/components/CrossRefsPanel"));
 const MedievalTheologiansPanel = lazy(() => import("@/components/MedievalTheologiansPanel"));
