@@ -636,7 +636,7 @@ const Reader = () => {
             onClose={() => setShowRightPanel(false)}
           />
         </div>
-
+      </div>
       {/* Overlays */}
       {actionMenu && (
         <VerseActionMenu
