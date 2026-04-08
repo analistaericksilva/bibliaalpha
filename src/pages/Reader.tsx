@@ -20,10 +20,11 @@ import PeoplePanel from "@/components/PeoplePanel";
 import DailyVerse from "@/components/DailyVerse";
 import OnboardingTour from "@/components/OnboardingTour";
 import Notepad from "@/components/Notepad";
+import RightPanel from "@/components/RightPanel";
 import { useUserAnnotations } from "@/hooks/useUserAnnotations";
 import ReaderSettingsBar from "@/components/ReaderSettingsBar";
 import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
-import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, PanelRightOpen, Sparkles } from "lucide-react";
 
 const CrossRefsPanel = lazy(() => import("@/components/CrossRefsPanel"));
 const MedievalTheologiansPanel = lazy(() => import("@/components/MedievalTheologiansPanel"));
@@ -144,6 +145,7 @@ const Reader = () => {
   const [showUserPanel, setShowUserPanel] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showNotepad, setShowNotepad] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(false);
 
   const [showLexicon, setShowLexicon] = useState(false);
   const [showPeople, setShowPeople] = useState(false);
@@ -487,34 +489,43 @@ const Reader = () => {
           onToggleNotepad={() => setShowNotepad(!showNotepad)}
         />
 
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Compact top bar with sidebar trigger */}
-          <header className="reader-topbar sticky top-0 z-40 h-14 flex items-center px-4 md:px-6 gap-3">
-            <SidebarTrigger className="shrink-0 rounded-lg border border-border/60 bg-card/70 hover:bg-muted/80">
-              <Menu className="w-4 h-4" />
-            </SidebarTrigger>
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] tracking-[0.28em] menu-strong uppercase">
-                  Leitura Bíblica
-                </span>
-                <span className="text-sm tracking-[0.09em] title-strong truncate">
-                  {book?.name}
-                </span>
+        <div className={`flex-1 flex min-w-0 transition-all duration-300 ${showRightPanel ? 'mr-0' : ''}`}>
+          <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${showRightPanel ? 'lg:mr-96' : ''}`}>
+            {/* Compact top bar with sidebar trigger */}
+            <header className="reader-topbar sticky top-0 z-40 h-14 flex items-center px-4 md:px-6 gap-3">
+              <SidebarTrigger className="shrink-0 rounded-lg border border-border/60 bg-card/70 hover:bg-muted/80">
+                <Menu className="w-4 h-4" />
+              </SidebarTrigger>
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] tracking-[0.28em] menu-strong uppercase">
+                    Leitura Bíblica
+                  </span>
+                  <span className="text-sm tracking-[0.09em] title-strong truncate">
+                    {book?.name}
+                  </span>
+                </div>
+                <span className="reader-chip shrink-0">Cap. {currentChapter}</span>
               </div>
-              <span className="reader-chip shrink-0">Cap. {currentChapter}</span>
-            </div>
-            <div className="ml-auto flex items-center gap-1.5">
-              <ReaderSettingsBar />
-              <div className="w-px h-6 bg-border/70 mx-0.5" />
-              <button onClick={() => navigateChapter(-1)} className="reader-icon-button" aria-label="Capítulo anterior">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button onClick={() => navigateChapter(1)} className="reader-icon-button" aria-label="Próximo capítulo">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </header>
+              <div className="ml-auto flex items-center gap-1.5">
+                <button 
+                  onClick={() => setShowRightPanel(!showRightPanel)}
+                  className={`reader-icon-button ${showRightPanel ? "bg-primary/20 text-primary" : ""}`}
+                  aria-label="Painel de insights"
+                  title="Painel de insights"
+                >
+                  <PanelRightOpen className="w-4 h-4" />
+                </button>
+                <ReaderSettingsBar />
+                <div className="w-px h-6 bg-border/70 mx-0.5" />
+                <button onClick={() => navigateChapter(-1)} className="reader-icon-button" aria-label="Capítulo anterior">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button onClick={() => navigateChapter(1)} className="reader-icon-button" aria-label="Próximo capítulo">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </header>
 
           {/* Reader content */}
           <main ref={readingContainerRef} className="flex-1 overflow-y-auto">
@@ -581,7 +592,7 @@ const Reader = () => {
                     <Loader2 className="w-5 h-5 animate-spin text-foreground" />
                   </div>
                 ) : (
-                  <div className="reader-content text-foreground/95" style={{ fontSize: `${fontSize}px`, lineHeight: 2.05, letterSpacing: "0.008em" }}>
+                  <div className="reader-content reading-ai" style={{ fontSize: `${fontSize}px` }}>
                     {verses.map((v) => {
                       const speechClass = jesusSpeechVerses.has(v.verse)
                         ? "text-jesus"
@@ -598,7 +609,7 @@ const Reader = () => {
                         <span key={v.verse}>
                             <span
                               ref={(el) => { verseRefs.current[v.verse] = el; }}
-                              className={`reader-verse cursor-pointer ${hlBg} rounded-md px-0.5 md:px-1 transition-colors align-baseline`}
+                              className={`reader-verse cursor-pointer ${hlBg} rounded-md px-0.5 md:px-1 transition-colors align-baseline inline`}
                               onClick={() => handleVerseClick(v.verse)}
                             onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                             onTouchStart={(e) => {
@@ -609,7 +620,7 @@ const Reader = () => {
                             }}
                           >
                               <sup
-                                className={`verse-number text-[0.58em] align-super mr-0.5 text-foreground ${hasNote ? "!text-primary !font-bold" : ""} ${fav ? "!text-destructive !font-bold" : ""} ${pNote ? "!text-accent !underline" : ""}`}
+                                className={`verse-number text-[0.7em] align-super mr-1 font-semibold text-primary ${hasNote ? "!text-primary" : ""} ${fav ? "!text-destructive" : ""} ${pNote ? "!text-accent" : ""}`}
                               >
                               {v.verse}{fav && "♥"}
                             </sup>
@@ -655,9 +666,10 @@ const Reader = () => {
                     PRÓXIMO →
                   </button>
                 </div>
+                </div>
               </div>
-            </div>
-          </main>
+            </main>
+          </div>
         </div>
       </div>
 
@@ -690,6 +702,17 @@ const Reader = () => {
       <LexiconPanel open={showLexicon} onClose={() => setShowLexicon(false)} />
       <PeoplePanel open={showPeople} onClose={() => setShowPeople(false)} />
       <Notepad open={showNotepad} onClose={() => setShowNotepad(false)} />
+      
+      {/* Right Panel - Comments & Notepad */}
+      <RightPanel 
+        open={showRightPanel} 
+        onClose={() => setShowRightPanel(false)} 
+        bookId={currentBook}
+        chapter={currentChapter}
+        selectedVerse={selectedVerse}
+        onNavigate={goToChapter}
+      />
+      
       <OnboardingTour />
     </SidebarProvider>
   );
