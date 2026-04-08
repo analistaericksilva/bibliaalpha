@@ -126,49 +126,49 @@
   }
 
   .gray {
-    --background: 220 12% 13%;
-    --foreground: 220 12% 91%;
+    --background: 0 0% 100%;
+    --foreground: 220 13% 18%;
 
-    --card: 220 12% 17%;
-    --card-foreground: 220 12% 91%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 18%;
 
-    --popover: 220 12% 17%;
-    --popover-foreground: 220 12% 91%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 18%;
 
-    --primary: 216 18% 73%;
-    --primary-foreground: 220 18% 10%;
-    --primary-light: 220 14% 24%;
+    --primary: 220 16% 32%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 220 22% 96%;
 
-    --secondary: 220 10% 20%;
-    --secondary-foreground: 220 12% 91%;
+    --secondary: 220 16% 96%;
+    --secondary-foreground: 220 13% 18%;
 
-    --muted: 220 10% 21%;
-    --muted-foreground: 220 8% 70%;
+    --muted: 220 13% 97%;
+    --muted-foreground: 220 10% 44%;
 
-    --accent: 215 26% 74%;
-    --accent-foreground: 220 18% 10%;
+    --accent: 220 16% 32%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 68% 56%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 9% 28%;
-    --input: 220 9% 28%;
-    --ring: 216 18% 73%;
+    --border: 220 14% 89%;
+    --input: 220 14% 89%;
+    --ring: 220 16% 32%;
 
-    --paper: 220 11% 16%;
-    --comfort: 220 11% 15%;
-    --comfort-warm: 220 10% 18%;
-    --ink: 220 12% 90%;
-    --ink-light: 220 8% 72%;
+    --paper: 0 0% 100%;
+    --comfort: 220 13% 98%;
+    --comfort-warm: 220 12% 99%;
+    --ink: 220 13% 18%;
+    --ink-light: 220 10% 36%;
 
-    --sidebar-background: 220 12% 11%;
-    --sidebar-foreground: 220 12% 91%;
-    --sidebar-primary: 216 18% 73%;
-    --sidebar-primary-foreground: 220 18% 10%;
-    --sidebar-accent: 220 10% 19%;
-    --sidebar-accent-foreground: 220 12% 91%;
-    --sidebar-border: 220 9% 24%;
-    --sidebar-ring: 216 18% 73%;
+    --sidebar-background: 220 14% 98%;
+    --sidebar-foreground: 220 13% 18%;
+    --sidebar-primary: 220 16% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 95%;
+    --sidebar-accent-foreground: 220 13% 18%;
+    --sidebar-border: 220 13% 90%;
+    --sidebar-ring: 220 16% 32%;
   }
 }
 
@@ -178,10 +178,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    background-image:
-      radial-gradient(circle at 15% 10%, hsl(var(--primary) / 0.16), transparent 36%),
-      radial-gradient(circle at 85% 90%, hsl(var(--accent) / 0.14), transparent 32%);
-    background-attachment: fixed;
+    background-image: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -299,22 +296,7 @@
 .reader-shell {
   position: relative;
   min-height: 100vh;
-  background:
-    linear-gradient(160deg, hsl(var(--background) / 0.92) 0%, hsl(var(--background) / 0.86) 100%),
-    radial-gradient(circle at top left, hsl(var(--primary) / 0.12), transparent 42%),
-    radial-gradient(circle at bottom right, hsl(var(--accent) / 0.1), transparent 35%);
-}
-
-.reader-shell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(transparent 96%, hsl(var(--border) / 0.08) 100%),
-    linear-gradient(90deg, transparent 96%, hsl(var(--border) / 0.05) 100%);
-  background-size: 100% 36px, 36px 100%;
-  opacity: 0.28;
+  background: hsl(var(--background));
 }
 
 .reader-topbar {
@@ -325,12 +307,10 @@
 }
 
 .reader-main-paper {
-  background: linear-gradient(180deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.88));
-  border: 1px solid hsl(var(--border) / 0.9);
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
   border-radius: 1.1rem;
-  backdrop-filter: blur(14px) saturate(120%);
-  -webkit-backdrop-filter: blur(14px) saturate(120%);
-  box-shadow: 0 24px 64px -46px hsl(var(--foreground) / 0.72);
+  box-shadow: 0 16px 36px -30px hsl(var(--foreground) / 0.22);
 }
 
 .reader-surface {
@@ -586,12 +566,10 @@
 .browseros-reader-card {
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.96) 100%),
-    radial-gradient(circle at top right, hsl(var(--primary) / 0.09), transparent 38%);
+  background: hsl(var(--card));
   box-shadow:
-    0 10px 30px -18px hsl(var(--foreground) / 0.35),
-    inset 0 1px 0 hsl(var(--background) / 0.6);
+    0 12px 28px -22px hsl(var(--foreground) / 0.16),
+    inset 0 1px 0 hsl(var(--background));
 }
 
 .browseros-reader-card::before {
@@ -599,17 +577,17 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: linear-gradient(transparent 92%, hsl(var(--border) / 0.18) 100%);
+  background-image: linear-gradient(transparent 94%, hsl(var(--border) / 0.14) 100%);
   background-size: 100% 30px;
-  opacity: 0.35;
+  opacity: 0.2;
 }
 
 .browseros-header-shell {
-  backdrop-filter: blur(16px) saturate(135%);
-  -webkit-backdrop-filter: blur(16px) saturate(135%);
-  background: linear-gradient(180deg, hsl(var(--card) / 0.94), hsl(var(--card) / 0.82));
-  border: 1px solid hsl(var(--border) / 0.75);
-  box-shadow: 0 18px 40px -34px hsl(var(--foreground) / 0.55);
+  backdrop-filter: blur(10px) saturate(110%);
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  background: hsl(var(--card) / 0.96);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 12px 26px -24px hsl(var(--foreground) / 0.18);
 }
 
 .browseros-menu-chip {
@@ -650,8 +628,8 @@
 .reader-template-browseros .browseros-header-shell,
 .reader-template-browseros .browseros-reader-card {
   box-shadow:
-    0 22px 55px -36px hsl(var(--foreground) / 0.65),
-    inset 0 1px 0 hsl(var(--background) / 0.45);
+    0 14px 30px -24px hsl(var(--foreground) / 0.18),
+    inset 0 1px 0 hsl(var(--background));
 }
 
 .reader-template-focus .browseros-menu-chip,
