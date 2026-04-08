@@ -450,11 +450,6 @@ const Reader = () => {
   }, [lastReadingKey, currentBook, currentChapter, persistLastReading, isContainerScrollable]);
 
   useEffect(() => {
-    if (!showHeaderFooter) {
-      setIsHeaderVisible(false);
-      return;
-    }
-
     const container = readingContainerRef.current;
     let hideTimer: number | undefined;
     let lastScrollTop = getCurrentScrollTop();
@@ -463,11 +458,13 @@ const Reader = () => {
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => {
         setIsHeaderVisible(false);
+        setIsFooterVisible(false);
       }, 5000);
     };
 
-    const revealHeader = () => {
+    const revealHeaderAndFooter = () => {
       setIsHeaderVisible(true);
+      setIsFooterVisible(true);
       scheduleHide();
     };
 
@@ -475,14 +472,15 @@ const Reader = () => {
       const currentScrollTop = getCurrentScrollTop();
       if (currentScrollTop < lastScrollTop) {
         setIsHeaderVisible(true);
+        setIsFooterVisible(true);
       } else {
-        revealHeader();
+        revealHeaderAndFooter();
       }
       lastScrollTop = currentScrollTop;
       scheduleHide();
     };
 
-    revealHeader();
+    revealHeaderAndFooter();
 
     const useContainer = container && isContainerScrollable();
     if (useContainer) {
@@ -495,7 +493,7 @@ const Reader = () => {
 
     interactionEvents.forEach((eventName) => {
       const passive = eventName !== "keydown";
-      window.addEventListener(eventName, revealHeader, { passive });
+      window.addEventListener(eventName, revealHeaderAndFooter, { passive });
     });
 
     return () => {
@@ -507,59 +505,10 @@ const Reader = () => {
       }
 
       interactionEvents.forEach((eventName) => {
-        window.removeEventListener(eventName, revealHeader);
+        window.removeEventListener(eventName, revealHeaderAndFooter);
       });
     };
-  }, [showHeaderFooter, currentBook, currentChapter, getCurrentScrollTop, isContainerScrollable]);
-
-  useEffect(() => {
-    if (!showHeaderFooter) {
-      setIsFooterVisible(false);
-      return;
-    }
-
-    const container = readingContainerRef.current;
-    let hideTimer: number | undefined;
-
-    const scheduleHide = () => {
-      window.clearTimeout(hideTimer);
-      hideTimer = window.setTimeout(() => {
-        setIsFooterVisible(false);
-      }, 5000);
-    };
-
-    const revealFooter = () => {
-      setIsFooterVisible(true);
-      scheduleHide();
-    };
-
-    revealFooter();
-
-    const useContainer = container && isContainerScrollable();
-    const scrollContainer = useContainer ? container : window;
-
-    const onScroll = () => {
-      scheduleHide();
-    };
-
-    scrollContainer.addEventListener("scroll", onScroll, { passive: true });
-
-    const interactionEvents: Array<keyof WindowEventMap> = ["mousemove", "touchstart", "pointerdown", "keydown", "wheel"];
-
-    interactionEvents.forEach((eventName) => {
-      const passive = eventName !== "keydown";
-      window.addEventListener(eventName, revealFooter, { passive });
-    });
-
-    return () => {
-      window.clearTimeout(hideTimer);
-      scrollContainer.removeEventListener("scroll", onScroll);
-
-      interactionEvents.forEach((eventName) => {
-        window.removeEventListener(eventName, revealFooter);
-      });
-    };
-  }, [showHeaderFooter, currentBook, currentChapter, isContainerScrollable]);
+  }, [getCurrentScrollTop, isContainerScrollable]);
 
   useEffect(() => {
     if (loading || verses.length === 0) return;
