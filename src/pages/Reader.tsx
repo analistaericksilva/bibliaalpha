@@ -131,7 +131,7 @@ const Reader = () => {
   const usageTemplateLabel = useMemo(() => {
     if (usageTemplate === "focus") return "Foco";
     if (usageTemplate === "study") return "Estudo";
-    return "BrowserOS";
+    return "Padrão";
   }, [usageTemplate]);
 
   const lastReadingKey = user ? `biblia-alpha:last-reading:${user.id}` : null;
@@ -764,7 +764,7 @@ const Reader = () => {
 
   return (
     <SidebarProvider>
-      <div className={cn("reader-shell min-h-screen flex w-full text-foreground", `reader-template-${usageTemplate}`)}>
+      <div className={cn("reader-shell min-h-screen flex w-full text-foreground", `reader-template-${usageTemplate === "focus" ? "focus" : usageTemplate === "study" ? "study" : "default"}`)}>
         <ReaderSidebar
           onToggleSearch={() => setShowSearch(!showSearch)}
           onToggleBookSelector={() => setShowBooks(!showBooks)}
@@ -801,11 +801,11 @@ const Reader = () => {
               className={cn(
                 "sticky top-0 z-50 overflow-hidden transition-all duration-500 ease-out",
                 showHeaderFooter && isHeaderVisible
-                  ? "max-h-[260px] px-2 sm:px-3 pt-1.5 pb-1.5 bg-background/88 backdrop-blur-md border-b border-border/55 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] opacity-100 translate-y-0"
+                  ? "max-h-[220px] px-2 sm:px-3 pt-1.5 pb-1.5 bg-background/88 backdrop-blur-md border-b border-border/55 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] opacity-100 translate-y-0"
                   : "max-h-0 px-2 sm:px-3 pt-0 pb-0 border-b-0 bg-transparent shadow-none opacity-0 -translate-y-2 pointer-events-none"
               )}
             >
-              <div className="rounded-2xl border border-border/70 bg-card/85 shadow-sm browseros-header-shell">
+              <div className="rounded-2xl border border-border/70 bg-card/85 shadow-sm reader-header-shell">
                 <div className="flex flex-wrap md:flex-nowrap items-center gap-2 px-2 md:px-3 py-2 border-b border-border/60">
                   <SidebarTrigger className="h-8 w-8 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground">
                     <Menu className="w-4 h-4" />
@@ -856,7 +856,7 @@ const Reader = () => {
                   ].map((item) => (
                     <button
                       key={item.label}
-                      className="browseros-menu-chip shrink-0"
+                      className="reader-menu-chip shrink-0"
                       onClick={item.action}
                       type="button"
                     >
@@ -971,7 +971,7 @@ const Reader = () => {
                   )}
 
                   {viewMode === "paragraph" ? (
-                    <article className="reader-main-paper browseros-reader-card p-5 sm:p-6 md:p-10" style={{ fontSize: `${fontSize}px` }}>
+                    <article className="reader-main-paper reader-main-card p-5 sm:p-6 md:p-10" style={{ fontSize: `${fontSize}px` }}>
                       <div className="reader-content reader-content-flow text-reader-black select-text">
                         {verses.map((v) => {
                           const speechClass = jesusSpeechVerses.has(v.verse)
@@ -1074,35 +1074,35 @@ const Reader = () => {
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setShowBooks(true)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#D8C8F3] text-[#2E1065] bg-[#F7F2FF] hover:bg-[#EFE5FF] transition-colors"
+                    className="reader-book-nav-chip"
                     type="button"
                   >
                     📚 Livro
                   </button>
                   <button
                     onClick={() => openUserPanel("goto")}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#D8C8F3] text-[#2E1065] bg-[#F7F2FF] hover:bg-[#EFE5FF] transition-colors"
+                    className="reader-book-nav-chip"
                     type="button"
                   >
                     🔢 Ir p/ capítulo
                   </button>
                   <button
                     onClick={() => setShowSearch(true)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#D8C8F3] text-[#2E1065] bg-[#F7F2FF] hover:bg-[#EFE5FF] transition-colors"
+                    className="reader-book-nav-chip"
                     type="button"
                   >
                     🔍 Busca
                   </button>
                   <button
                     onClick={() => setShowNotes(true)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#D8C8F3] text-[#2E1065] bg-[#F7F2FF] hover:bg-[#EFE5FF] transition-colors"
+                    className="reader-book-nav-chip"
                     type="button"
                   >
                     📝 Notas
                   </button>
                   <button
                     onClick={scrollReaderToTop}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#D8C8F3] text-[#2E1065] bg-[#F7F2FF] hover:bg-[#EFE5FF] transition-colors"
+                    className="reader-book-nav-chip"
                     type="button"
                   >
                     ↑ Topo
@@ -1116,7 +1116,7 @@ const Reader = () => {
                         window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
                       }
                     }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#D8C8F3] text-[#2E1065] bg-[#F7F2FF] hover:bg-[#EFE5FF] transition-colors"
+                    className="reader-book-nav-chip"
                     type="button"
                   >
                     ↓ Rodapé
