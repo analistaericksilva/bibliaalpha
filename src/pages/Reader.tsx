@@ -190,6 +190,7 @@ const Reader = () => {
   const [crossRefVerses, setCrossRefVerses] = useState<Set<number>>(new Set());
   const [actionMenu, setActionMenu] = useState<{ verse: number; x: number; y: number } | null>(null);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [isFooterVisible, setIsFooterVisible] = useState(true);
   const [navHistory, setNavHistory] = useState<Array<{ bookId: string; chapter: number; verse?: number }>>([]);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
   const readingContainerRef = useRef<HTMLElement | null>(null);
@@ -510,6 +511,55 @@ const Reader = () => {
       });
     };
   }, [showHeaderFooter, currentBook, currentChapter, getCurrentScrollTop, isContainerScrollable]);
+
+  useEffect(() => {
+    if (!showHeaderFooter) {
+      setIsFooterVisible(false);
+      return;
+    }
+
+    const container = readingContainerRef.current;
+    let hideTimer: number | undefined;
+
+    const scheduleHide = () => {
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => {
+        setIsFooterVisible(false);
+      }, 5000);
+    };
+
+    const revealFooter = () => {
+      setIsFooterVisible(true);
+      scheduleHide();
+    };
+
+    revealFooter();
+
+    const useContainer = container && isContainerScrollable();
+    const scrollContainer = useContainer ? container : window;
+
+    const onScroll = () => {
+      scheduleHide();
+    };
+
+    scrollContainer.addEventListener("scroll", onScroll, { passive: true });
+
+    const interactionEvents: Array<keyof WindowEventMap> = ["mousemove", "touchstart", "pointerdown", "keydown", "wheel"];
+
+    interactionEvents.forEach((eventName) => {
+      const passive = eventName !== "keydown";
+      window.addEventListener(eventName, revealFooter, { passive });
+    });
+
+    return () => {
+      window.clearTimeout(hideTimer);
+      scrollContainer.removeEventListener("scroll", onScroll);
+
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, revealFooter);
+      });
+    };
+  }, [showHeaderFooter, currentBook, currentChapter, isContainerScrollable]);
 
   useEffect(() => {
     if (loading || verses.length === 0) return;
@@ -1056,7 +1106,12 @@ const Reader = () => {
               
 
               {/* Chapter navigation */}
-              <div className="mt-12 pt-6 border-t border-border space-y-3">
+              <div className={cn(
+                "mt-12 pt-6 border-t border-border space-y-3 transition-all duration-500 ease-out",
+                showHeaderFooter && isFooterVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4 pointer-events-none"
+              )}>
                 <div className="flex items-center justify-between">
                   <button onClick={() => navigateChapter(-1)} className="reader-nav-button">
                     ← Anterior
