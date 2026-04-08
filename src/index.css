@@ -257,7 +257,21 @@
   }
 
   .manus-app-card {
-    @apply p-4 rounded-xl border border-border/50 bg-card hover:bg-accent/50 transition-all cursor-pointer flex items-center gap-3;
+    @apply p-4 rounded-xl border border-border/50 bg-card/75 hover:bg-accent/40 transition-all duration-200 cursor-pointer flex items-center gap-3;
+    backdrop-filter: blur(10px) saturate(130%);
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+    box-shadow: 0 10px 24px -18px hsl(var(--foreground) / 0.5);
+  }
+
+  .manus-app-card:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--primary) / 0.35);
+    box-shadow: 0 14px 28px -16px hsl(var(--foreground) / 0.58);
+  }
+
+  .manus-app-card:focus-visible {
+    outline: 2px solid hsl(var(--primary) / 0.7);
+    outline-offset: 2px;
   }
 
   .manus-reference {
@@ -358,12 +372,19 @@
   border: 1px solid transparent;
   background: transparent;
   color: hsl(var(--muted-foreground));
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
 }
 
 .reader-icon-button:hover {
   color: hsl(var(--foreground));
   background: hsl(var(--muted));
+  border-color: hsl(var(--primary) / 0.2);
+  transform: translateY(-1px);
+}
+
+.reader-icon-button:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.65);
+  outline-offset: 2px;
 }
 
 .reader-nav-button {
@@ -592,6 +613,12 @@
   color: hsl(var(--foreground));
   border-color: hsl(var(--primary) / 0.45);
   background: hsl(var(--primary) / 0.08);
+  transform: translateY(-1px);
+}
+
+.browseros-menu-chip:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.6);
+  outline-offset: 2px;
 }
 
 .reader-verse-line {
@@ -626,6 +653,15 @@
 .reader-template-study .verse-number {
   color: hsl(var(--primary));
   opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Print */

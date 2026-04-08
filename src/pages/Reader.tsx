@@ -128,6 +128,12 @@ const Reader = () => {
   const selectedFont = readerSettings.selectedFont;
   const usageTemplate = readerSettings.usageTemplate;
 
+  const usageTemplateLabel = useMemo(() => {
+    if (usageTemplate === "focus") return "Foco";
+    if (usageTemplate === "study") return "Estudo";
+    return "BrowserOS";
+  }, [usageTemplate]);
+
   const lastReadingKey = user ? `biblia-alpha:last-reading:${user.id}` : null;
 
   const getStoredReading = (): LastReadingState | null => {
@@ -736,6 +742,11 @@ const Reader = () => {
                     <p className="text-[11px] text-muted-foreground truncate">{book?.name} {currentChapter} • leitura inteligente</p>
                   </div>
                   <div className="ml-auto flex items-center gap-2">
+                    <span className="hidden xl:inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.12em] px-2 h-7 rounded-full border border-border/70 bg-background/60 text-muted-foreground">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      {usageTemplateLabel}
+                    </span>
+
                     <select
                       value={selectedTranslation}
                       onChange={(e) => setSelectedTranslation(e.target.value)}

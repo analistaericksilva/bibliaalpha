@@ -99,7 +99,7 @@ const Notepad = ({ open, onClose }: NotepadProps) => {
       setNewTitle("");
       setNewContent("");
       setShowNewForm(false);
-      toast({ title: "Sermão criado", description: "Seu sermão foi adicionado ao Notepad premium." });
+      toast({ title: "Sermão criado", description: "Seu sermão foi adicionado ao bloco de notas premium." });
     }
   };
 
@@ -190,7 +190,7 @@ const Notepad = ({ open, onClose }: NotepadProps) => {
               <div className="min-w-0">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2 truncate">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  Notepad Incrível
+                  Bloco de Notas Incrível
                 </h2>
                 <p className="text-[11px] text-muted-foreground truncate">Escreva, organize, compartilhe e exporte seus sermões com estilo BrowserOS.</p>
               </div>
@@ -405,7 +405,7 @@ const Notepad = ({ open, onClose }: NotepadProps) => {
           <div className="absolute bottom-0 left-0 right-0 h-9 bg-gradient-to-r from-transparent via-muted/20 to-transparent border-t border-border/10 flex items-center justify-center">
             <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
-              Bíblia Alpha • Notepad Premium BrowserOS
+              Bíblia Alpha • Bloco de Notas Premium BrowserOS
             </span>
           </div>
         </div>
