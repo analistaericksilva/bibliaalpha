@@ -455,7 +455,7 @@ const Reader = () => {
     let lastScrollTop = getCurrentScrollTop();
 
     const inactivityDelayMs = 5000;
-    const readingThreshold = 96;
+    const readingThreshold = 24;
 
     const clearHideTimer = () => {
       window.clearTimeout(hideTimer);
@@ -513,7 +513,17 @@ const Reader = () => {
       window.addEventListener("scroll", onScroll, { passive: true });
     }
 
-    const interactionEvents: Array<keyof WindowEventMap> = ["mousemove", "touchstart", "pointerdown", "keydown", "wheel"];
+    let lastMouseMoveAt = 0;
+    const onMouseMove = () => {
+      const now = Date.now();
+      if (now - lastMouseMoveAt < 160) return;
+      lastMouseMoveAt = now;
+      onUserInteraction();
+    };
+
+    const interactionEvents: Array<keyof WindowEventMap> = ["touchstart", "pointerdown", "keydown", "wheel"];
+
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
 
     interactionEvents.forEach((eventName) => {
       const passive = eventName !== "keydown";
@@ -527,6 +537,8 @@ const Reader = () => {
       } else {
         window.removeEventListener("scroll", onScroll);
       }
+
+      window.removeEventListener("mousemove", onMouseMove);
 
       interactionEvents.forEach((eventName) => {
         window.removeEventListener(eventName, onUserInteraction);

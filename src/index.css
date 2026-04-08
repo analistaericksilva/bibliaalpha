@@ -302,6 +302,14 @@
     color: hsl(var(--reader-text-black));
   }
 
+  .verse-text-lilac.text-jesus {
+    color: hsl(var(--jesus));
+  }
+
+  .verse-text-lilac.text-god {
+    color: hsl(var(--god));
+  }
+
   .verse-reference-color {
     color: hsl(var(--reader-verse-purple));
   }
