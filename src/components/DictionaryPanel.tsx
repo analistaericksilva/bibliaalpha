@@ -157,6 +157,7 @@ const DictionaryPanel = ({ open, onClose, initialTerm }: DictionaryPanelProps) =
                         text={entry.definition}
                         className="text-sm font-serif leading-relaxed text-foreground/90 mt-2 whitespace-pre-line"
                         showOriginalToggle={false}
+                        forceTranslate
                       />
                       {entry.references_list.length > 0 && (
                         <div className="mt-3">

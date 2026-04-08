@@ -62,7 +62,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
 
   const authorEntries = Object.entries(notesByAuthor);
 
-  // Filter notes for selected verse
+  // Filtra notas para o versículo selecionado
   const getRelevantNotes = (authorNotes: StudyNote[]) => {
     if (!selectedVerse) return authorNotes;
     return authorNotes.filter(n => 
@@ -75,7 +75,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
 
   return (
     <div className="comments-sidebar w-80 lg:w-96 shrink-0 flex flex-col h-full">
-      {/* Header */}
+      {/* Cabeçalho */}
       <div className="h-14 flex items-center justify-between px-4 border-b border-border">
         <div className="flex items-center gap-2">
           <MessageCircle className="w-4 h-4 text-muted-foreground" />
@@ -93,7 +93,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
         </button>
       </div>
 
-      {/* Content */}
+      {/* Conteúdo */}
       <ScrollArea className="flex-1">
         <div className="p-3 space-y-2">
           {loading ? (
@@ -116,7 +116,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
 
               return (
                 <div key={author} className="comment-author-card overflow-hidden">
-                  {/* Author header — always visible */}
+                  {/* Cabeçalho do autor — sempre visível */}
                   <button
                     onClick={() => toggleAuthor(author)}
                     className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/30 transition-colors"
@@ -141,7 +141,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
                     )}
                   </button>
 
-                  {/* Notes — expandable */}
+                  {/* Notas — expansível */}
                   {isExpanded && (
                     <div className="px-3 pb-3 space-y-2">
                       {(selectedVerse ? relevantNotes : authorNotes).map(note => (
@@ -163,6 +163,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
                             text={note.content.length > 300 ? note.content.slice(0, 300) + "..." : note.content}
                             className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-line"
                             showOriginalToggle={false}
+                            forceTranslate
                           />
                         </div>
                       ))}

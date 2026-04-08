@@ -58,7 +58,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
 
-  // Buscar comentários quando o versículo mudar
+  // Busca comentários quando o versículo muda
   useEffect(() => {
     if (open && (selectedVerse || fixedVerse)) {
       const verseToFetch = fixedVerse || selectedVerse;
@@ -69,7 +69,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
     }
   }, [open, bookId, chapter, selectedVerse, fixedVerse]);
 
-  // Buscar sermões quando mudar para aba notepad
+  // Busca sermões quando muda para a aba de notas
   useEffect(() => {
     if (open && activeTab === "notepad" && user) {
       fetchSermons();
@@ -88,7 +88,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
       .order("verse_start", { ascending: true });
     
     if (data) {
-      // Filtrar apenas notas relevantes para este versículo
+      // Filtra apenas notas relevantes para este versículo
       const relevantNotes = data.filter(n => 
         n.verse_start <= verse && (n.verse_end === null || n.verse_end >= verse)
       );
@@ -211,7 +211,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
       <div className="fixed right-0 top-0 h-full w-full max-w-md z-50 animate-in slide-in-from-right duration-300">
         <div className="h-full bg-gradient-to-b from-card via-card to-background border-l border-border/20 shadow-2xl flex flex-col overflow-hidden">
           
-          {/* Header */}
+          {/* Cabeçalho */}
           <div className="flex items-center justify-between p-4 border-b border-border/10 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/90 to-primary/40 flex items-center justify-center shadow-lg shadow-primary/20">
@@ -219,7 +219,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
               </div>
               <div>
                 <h2 className="text-sm font-bold text-foreground">
-                  {currentVerse ? `Versículo ${currentVerse}` : 'Insights & Notas'}
+                  {currentVerse ? `Versículo ${currentVerse}` : 'Percepções e Notas'}
                 </h2>
                 <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <span className="text-primary">●</span> Sincronizado em tempo real
@@ -242,7 +242,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
             </div>
           </div>
 
-          {/* Content */}
+          {/* Conteúdo */}
           <div className="flex-1 flex flex-col overflow-hidden">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col">
               <TabsList className="mx-4 mt-2 grid grid-cols-3 bg-muted/30 p-1 rounded-xl">
@@ -252,7 +252,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
                 </TabsTrigger>
                 <TabsTrigger value="refs" className="text-[11px] rounded-lg gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <ExternalLink className="w-3.5 h-3.5" />
-                  Refs
+                  Referências
                 </TabsTrigger>
                 <TabsTrigger value="notepad" className="text-[11px] rounded-lg gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <StickyNote className="w-3.5 h-3.5" />
@@ -260,7 +260,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
                 </TabsTrigger>
               </TabsList>
 
-              {/* Comments Tab */}
+              {/* Aba de comentários */}
               <TabsContent value="comments" className="flex-1 m-0 overflow-hidden">
                 <ScrollArea className="h-full">
                   <div className="p-4 space-y-3">
@@ -306,6 +306,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
                             text={note.content}
                             className="text-sm font-serif text-foreground/85 leading-relaxed line-clamp-[7]"
                             showOriginalToggle={false}
+                            forceTranslate
                           />
                         </div>
                       ))
@@ -314,7 +315,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
                 </ScrollArea>
               </TabsContent>
 
-              {/* Cross References Tab */}
+              {/* Aba de referências cruzadas */}
               <TabsContent value="refs" className="flex-1 m-0 overflow-hidden">
                 <ScrollArea className="h-full">
                   <div className="p-4 space-y-3">
@@ -335,7 +336,12 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
                         <div key={ref.id || idx} className="p-3 rounded-xl bg-muted/30 border border-border/10 hover:bg-muted/50 transition-colors">
                           <p className="text-sm font-medium text-foreground">{ref.refs}</p>
                           {ref.content && (
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-3">{ref.content}</p>
+                            <TranslatableText
+                              text={ref.content}
+                              className="text-xs text-muted-foreground mt-1 line-clamp-3"
+                              showOriginalToggle={false}
+                              forceTranslate
+                            />
                           )}
                         </div>
                       ))
@@ -344,7 +350,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
                 </ScrollArea>
               </TabsContent>
 
-              {/* Notepad Tab */}
+              {/* Aba de notas */}
               <TabsContent value="notepad" className="flex-1 m-0 overflow-hidden">
                 <ScrollArea className="h-full">
                   <div className="p-4 space-y-3">
@@ -425,7 +431,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
             </Tabs>
           </div>
 
-          {/* Footer */}
+          {/* Rodapé */}
           <div className="p-3 border-t border-border/10 bg-muted/10">
             <p className="text-[10px] text-muted-foreground/60 text-center flex items-center justify-center gap-1">
               <Sparkles className="w-3 h-3" />

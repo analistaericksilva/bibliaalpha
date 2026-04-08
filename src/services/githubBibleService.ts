@@ -19,10 +19,30 @@ interface ExternalBookPayload {
   chapters: string[][];
 }
 
-const RAW_BASE = "https://raw.githubusercontent.com/maatheusgois/bible/main";
-const INDEX_URL = `${RAW_BASE}/sumary/index.json`;
+const DATA_BASE_URLS = [
+  "https://cdn.jsdelivr.net/gh/maatheusgois/bible@main",
+  "https://raw.githubusercontent.com/maatheusgois/bible/main",
+] as const;
+
 const INDEX_CACHE_KEY = "biblia-alpha:external-bible-index";
 const INDEX_CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h
+
+const LANGUAGE_NAME_PT: Record<string, string> = {
+  ar: "Árabe",
+  zh: "Chinês",
+  de: "Alemão",
+  el: "Grego",
+  en: "Inglês",
+  eo: "Esperanto",
+  es: "Espanhol",
+  fi: "Finlandês",
+  fr: "Francês",
+  ko: "Coreano",
+  "pt-br": "Português",
+  ro: "Romeno",
+  ru: "Russo",
+  vi: "Vietnamita",
+};
 
 const SOURCE_BOOK_ID_BY_INTERNAL_ID: Record<string, string> = {
   gn: "gn",
@@ -96,30 +116,70 @@ const SOURCE_BOOK_ID_BY_INTERNAL_ID: Record<string, string> = {
 const versionCache = new Map<string, ExternalBibleVersion[]>();
 const bookCache = new Map<string, ExternalBookPayload>();
 
-function toVersionLabel(languageId: string, versionId: string, versionName: string) {
-  return `${languageId.toUpperCase()} • ${versionId.toUpperCase()} — ${versionName}`;
+const normalizeBookPayload = (raw: unknown, sourceBookId: string): ExternalBookPayload => {
+  if (raw && typeof raw === "object" && Array.isArray((raw as ExternalBookPayload).chapters)) {
+    return raw as ExternalBookPayload;
+  }
+
+  if (Array.isArray(raw)) {
+    return {
+      id: sourceBookId,
+      name: sourceBookId,
+      chapters: raw as string[][],
+    };
+  }
+
+  throw new Error(`Formato de livro inválido para ${sourceBookId}.`);
+};
+
+const toVersionLabel = (
+  languageId: string,
+  languageName: string,
+  versionId: string,
+  versionName: string
+) => {
+  const languageLabel = LANGUAGE_NAME_PT[languageId] || languageName;
+  return `${languageLabel} • ${versionId.toUpperCase()} — ${versionName}`;
+};
+
+async function fetchJsonFromMirrors<T>(relativePath: string): Promise<T> {
+  let lastError: unknown;
+
+  for (const base of DATA_BASE_URLS) {
+    const url = `${base}/${relativePath}`;
+
+    try {
+      const response = await fetch(url, { cache: "default" });
+      if (!response.ok) {
+        lastError = new Error(`Falha em ${url} (${response.status})`);
+        continue;
+      }
+
+      return (await response.json()) as T;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw new Error(
+    `Nenhum endpoint de espelho respondeu para ${relativePath}. ${
+      lastError instanceof Error ? lastError.message : ""
+    }`
+  );
 }
 
 async function loadIndexFromNetwork(): Promise<LanguageNode[]> {
-  const response = await fetch(INDEX_URL);
-  if (!response.ok) throw new Error(`Falha ao carregar índice de traduções (${response.status})`);
-  const payload = (await response.json()) as LanguageNode[];
+  const payload = await fetchJsonFromMirrors<LanguageNode[]>("sumary/index.json");
+
   localStorage.setItem(
     INDEX_CACHE_KEY,
     JSON.stringify({ timestamp: Date.now(), data: payload })
   );
+
   return payload;
 }
 
 async function loadIndex(): Promise<LanguageNode[]> {
-  if (versionCache.size > 0) {
-    // já carregado ao menos uma vez na sessão
-    const cached = Array.from(versionCache.values())[0];
-    if (cached.length > 0) {
-      // não precisamos do conteúdo exato aqui, apenas evitamos request desnecessária
-    }
-  }
-
   const raw = localStorage.getItem(INDEX_CACHE_KEY);
   if (raw) {
     try {
@@ -145,10 +205,10 @@ export const githubBibleService = {
         lang.versions.map((version) => ({
           key: `${lang.id}/${version.id}`,
           languageId: lang.id,
-          languageName: lang.language,
+          languageName: LANGUAGE_NAME_PT[lang.id] || lang.language,
           versionId: version.id,
           versionName: version.name,
-          label: toVersionLabel(lang.id, version.id, version.name),
+          label: toVersionLabel(lang.id, lang.language, version.id, version.name),
         }))
       )
       .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
@@ -172,12 +232,9 @@ export const githubBibleService = {
     let payload = bookCache.get(cacheKey);
 
     if (!payload) {
-      const url = `${RAW_BASE}/versions/${languageId}/${versionId}/${sourceBookId}/${sourceBookId}.json`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Falha ao carregar livro ${sourceBookId} (${response.status})`);
-      }
-      payload = (await response.json()) as ExternalBookPayload;
+      const relativePath = `versions/${languageId}/${versionId}/${sourceBookId}/${sourceBookId}.json`;
+      const rawPayload = await fetchJsonFromMirrors<unknown>(relativePath);
+      payload = normalizeBookPayload(rawPayload, sourceBookId);
       bookCache.set(cacheKey, payload);
     }
 

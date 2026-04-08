@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { bibleBooks } from "@/data/bibleBooks";
 import TranslatableText from "@/components/TranslatableText";
 
-// --- Types ---
+// --- Tipos ---
 
 interface StudyNote {
   id: string;
@@ -36,7 +36,7 @@ interface StudyNotesPanelProps {
   onNavigate?: (bookId: string, chapter: number, verse?: number) => void;
 }
 
-// --- Reference parsing ---
+// --- Parse de referências ---
 
 const abbrevToId: Record<string, string> = {};
 const nameToId: Record<string, string> = {};
@@ -129,7 +129,7 @@ function renderClickableRefs(
   });
 }
 
-// --- Source labels ---
+// --- Rótulos de fonte ---
 
 const SOURCE_LABELS: Record<string, { label: string; subtitle: string }> = {
   matthew_henry: { label: "MATTHEW HENRY", subtitle: "Comentário Devocional" },
@@ -139,7 +139,7 @@ const SOURCE_LABELS: Record<string, { label: string; subtitle: string }> = {
 
 const TYPE_ORDER = ["matthew_henry", "sermon", "commentary"];
 
-// --- Helper: match dict references to current verse ---
+// --- Auxiliar: compara referências do dicionário com o versículo atual ---
 
 function dictEntryMatchesVerse(entry: DictEntry, bookId: string, chapter: number, verse: number | null): boolean {
   if (!entry.references_list || !Array.isArray(entry.references_list)) return false;
@@ -148,13 +148,13 @@ function dictEntryMatchesVerse(entry: DictEntry, bookId: string, chapter: number
 
   return entry.references_list.some((ref: string) => {
     if (!ref) return false;
-    // refs like "Gn 1:1", "Sl 19:1", "Gn 15:18"
+    // referências como "Gn 1:1", "Sl 19:1", "Gn 15:18"
     const parsed = parseReference(ref);
     if (!parsed) return false;
     if (parsed.bookId !== bookId) return false;
     if (parsed.chapter !== chapter) return false;
     if (verse && parsed.verse) return parsed.verse === verse;
-    return true; // chapter-level match
+    return true; // correspondência no nível de capítulo
   });
 }
 
@@ -169,7 +169,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
     const fetchData = async () => {
       setLoading(true);
 
-      // Fetch study notes (exclude concordance — shown separately)
+      // Busca notas de estudo (exceto concordância — exibida separadamente)
       let notesQuery = supabase
         .from("study_notes")
         .select("*")
@@ -179,7 +179,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
         .order("verse_start")
         .limit(500);
 
-      // Fetch concordance
+      // Busca concordância
       let concQuery = supabase
         .from("study_notes")
         .select("*")
@@ -194,7 +194,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
         concQuery = concQuery.eq("verse_start", selectedVerse);
       }
 
-      // Fetch curated Portuguese Strong's/dictionary entries (those with references)
+      // Busca verbetes curados de Strong/dicionário em português (com referências)
       const dictQuery = supabase
         .from("bible_dictionary")
         .select("*")
@@ -203,7 +203,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
 
       const [notesRes, concRes, dictRes] = await Promise.all([notesQuery, concQuery, dictQuery]);
 
-      // Filter notes covering selected verse
+      // Filtra notas que cobrem o versículo selecionado
       let filteredNotes = (notesRes.data as StudyNote[]) || [];
       if (selectedVerse) {
         filteredNotes = filteredNotes.filter(
@@ -216,7 +216,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
       setNotes(filteredNotes);
       setConcordanceRefs((concRes.data as StudyNote[]) || []);
 
-      // Filter dictionary entries by verse reference match
+      // Filtra verbetes do dicionário que combinam com a referência do versículo
       const allDict = (dictRes.data as DictEntry[]) || [];
       const matched = allDict.filter((e) =>
         dictEntryMatchesVerse(e, bookId, chapter, selectedVerse)
@@ -240,7 +240,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
 
   if (!open) return null;
 
-  // Group notes by note_type
+  // Agrupa notas por tipo
   const groupedNotes: Record<string, StudyNote[]> = {};
   notes.forEach((note) => {
     const key = note.note_type || "commentary";
@@ -261,7 +261,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
     <>
       <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={onClose} />
       <div className="reader-floating-panel fixed top-0 right-0 h-full w-full max-w-lg bg-background border-l border-border z-50 animate-fade-in flex flex-col shadow-2xl">
-        {/* Header */}
+        {/* Cabeçalho */}
         <div className="reader-panel-header flex items-center justify-between px-6 py-5 border-b border-border bg-muted/20">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -298,7 +298,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
               </p>
             )}
 
-            {/* Léxico Hebraico/Grego — show first when available for immediate context */}
+            {/* Léxico Hebraico/Grego — mostra primeiro para contexto imediato */}
             {!loading && strongEntries.length > 0 && (
               <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
                 <div className="px-5 pt-4 pb-3 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
@@ -332,8 +332,9 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                       <TranslatableText
                         text={entry.definition}
                         className="text-[13px] comment-strong leading-[1.8]"
+                        forceTranslate
                       />
-                      {/* Render references as clickable */}
+                      {/* Renderiza referências como itens clicáveis */}
                       {entry.references_list && Array.isArray(entry.references_list) && entry.references_list.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {entry.references_list.map((ref: string, i: number) => {
@@ -363,7 +364,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
               </div>
             )}
 
-            {/* Notes grouped by source/type */}
+            {/* Notas agrupadas por fonte/tipo */}
             {!loading &&
               sortedTypes.map((type) => {
                 const typeNotes = groupedNotes[type];
@@ -409,6 +410,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                               text={note.content}
                               className="text-[13px] comment-strong leading-[1.8] whitespace-pre-line"
                               renderText={(content) => renderContentWithRefs(content, onNavigate ? handleNavigate : undefined)}
+                              forceTranslate
                             />
                           </div>
                         ))}
@@ -459,6 +461,7 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                             text={note.content}
                             className="text-[13px] comment-strong leading-[1.8] whitespace-pre-line"
                             renderText={(content) => renderContentWithRefs(content, onNavigate ? handleNavigate : undefined)}
+                            forceTranslate
                           />
                         </div>
                       ))}

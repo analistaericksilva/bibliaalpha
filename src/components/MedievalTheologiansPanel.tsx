@@ -576,6 +576,7 @@ const MedievalTheologiansPanel = ({
                             text={note.content}
                             className={`text-sm comment-strong leading-relaxed ${!isExpanded ? "line-clamp-3" : ""}`}
                             showOriginalToggle={false}
+                            forceTranslate
                           />
 
                           {note.content.length > 200 && (

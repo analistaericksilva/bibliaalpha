@@ -281,9 +281,14 @@ const InlineStudyNotes = ({
                       <TranslatableText
                         text={note.content}
                         renderText={(content) => renderContentWithRefs(content, onNavigate)}
+                        forceTranslate
                       />
                     ) : (
-                      shortText(note.content, 140)
+                      <TranslatableText
+                        text={shortText(note.content, 140)}
+                        showOriginalToggle={false}
+                        forceTranslate
+                      />
                     )}
                   </span>
                 </button>

@@ -264,6 +264,7 @@ const VerseIntelligencePanel = ({ open, onClose, bookId, chapter, verse, onNavig
                             text={compact(note.content, 320)}
                             className="text-sm leading-6"
                             showOriginalToggle={false}
+                            forceTranslate
                           />
                         </article>
                       ))}
@@ -277,6 +278,7 @@ const VerseIntelligencePanel = ({ open, onClose, bookId, chapter, verse, onNavig
                             text={compact(note.content, 320)}
                             className="text-sm leading-6"
                             showOriginalToggle={false}
+                            forceTranslate
                           />
                         </article>
                       ))}

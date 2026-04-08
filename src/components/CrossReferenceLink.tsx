@@ -44,7 +44,7 @@ const CrossReferenceLink = ({ bookId, chapter, verse, className, children }: Cro
       if (error) throw error;
       setCrossRefs(data || []);
     } catch (err) {
-      console.error("Error loading cross references:", err);
+      console.error("Erro ao carregar referências cruzadas:", err);
     } finally {
       setIsLoading(false);
     }

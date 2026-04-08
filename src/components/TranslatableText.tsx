@@ -8,10 +8,11 @@ interface TranslatableTextProps {
   className?: string;
   renderText?: (text: string) => ReactNode;
   showOriginalToggle?: boolean;
+  forceTranslate?: boolean;
 }
 
-const ENGLISH_PATTERN = /\b(the|and|with|from|that|this|your|shall|lord|god|jesus|christ|faith|grace|holy|spirit|love|sin|salvation|gospel|heaven|earth|righteousness|repent|mercy|forgiveness)\b/gi;
-const PORTUGUESE_PATTERN = /\b(que|com|para|não|senhor|deus|jesus|cristo|fé|graça|espírito|amor|pecado|salvação|evangelho|céu|terra|justiça|arrependimento|misericórdia|perdão)\b/gi;
+const ENGLISH_PATTERN = /\b(the|and|with|from|that|this|your|shall|lord|god|jesus|christ|faith|grace|holy|spirit|love|sin|salvation|gospel|heaven|earth|righteousness|repent|mercy|forgiveness|said|unto|thou|thee|behold|therefore|wherefore|kingdom|covenant|blessed|prophet|apostle)\b/gi;
+const PORTUGUESE_PATTERN = /\b(que|com|para|não|senhor|deus|jesus|cristo|fé|graça|espírito|amor|pecado|salvação|evangelho|céu|terra|justiça|arrependimento|misericórdia|perdão|então|porque|profeta|apóstolo|aliança|reino|abençoado)\b/gi;
 
 const translationCache = new Map<string, string>();
 
@@ -20,12 +21,28 @@ const countMatches = (text: string, pattern: RegExp) => {
   return matches ? matches.length : 0;
 };
 
-const shouldTranslateToPt = (text: string) => {
-  const cleaned = text.replace(/\d+[:.]\d+/g, " ").trim();
-  if (cleaned.length < 40) return false;
+const normalizeText = (text: string) =>
+  text
+    .replace(/\d+[:.]\d+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
+const scoreLanguageHints = (text: string) => {
+  const cleaned = normalizeText(text);
   const englishScore = countMatches(cleaned, ENGLISH_PATTERN);
   const portugueseScore = countMatches(cleaned, PORTUGUESE_PATTERN);
+
+  return { cleaned, englishScore, portugueseScore };
+};
+
+const shouldTranslateToPt = (text: string) => {
+  const { cleaned, englishScore, portugueseScore } = scoreLanguageHints(text);
+  if (cleaned.length < 16) return false;
+
+  // Regra mais permissiva para trechos curtos, útil para comentários bíblicos resumidos.
+  if (cleaned.length < 50) {
+    return englishScore >= 2 && englishScore >= portugueseScore + 1;
+  }
 
   return englishScore >= 3 && englishScore > portugueseScore;
 };
@@ -35,11 +52,19 @@ const TranslatableText = ({
   className,
   renderText,
   showOriginalToggle = true,
+  forceTranslate = false,
 }: TranslatableTextProps) => {
   const [translatedText, setTranslatedText] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
 
-  const needsTranslation = useMemo(() => shouldTranslateToPt(text), [text]);
+  const needsTranslation = useMemo(() => {
+    if (forceTranslate) {
+      const { englishScore, portugueseScore } = scoreLanguageHints(text);
+      return englishScore >= 1 && englishScore >= portugueseScore;
+    }
+
+    return shouldTranslateToPt(text);
+  }, [text, forceTranslate]);
 
   useEffect(() => {
     let active = true;

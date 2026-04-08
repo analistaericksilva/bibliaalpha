@@ -211,9 +211,15 @@ const VerseCommentPopup = ({
                           text={note.content}
                           className="text-sm leading-relaxed"
                           renderText={(content) => renderContentWithRefs(content, onNavigate ? handleNavigate : undefined)}
+                          forceTranslate
                         />
                       ) : (
-                        <p className={cn("whitespace-pre-line")}>{shortText(note.content)}</p>
+                        <TranslatableText
+                          text={shortText(note.content)}
+                          className={cn("whitespace-pre-line")}
+                          showOriginalToggle={false}
+                          forceTranslate
+                        />
                       )}
 
                       {canCollapse && (
