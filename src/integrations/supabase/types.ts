@@ -457,6 +457,54 @@ export type Database = {
         }
         Relationships: []
       }
+      study_notebook_entries: {
+        Row: {
+          book_id: string
+          chapter: number
+          content: string
+          created_at: string
+          id: string
+          last_reviewed_at: string | null
+          next_review_date: string | null
+          review_count: number | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          word_count: number | null
+        }
+        Insert: {
+          book_id: string
+          chapter: number
+          content?: string
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          next_review_date?: string | null
+          review_count?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          word_count?: number | null
+        }
+        Update: {
+          book_id?: string
+          chapter?: number
+          content?: string
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          next_review_date?: string | null
+          review_count?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          word_count?: number | null
+        }
+        Relationships: []
+      }
       study_notes: {
         Row: {
           book_id: string
@@ -496,39 +544,6 @@ export type Database = {
           title?: string | null
           verse_end?: number | null
           verse_start?: number
-        }
-        Relationships: []
-      }
-      sermon_notes: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          content: string
-          tags: string[]
-          verses_refs: string[]
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title: string
-          content?: string
-          tags?: string[]
-          verses_refs?: string[]
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          title?: string
-          content?: string
-          tags?: string[]
-          verses_refs?: string[]
-          created_at?: string
-          updated_at?: string
         }
         Relationships: []
       }
