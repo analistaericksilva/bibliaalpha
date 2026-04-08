@@ -452,7 +452,7 @@ const Reader = () => {
         setLastFocusedVerse(firstVerse);
       }
     }
-    setShowIntelligence((prev) => !prev);
+    setShowRightPanel((prev) => !prev);
   };
 
   const handleShareChapter = async () => {
