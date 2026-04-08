@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Database, Shield, FileText, BookOpen, Languages, Link2, MessageSquare, Search, Star, MapPin, Users, FileSignature, Heading, Scroll } from "lucide-react";
-import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,10 +25,7 @@ interface ModuleCategory {
 }
 
 const ModuleManager = () => {
-  const readerSettings = useReaderSettings();
-  
   const [activeTab, setActiveTab] = useState("bibles");
-  const [isInstalling, setIsInstalling] = useState<string | null>(null);
 
   const categories: ModuleCategory[] = [
     {
@@ -233,7 +229,7 @@ const ModuleManager = () => {
                           "w-8 h-8 rounded-full flex items-center justify-center",
                           mod.installed ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
                         )}>
-                          <mod.installed ? <Star className="w-4 h-4" /> : <cat.icon className="w-4 h-4" />}
+                          {mod.installed ? <Star className="w-4 h-4" /> : <cat.icon className="w-4 h-4" />}
                         </div>
                         <div>
                           <p className="font-medium text-sm">{mod.name}</p>

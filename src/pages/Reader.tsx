@@ -27,7 +27,8 @@ import WordStyleLayout from "@/components/WordStyleLayout";
 import ModuleManager from "@/components/ModuleManager";
 import StrongNumberDisplay from "@/components/StrongNumberDisplay";
 import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
-import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, AlignLeft, List, Database } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, FileText, Search, BookOpen, Library, Map, Users, Settings2 } from "lucide-react";
 
 import CrossReferenceLink from "@/components/CrossReferenceLink";
 import BibleApplications from "@/components/BibleApplications";
@@ -379,14 +380,16 @@ const Reader = () => {
 
   // TheWord-style keyboard shortcuts
   useEffect(() => {
-    const handleNavigate = (e: any) => {
-      const { bookId, chapter, verse } = e.detail;
+    const handleNavigate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ bookId: string; chapter: number; verse?: number }>;
+      const { bookId, chapter, verse } = customEvent.detail || {};
+      if (!bookId || !chapter) return;
       goToChapter(bookId, chapter, verse);
     };
 
     window.addEventListener("navigate-to-verse", handleNavigate);
     return () => window.removeEventListener("navigate-to-verse", handleNavigate);
-  }, [goToChapter]);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -595,7 +598,7 @@ const Reader = () => {
 
   const handleShareChapter = async () => {
     const shareText = `📖 ${book?.name} ${currentChapter} — Bíblia Alpha`;
-    const shareUrl = `${window.location.origin}/?book=${currentBook}&chapter=${currentChapter}`;
+    const shareUrl = `${window.location.origin}/biblia?book=${currentBook}&chapter=${currentChapter}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: shareText, text: shareText, url: shareUrl });
@@ -628,36 +631,78 @@ const Reader = () => {
 
         <div className="flex-1 flex min-w-0 overflow-hidden">
           <div className="flex-1 flex flex-col min-w-0">
-            {/* Compact top bar with sidebar trigger */}
-              <header className="reader-topbar sticky top-0 z-40 h-12 flex items-center px-4 md:px-6 gap-3">
-                <SidebarTrigger className="shrink-0 rounded-lg hover:bg-muted">
+            {/* Microsoft Word inspired chrome */}
+            <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur">
+              <div className="h-8 bg-[#2b579a] text-white flex items-center gap-2 px-3">
+                <SidebarTrigger className="h-6 w-6 rounded hover:bg-white/20">
                   <Menu className="w-4 h-4" />
                 </SidebarTrigger>
-                <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
-                  <span className="text-sm font-medium text-foreground truncate">
-                    {book?.name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {currentChapter}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button 
-                    onClick={() => setShowRightPanel(!showRightPanel)}
-                    className={`reader-icon-button ${showRightPanel ? "bg-muted text-foreground" : ""}`}
-                    title="Comentários"
+                <span className="text-[11px] font-medium tracking-wide truncate">
+                  Bíblia Alpha • {book?.name} {currentChapter}
+                </span>
+                <span className="ml-auto text-[10px] opacity-90">Estudo Avançado</span>
+              </div>
+
+              <div className="h-8 bg-muted/70 border-b border-border/60 px-2 flex items-center gap-1 text-[11px]">
+                {[
+                  { label: "Arquivo", icon: FileText },
+                  { label: "Editar", icon: Settings2 },
+                  { label: "Pesquisar", icon: Search },
+                  { label: "Estudo", icon: BookOpen },
+                  { label: "Módulos", icon: Library },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    className="h-6 px-2.5 rounded hover:bg-background text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                    onClick={() => {
+                      if (item.label === "Pesquisar") setShowSearch(true);
+                      if (item.label === "Estudo") setShowNotes(true);
+                    }}
+                    type="button"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <item.icon className="w-3.5 h-3.5" />
+                    {item.label}
                   </button>
+                ))}
+              </div>
+
+              <div className="h-11 px-3 bg-card border-b border-border/60 flex items-center gap-1.5">
+                <button onClick={() => navigateChapter(-1)} className="reader-icon-button" aria-label="Capítulo anterior" type="button">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button onClick={() => navigateChapter(1)} className="reader-icon-button" aria-label="Próximo capítulo" type="button">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <div className="w-px h-6 bg-border mx-1" />
+                <button onClick={() => setShowSearch(true)} className="reader-icon-button" title="Buscar" type="button">
+                  <Search className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowNotes(true)} className="reader-icon-button" title="Notas" type="button">
+                  <BookOpen className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowLexicon(true)} className="reader-icon-button" title="Léxico" type="button">
+                  <Library className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowMap(true)} className="reader-icon-button" title="Mapa bíblico" type="button">
+                  <Map className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowPeople(true)} className="reader-icon-button" title="Personagens" type="button">
+                  <Users className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowRightPanel(!showRightPanel)}
+                  className={cn("reader-icon-button", showRightPanel && "bg-muted text-foreground")}
+                  title="Comentários"
+                  type="button"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </button>
+                <div className="ml-auto flex items-center gap-2">
+                  <span className="text-[11px] text-muted-foreground hidden md:block">{book?.abbrev?.toUpperCase()} {currentChapter}</span>
                   <ReaderSettingsBar />
-                  <button onClick={() => navigateChapter(-1)} className="reader-icon-button" aria-label="Capítulo anterior">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => navigateChapter(1)} className="reader-icon-button" aria-label="Próximo capítulo">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
                 </div>
-              </header>
+              </div>
+            </header>
 
             {/* Reader content */}
             <main ref={readingContainerRef} className="flex-1 overflow-y-auto">
@@ -760,58 +805,6 @@ const Reader = () => {
                 </div>
               )}
               
-              {false && viewMode === "parallel" && (
-                <div className="reader-content reading-ai" style={{ fontSize: `${fontSize}px` }}>
-                  {verses.map((v) => {
-                    const speechClass = jesusSpeechVerses.has(v.verse)
-                      ? "text-jesus"
-                      : getSpeechClass(v.text, currentBook);
-                    const hasNote = noteVerses.has(v.verse);
-                    const hasCrossRef = crossRefVerses.has(v.verse);
-                    const shouldShowInlineNotes = hasNote || hasCrossRef || selectedVerse === v.verse;
-                    const hlColor = getHighlightColor(v.verse);
-                    const fav = isFavorite(v.verse);
-                    const pNote = hasPersonalNote(v.verse);
-                    const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
-
-                        return (
-                        <span key={v.verse}>
-                            <span
-                              ref={(el) => { verseRefs.current[v.verse] = el; }}
-                              className={`reader-verse cursor-pointer ${hlBg} rounded-md px-0.5 md:px-1 transition-colors align-baseline inline`}
-                              onClick={() => handleVerseClick(v.verse)}
-                            onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
-                            onTouchStart={(e) => {
-                              const timer = setTimeout(() => handleVerseLongPress(v.verse, e), 500);
-                              const clear = () => clearTimeout(timer);
-                              e.currentTarget.addEventListener("touchend", clear, { once: true });
-                              e.currentTarget.addEventListener("touchmove", clear, { once: true });
-                            }}
-                          >
-                              <sup
-                                className={`verse-number text-[0.7em] align-super mr-1 font-semibold text-primary ${hasNote ? "!text-primary" : ""} ${fav ? "!text-destructive" : ""} ${pNote ? "!text-accent" : ""}`}
-                              >
-                              {v.verse}{fav && "♥"}
-                            </sup>
-                            <span className={speechClass}>{v.text}</span>
-                            {showCrossRefs && hasCrossRef && (
-                              <CrossReferenceLink
-                                bookId={currentBook}
-                                chapter={currentChapter}
-                                verse={v.verse}
-                              />
-                            )}
-                          </span>
-                        </span>
-                      );
-                    })}
-                  {verses.length === 0 && (
-                    <p className="text-center text-foreground font-sans text-sm">
-                      Nenhum versículo encontrado.
-                    </p>
-                  )}
-                </div>
-              )}
 
               {/* Chapter navigation */}
               <div className="flex items-center justify-between mt-12 pt-6 border-t border-border">
@@ -827,6 +820,11 @@ const Reader = () => {
               </div>
               </div>
             </main>
+
+            <footer className="h-7 border-t border-border/60 bg-[#0078d4] text-white px-3 text-[11px] flex items-center justify-between">
+              <span>{book?.name} {currentChapter}</span>
+              <span>{verses.length} versículos • {selectedVerse ? `v.${selectedVerse} selecionado` : "pronto"}</span>
+            </footer>
             </div>
 
           <CommentsSidebar
