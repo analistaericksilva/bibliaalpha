@@ -461,9 +461,7 @@ const Reader = () => {
     const scheduleHide = () => {
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => {
-        if (getCurrentScrollTop() > 48) {
-          setIsHeaderVisible(false);
-        }
+        setIsHeaderVisible(false);
       }, 5000);
     };
 
