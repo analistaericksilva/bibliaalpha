@@ -491,32 +491,27 @@ const Reader = () => {
         <div className="flex-1 flex min-w-0 overflow-hidden">
           <div className="flex-1 flex flex-col min-w-0">
             {/* Compact top bar with sidebar trigger */}
-            <header className="reader-topbar sticky top-0 z-40 h-14 flex items-center px-4 md:px-6 gap-3">
-              <SidebarTrigger className="shrink-0 rounded-lg border border-border/60 bg-card/70 hover:bg-muted/80">
+            <header className="reader-topbar sticky top-0 z-40 h-12 flex items-center px-4 md:px-6 gap-3">
+              <SidebarTrigger className="shrink-0 rounded-lg hover:bg-muted">
                 <Menu className="w-4 h-4" />
               </SidebarTrigger>
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[10px] tracking-[0.28em] menu-strong uppercase">
-                    Leitura Bíblica
-                  </span>
-                  <span className="text-sm tracking-[0.09em] title-strong truncate">
-                    {book?.name}
-                  </span>
-                </div>
-                <span className="reader-chip shrink-0">Cap. {currentChapter}</span>
+              <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
+                <span className="text-sm font-medium text-foreground truncate">
+                  {book?.name}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {currentChapter}
+                </span>
               </div>
-              <div className="ml-auto flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <button 
                   onClick={() => setShowRightPanel(!showRightPanel)}
                   className={`reader-icon-button ${showRightPanel ? "bg-muted text-foreground" : ""}`}
-                  aria-label="Comentários"
                   title="Comentários"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </button>
                 <ReaderSettingsBar />
-                <div className="w-px h-6 bg-border/70 mx-0.5" />
                 <button onClick={() => navigateChapter(-1)} className="reader-icon-button" aria-label="Capítulo anterior">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
