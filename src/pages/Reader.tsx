@@ -456,33 +456,60 @@ const Reader = () => {
 
     const container = readingContainerRef.current;
     let hideTimer: number | undefined;
+    let lastScrollTop = getCurrentScrollTop();
 
-    const onReaderInteraction = () => {
-      setIsHeaderVisible(true);
+    const scheduleHide = () => {
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => {
-        if (getCurrentScrollTop() > 36) {
+        if (getCurrentScrollTop() > 48) {
           setIsHeaderVisible(false);
         }
       }, 5000);
     };
 
-    onReaderInteraction();
+    const revealHeader = () => {
+      setIsHeaderVisible(true);
+      scheduleHide();
+    };
+
+    const onScroll = () => {
+      const currentScrollTop = getCurrentScrollTop();
+      if (currentScrollTop < lastScrollTop) {
+        setIsHeaderVisible(true);
+      } else {
+        revealHeader();
+      }
+      lastScrollTop = currentScrollTop;
+      scheduleHide();
+    };
+
+    revealHeader();
 
     const useContainer = container && isContainerScrollable();
     if (useContainer) {
-      container.addEventListener("scroll", onReaderInteraction, { passive: true });
+      container.addEventListener("scroll", onScroll, { passive: true });
     } else {
-      window.addEventListener("scroll", onReaderInteraction, { passive: true });
+      window.addEventListener("scroll", onScroll, { passive: true });
     }
+
+    const interactionEvents: Array<keyof WindowEventMap> = ["mousemove", "touchstart", "pointerdown", "keydown", "wheel"];
+
+    interactionEvents.forEach((eventName) => {
+      const passive = eventName !== "keydown";
+      window.addEventListener(eventName, revealHeader, { passive });
+    });
 
     return () => {
       window.clearTimeout(hideTimer);
       if (useContainer) {
-        container.removeEventListener("scroll", onReaderInteraction);
+        container.removeEventListener("scroll", onScroll);
       } else {
-        window.removeEventListener("scroll", onReaderInteraction);
+        window.removeEventListener("scroll", onScroll);
       }
+
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, revealHeader);
+      });
     };
   }, [showHeaderFooter, currentBook, currentChapter, getCurrentScrollTop, isContainerScrollable]);
 
@@ -772,10 +799,10 @@ const Reader = () => {
           <div className="flex-1 flex flex-col min-w-0">
             <header
               className={cn(
-                "sticky top-0 z-50 overflow-hidden transition-all duration-300",
+                "sticky top-0 z-50 overflow-hidden transition-all duration-500 ease-out",
                 showHeaderFooter && isHeaderVisible
-                  ? "max-h-[320px] px-3 pt-2 pb-2 bg-background/92 backdrop-blur-xl border-b border-border/60 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] opacity-100"
-                  : "max-h-0 px-3 pt-0 pb-0 border-b-0 bg-transparent shadow-none opacity-0 pointer-events-none"
+                  ? "max-h-[260px] px-2 sm:px-3 pt-1.5 pb-1.5 bg-background/88 backdrop-blur-md border-b border-border/55 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] opacity-100 translate-y-0"
+                  : "max-h-0 px-2 sm:px-3 pt-0 pb-0 border-b-0 bg-transparent shadow-none opacity-0 -translate-y-2 pointer-events-none"
               )}
             >
               <div className="rounded-2xl border border-border/70 bg-card/85 shadow-sm browseros-header-shell">
@@ -883,12 +910,12 @@ const Reader = () => {
             <main ref={readingContainerRef} className="flex-1 overflow-y-auto">
               <div
                 className={cn(
-                  "mx-auto w-full px-2 sm:px-4 md:px-8 lg:px-10 pt-6 sm:pt-8 pb-24 transition-all duration-300",
+                  "mx-auto w-full px-3 sm:px-5 md:px-8 lg:px-12 xl:px-14 pt-6 sm:pt-8 pb-24 transition-all duration-300",
                   usageTemplate === "focus"
-                    ? "max-w-[1120px]"
+                    ? "max-w-[980px]"
                     : usageTemplate === "study"
-                      ? "max-w-[1540px]"
-                      : "max-w-[1420px]",
+                      ? "max-w-[1240px]"
+                      : "max-w-[1100px]",
                 )}
               >
               {/* Back button */}
@@ -944,7 +971,7 @@ const Reader = () => {
                   )}
 
                   {viewMode === "paragraph" ? (
-                    <article className="reader-main-paper browseros-reader-card p-4 sm:p-5 md:p-8" style={{ fontSize: `${fontSize}px` }}>
+                    <article className="reader-main-paper browseros-reader-card p-5 sm:p-6 md:p-10" style={{ fontSize: `${fontSize}px` }}>
                       <div className="reader-content reader-content-flow text-reader-black select-text">
                         {verses.map((v) => {
                           const speechClass = jesusSpeechVerses.has(v.verse)
@@ -992,7 +1019,7 @@ const Reader = () => {
                       </div>
                     </article>
                   ) : (
-                    <div className="space-y-0.5" style={{ fontSize: `${fontSize}px` }}>
+                    <div className="space-y-1.5 sm:space-y-2" style={{ fontSize: `${fontSize}px` }}>
                       {verses.map((v) => {
                         const speechClass = jesusSpeechVerses.has(v.verse)
                           ? "text-jesus"
