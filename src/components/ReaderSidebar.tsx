@@ -91,8 +91,8 @@ const ReaderSidebar = ({
   ].filter(Boolean) as { title: string; icon: any; onClick: () => void }[];
 
   return (
-    <Sidebar variant="floating" collapsible="icon" className="border-r-0">
-      <SidebarHeader className="p-3.5 border-b border-sidebar-border/60 bg-sidebar/90 backdrop-blur">
+    <Sidebar variant="floating" collapsible="icon" className="border-r-0 manus-sidebar">
+      <SidebarHeader className="p-4 border-b border-border/40 bg-background/40 backdrop-blur-xl">
         <div className="flex items-center gap-2.5 overflow-hidden">
           <img src={logoSrc} alt="Bíblia Alpha" className="w-8 h-8 shrink-0 drop-shadow-md" width={32} height={32} />
           {!collapsed && (
@@ -110,14 +110,18 @@ const ReaderSidebar = ({
 
       <SidebarContent className="px-2 py-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] lg:text-[11px] tracking-[0.16em] uppercase text-sidebar-foreground font-bold">Leitura</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-bold px-2 mb-2">Leitura</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {readingItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton onClick={item.onClick} tooltip={item.title} className="rounded-lg menu-strong data-[active=true]:bg-sidebar-accent/80 hover:bg-sidebar-accent/80">
-                    <item.icon className="h-4 w-4" />
-                    {!collapsed && <span className="menu-strong text-[13px] lg:text-[14px]">{item.title}</span>}
+                  <SidebarMenuButton 
+                    onClick={item.onClick} 
+                    tooltip={item.title} 
+                    className="rounded-xl px-3 py-2.5 h-auto transition-all duration-200 hover:bg-primary/5 hover:text-primary active:scale-95"
+                  >
+                    <item.icon className="h-4.5 w-4.5 stroke-[1.5]" />
+                    {!collapsed && <span className="font-medium text-[14px] ml-2">{item.title}</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -126,14 +130,18 @@ const ReaderSidebar = ({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] lg:text-[11px] tracking-[0.16em] uppercase text-sidebar-foreground font-bold">Estudo</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-bold px-2 mb-2">Estudo</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {studyItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton onClick={item.onClick} tooltip={item.title} className="rounded-lg menu-strong data-[active=true]:bg-sidebar-accent/80 hover:bg-sidebar-accent/80">
-                    <item.icon className="h-4 w-4" />
-                    {!collapsed && <span className="menu-strong text-[13px] lg:text-[14px]">{item.title}</span>}
+                  <SidebarMenuButton 
+                    onClick={item.onClick} 
+                    tooltip={item.title} 
+                    className="rounded-xl px-3 py-2.5 h-auto transition-all duration-200 hover:bg-primary/5 hover:text-primary active:scale-95"
+                  >
+                    <item.icon className="h-4.5 w-4.5 stroke-[1.5]" />
+                    {!collapsed && <span className="font-medium text-[14px] ml-2">{item.title}</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

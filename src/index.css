@@ -76,6 +76,7 @@
 
     --font-serif: 'EB Garamond', Georgia, serif;
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-manus: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   .dark {
@@ -232,6 +233,31 @@
   .reading-ai sup {
     font-weight: 600;
     color: hsl(var(--primary));
+  }
+
+  /* Manus AI Chat Style */
+  .manus-chat-container {
+    @apply flex flex-col gap-4 p-4 max-w-4xl mx-auto;
+  }
+
+  .manus-chat-bubble {
+    @apply relative p-4 rounded-2xl bg-secondary/50 border border-border/50 backdrop-blur-sm transition-all duration-200 hover:border-primary/30;
+  }
+
+  .manus-chat-bubble.verse-active {
+    @apply border-primary/50 bg-primary/5 shadow-sm;
+  }
+
+  .manus-sidebar {
+    @apply bg-background/60 backdrop-blur-xl border-r border-border/40;
+  }
+
+  .manus-app-card {
+    @apply p-4 rounded-xl border border-border/50 bg-card hover:bg-accent/50 transition-all cursor-pointer flex items-center gap-3;
+  }
+
+  .manus-reference {
+    @apply text-primary font-medium underline underline-offset-4 decoration-primary/30 hover:decoration-primary cursor-pointer transition-all;
   }
 
   .text-ink {

@@ -30,6 +30,7 @@ import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
 import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, AlignLeft, List, Database } from "lucide-react";
 
 import CrossReferenceLink from "@/components/CrossReferenceLink";
+import BibleApplications from "@/components/BibleApplications";
 const MedievalTheologiansPanel = lazy(() => import("@/components/MedievalTheologiansPanel"));
 const NotebookPanel = lazy(() => import("@/components/NotebookPanel"));
 const InterlinearView = lazy(() => import("@/components/InterlinearView"));
@@ -378,6 +379,16 @@ const Reader = () => {
 
   // TheWord-style keyboard shortcuts
   useEffect(() => {
+    const handleNavigate = (e: any) => {
+      const { bookId, chapter, verse } = e.detail;
+      goToChapter(bookId, chapter, verse);
+    };
+
+    window.addEventListener("navigate-to-verse", handleNavigate);
+    return () => window.removeEventListener("navigate-to-verse", handleNavigate);
+  }, [goToChapter]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
@@ -599,7 +610,7 @@ const Reader = () => {
   return (
     <SidebarProvider>
       <div className="reader-shell min-h-screen flex w-full text-foreground">
-        <QuickAccessToolbar
+        <ReaderSidebar
           onToggleSearch={() => setShowSearch(!showSearch)}
           onToggleBookSelector={() => setShowBooks(!showBooks)}
           onToggleNotes={() => { setSelectedVerse(null); setShowNotes((p) => !p); }}
@@ -610,11 +621,9 @@ const Reader = () => {
           onToggleReset={() => openUserPanel("data")}
           onToggleMap={() => setShowMap(!showMap)}
           onShare={handleShareChapter}
-          
           onToggleLexicon={() => setShowLexicon(!showLexicon)}
           onTogglePeople={() => setShowPeople(!showPeople)}
           onToggleNotepad={() => setShowNotepad(!showNotepad)}
-          onToggleCompareMode={() => setShowCompareMode(!showCompareMode)}
         />
 
         <div className="flex-1 flex min-w-0 overflow-hidden">
@@ -679,51 +688,79 @@ const Reader = () => {
 
               <div className="mt-6" />
 
-              {/* Verses */}
+              {/* Verses - Chat Layout Style */}
               {loading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                 </div>
-              ) : viewMode === "verse" ? (
-                <div className="reader-content reading-ai space-y-1" style={{ fontSize: `${fontSize}px` }}>
+              ) : (
+                <div className="manus-chat-container font-manus" style={{ fontSize: `${fontSize}px` }}>
                   {verses.map((v) => {
                     const speechClass = jesusSpeechVerses.has(v.verse)
                       ? "text-jesus"
                       : getSpeechClass(v.text, currentBook);
                     const hasNote = noteVerses.has(v.verse);
                     const hasCrossRef = crossRefVerses.has(v.verse);
-                    const shouldShowInlineNotes = hasNote || hasCrossRef || selectedVerse === v.verse;
                     const hlColor = getHighlightColor(v.verse);
                     const fav = isFavorite(v.verse);
                     const pNote = hasPersonalNote(v.verse);
                     const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
+                    const isActive = selectedVerse === v.verse;
 
                     return (
                       <div
                         key={v.verse}
                         ref={(el) => { verseRefs.current[v.verse] = el; }}
-                        className={`reader-verse cursor-pointer ${hlBg} rounded-md px-2 py-1.5 transition-colors flex gap-2 hover:bg-muted/50`}
+                        className={cn(
+                          "manus-chat-bubble cursor-pointer group",
+                          isActive && "verse-active",
+                          hlBg
+                        )}
                         onClick={() => handleVerseClick(v.verse)}
                         onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                       >
-                        <sup
-                          className={`verse-number text-[0.7em] align-super font-semibold text-primary shrink-0 ${hasNote ? "!text-primary" : ""} ${fav ? "!text-destructive" : ""} ${pNote ? "!text-accent" : ""}`}
-                        >
-                          {v.verse}{fav && "♥"}
-                        </sup>
-                        <span className={`flex-1 ${speechClass}`}>{v.text}</span>
-                        {showCrossRefs && hasCrossRef && (
-                          <CrossReferenceLink
-                            bookId={currentBook}
-                            chapter={currentChapter}
-                            verse={v.verse}
-                          />
-                        )}
+                        <div className="flex items-start gap-3">
+                          <div className="flex flex-col items-center gap-1 shrink-0 mt-1">
+                            <span className={cn(
+                              "text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors",
+                              isActive && "bg-primary text-white"
+                            )}>
+                              {v.verse}
+                            </span>
+                            {fav && <span className="text-[10px] text-destructive animate-pulse">♥</span>}
+                            {pNote && <span className="text-[10px] text-accent">✎</span>}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <p className={cn(
+                              "leading-relaxed tracking-tight text-foreground/90",
+                              speechClass,
+                              "selection:bg-primary/20"
+                            )}>
+                              {v.text}
+                            </p>
+                            
+                            {(showCrossRefs && hasCrossRef) && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                <CrossReferenceLink
+                                  bookId={currentBook}
+                                  chapter={currentChapter}
+                                  verse={v.verse}
+                                  className="manus-reference text-[11px]"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
+                  
+                  {/* Applications Section at the end of the chapter */}
+                  <BibleApplications />
                 </div>
-              ) : (
+              )}
+              
+              {false && viewMode === "parallel" && (
                 <div className="reader-content reading-ai" style={{ fontSize: `${fontSize}px` }}>
                   {verses.map((v) => {
                     const speechClass = jesusSpeechVerses.has(v.verse)
