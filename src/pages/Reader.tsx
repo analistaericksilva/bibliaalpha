@@ -523,81 +523,51 @@ const Reader = () => {
 
           {/* Reader content */}
           <main ref={readingContainerRef} className="flex-1 overflow-y-auto">
-            <div className="max-w-5xl mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-24 md:pb-28">
-              {/* Daily Verse */}
-              <div className="mb-6 md:mb-8 animate-fade-in">
-                <DailyVerse />
+            <div className="max-w-3xl mx-auto px-5 md:px-10 pt-8 pb-24">
+              {/* Back button */}
+              {navHistory.length > 0 && (
+                <button
+                  onClick={goBack}
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Voltar
+                </button>
+              )}
+
+              {/* Chapter title */}
+              <div className="mb-8">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {book?.testament === "old" ? "Antigo Testamento" : "Novo Testamento"}
+                </p>
+                <h1 className="text-2xl font-semibold text-foreground">
+                  {book?.name} <span className="text-muted-foreground font-normal">{currentChapter}</span>
+                </h1>
               </div>
 
-              <div className="reader-main-paper p-5 md:p-10 lg:p-12 mb-8 animate-fade-in">
-                {/* Back button */}
-                {navHistory.length > 0 && (
-                  <button
-                    onClick={goBack}
-                    className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.2em] font-sans text-primary/90 hover:text-primary transition-colors mb-5 rounded-full border border-primary/20 px-3 py-1"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    VOLTAR AO TEXTO ANTERIOR
-                  </button>
-                )}
+              {/* Chapter Navigation */}
+              <ChapterNavigation bookId={currentBook} chapter={currentChapter} onNavigate={goToChapter} />
 
-                <div className="text-center mb-10 md:mb-12">
-                  <p className="text-[9px] tracking-[0.42em] menu-strong mb-2 uppercase">
-                    {book?.testament === "old" ? "Antigo Testamento" : "Novo Testamento"}
-                  </p>
-                  <h1 className="text-3xl md:text-4xl lg:text-[2.85rem] title-strong mb-1">
-                    {book?.name}
-                  </h1>
-                  <p className="text-base md:text-lg comment-strong">Capítulo {currentChapter}</p>
+              <div className="mt-6" />
+
+              {/* Verses */}
+              {loading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                 </div>
-
-                {/* Legend */}
-                <div className="flex flex-wrap items-center justify-center gap-2.5 mb-7 text-[10px] font-sans tracking-wider">
-                  <span className="reader-pill">
-                    <span className="w-2 h-2 rounded-full bg-[hsl(var(--god))]" />
-                    <span>DEUS FALA</span>
-                  </span>
-                  <span className="reader-pill">
-                    <span className="w-2 h-2 rounded-full bg-[hsl(var(--jesus))]" />
-                    <span>JESUS FALA</span>
-                  </span>
-                  <span className="reader-pill">
-                    <span className="w-2 h-2 rounded-full bg-primary" />
-                    <span>NOTA DE ESTUDO</span>
-                  </span>
-                  <span className="reader-pill">
-                    <span className="w-2 h-2 rounded-full bg-destructive" />
-                    <span>FAVORITO</span>
-                  </span>
-                </div>
-
-                <p className="text-[10px] text-center menu-strong mb-6 tracking-wide">
-                  Pressione e segure um versículo para grifar, favoritar ou adicionar nota pessoal
-                </p>
-
-                {/* Chapter Navigation Strip */}
-                <ChapterNavigation bookId={currentBook} chapter={currentChapter} onNavigate={goToChapter} />
-
-                <div className="mt-6" />
-
-                {/* Verses */}
-                {loading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-5 h-5 animate-spin text-foreground" />
-                  </div>
-                ) : (
-                  <div className="reader-content reading-ai" style={{ fontSize: `${fontSize}px` }}>
-                    {verses.map((v) => {
-                      const speechClass = jesusSpeechVerses.has(v.verse)
-                        ? "text-jesus"
-                        : getSpeechClass(v.text, currentBook);
-                      const hasNote = noteVerses.has(v.verse);
-                      const hasCrossRef = crossRefVerses.has(v.verse);
-                      const shouldShowInlineNotes = hasNote || hasCrossRef || selectedVerse === v.verse;
-                      const hlColor = getHighlightColor(v.verse);
-                      const fav = isFavorite(v.verse);
-                      const pNote = hasPersonalNote(v.verse);
-                      const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
+              ) : (
+                <div className="reader-content reading-ai" style={{ fontSize: `${fontSize}px` }}>
+                  {verses.map((v) => {
+                    const speechClass = jesusSpeechVerses.has(v.verse)
+                      ? "text-jesus"
+                      : getSpeechClass(v.text, currentBook);
+                    const hasNote = noteVerses.has(v.verse);
+                    const hasCrossRef = crossRefVerses.has(v.verse);
+                    const shouldShowInlineNotes = hasNote || hasCrossRef || selectedVerse === v.verse;
+                    const hlColor = getHighlightColor(v.verse);
+                    const fav = isFavorite(v.verse);
+                    const pNote = hasPersonalNote(v.verse);
+                    const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
 
                         return (
                         <span key={v.verse}>
