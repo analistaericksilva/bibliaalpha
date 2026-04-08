@@ -23,8 +23,11 @@ import Notepad from "@/components/Notepad";
 import { useUserAnnotations } from "@/hooks/useUserAnnotations";
 import ReaderSettingsBar from "@/components/ReaderSettingsBar";
 import QuickAccessToolbar from "@/components/QuickAccessToolbar";
+import WordStyleLayout from "@/components/WordStyleLayout";
+import ModuleManager from "@/components/ModuleManager";
+import StrongNumberDisplay from "@/components/StrongNumberDisplay";
 import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
-import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, AlignLeft, List } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, AlignLeft, List, Database } from "lucide-react";
 
 const CrossRefsPanel = lazy(() => import("@/components/CrossRefsPanel"));
 const MedievalTheologiansPanel = lazy(() => import("@/components/MedievalTheologiansPanel"));
@@ -155,6 +158,7 @@ const Reader = () => {
   const [showNotepad, setShowNotepad] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(false);
   const [showCompareMode, setShowCompareMode] = useState(false);
+  const [showModuleManager, setShowModuleManager] = useState(false);
 
   const [showLexicon, setShowLexicon] = useState(false);
   const [showPeople, setShowPeople] = useState(false);
