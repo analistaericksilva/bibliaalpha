@@ -52,40 +52,40 @@ const CrossReferenceLink = ({ bookId, chapter, verse, className, children }: Cro
 
   // Função para navegar para a referência
   const navigateToRef = (ref: string) => {
-    // Parse ref como "Gn 1:1" ou "1:1"
-    const parts = ref.trim().split(/[\s:]+/);
-    if (parts.length >= 2) {
-      const bookAbbrev = parts[0];
-      const chapterVerse = parts[1];
-      
-      // Converter abreviação para ID do livro
-      const bookMap: Record<string, string> = {
-        "gn": "gn", "ex": "ex", "lv": "lv", "nm": "nm", "dt": "dt",
-        "js": "js", "jz": "jz", "1sm": "1sm", "2sm": "2sm",
-        "1rs": "1rs", "2rs": "2rs", "1cr": "1cr", "2cr": "2cr",
-        "ed": "ed", "ne": "ne", "et": "et", "sl": "sl", "pv": "pv",
-        "ec": "ec", "ct": "ct", "is": "is", "jr": "jr", "lm": "lm",
-        "ez": "ez", "dn": "dn", "os": "os", "jl": "jl", "am": "am",
-        "ob": "ob", "mq": "mq", "na": "na", "hc": "hc", "sf": "sf",
-        "ag": "ag", "zc": "zc", "ml": "ml",
-        "mt": "mt", "mc": "mc", "lc": "lc", "jo": "jo", "at": "at",
-        "rm": "rm", "1co": "1co", "2co": "2co", "gl": "gl", "ef": "ef",
-        "fp": "fp", "cl": "cl", "1ts": "1ts", "2ts": "2ts",
-        "1tm": "1tm", "2tm": "2tm", "tt": "tt", "fm": "fm",
-        "hb": "hb", "tg": "tg", "1pe": "1pe", "2pe": "2pe",
-        "1jo": "1jo", "2jo": "2jo", "3jo": "3jo", "jd": "jd", "ap": "ap",
-      };
+    const cleanRef = ref.trim();
+    const match = cleanRef.match(/^(\d?\s?[A-Za-zÀ-ú]+(?:\s+[A-Za-zÀ-ú]+)*)\s+(\d+)(?:[.:](\d+))?/);
+    if (!match) return;
 
-      const bookId = bookMap[bookAbbrev.toLowerCase()] || bookAbbrev;
-      const [ch, v] = chapterVerse.split(",").map(Number);
-      
-      // Dispara evento de navegação (será capturado pelo componente pai)
-      window.dispatchEvent(new CustomEvent("navigate-to-verse", {
-        detail: { bookId, chapter: ch, verse: v || 1 }
-      }));
-      
-      setIsOpen(false);
-    }
+    const bookRaw = match[1].replace(/\s+/g, "").toLowerCase();
+    const chapterNum = Number(match[2]);
+    const verseNum = match[3] ? Number(match[3]) : 1;
+
+    // Converter abreviação para ID do livro
+    const bookMap: Record<string, string> = {
+      "gn": "gn", "ex": "ex", "lv": "lv", "nm": "nm", "dt": "dt",
+      "js": "js", "jz": "jz", "1sm": "1sm", "2sm": "2sm",
+      "1rs": "1rs", "2rs": "2rs", "1cr": "1cr", "2cr": "2cr",
+      "ed": "ed", "ne": "ne", "et": "et", "sl": "sl", "pv": "pv",
+      "ec": "ec", "ct": "ct", "is": "is", "jr": "jr", "lm": "lm",
+      "ez": "ez", "dn": "dn", "os": "os", "jl": "jl", "am": "am",
+      "ob": "ob", "mq": "mq", "na": "na", "hc": "hc", "sf": "sf",
+      "ag": "ag", "zc": "zc", "ml": "ml",
+      "mt": "mt", "mc": "mc", "lc": "lc", "jo": "jo", "at": "at",
+      "rm": "rm", "1co": "1co", "2co": "2co", "gl": "gl", "ef": "ef",
+      "fp": "fp", "cl": "cl", "1ts": "1ts", "2ts": "2ts",
+      "1tm": "1tm", "2tm": "2tm", "tt": "tt", "fm": "fm",
+      "hb": "hb", "tg": "tg", "1pe": "1pe", "2pe": "2pe",
+      "1jo": "1jo", "2jo": "2jo", "3jo": "3jo", "jd": "jd", "ap": "ap",
+    };
+
+    const bookId = bookMap[bookRaw] || bookRaw;
+
+    // Dispara evento de navegação (será capturado pelo componente pai)
+    window.dispatchEvent(new CustomEvent("navigate-to-verse", {
+      detail: { bookId, chapter: chapterNum, verse: verseNum }
+    }));
+
+    setIsOpen(false);
   };
 
   // Formatar referência para exibição

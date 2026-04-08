@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { bibleBooks } from "@/data/bibleBooks";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import TranslatableText from "@/components/TranslatableText";
 
 interface StudyNote {
   id: string;
@@ -164,7 +165,7 @@ const InlineStudyNotes = ({
           (note.verse_end ? note.verse_end >= verse : note.verse_start === verse)
       );
 
-      const limitedComments = allNotes.slice(0, 2);
+      const limitedComments = allNotes;
 
       const refs = Array.from(
         new Set(
@@ -276,7 +277,14 @@ const InlineStudyNotes = ({
                     {sourceLabel ? ` · ${sourceLabel}` : ""}
                   </span>
                   <span className="block mt-1 text-[14px] leading-6 comment-strong">
-                    {expanded ? renderContentWithRefs(note.content, onNavigate) : shortText(note.content, 140)}
+                    {expanded ? (
+                      <TranslatableText
+                        text={note.content}
+                        renderText={(content) => renderContentWithRefs(content, onNavigate)}
+                      />
+                    ) : (
+                      shortText(note.content, 140)
+                    )}
                   </span>
                 </button>
               </span>
@@ -341,7 +349,12 @@ const InlineStudyNotes = ({
           {activeKeyword && (
             <span className="block mt-2 rounded-md bg-muted/40 border border-border/60 px-3 py-2 text-[12px] leading-6 text-foreground/85">
               <strong className="font-semibold text-foreground">{activeKeyword.term}</strong>
-              {activeKeyword.hebrew_greek ? ` (${activeKeyword.hebrew_greek})` : ""}: {shortText(activeKeyword.definition, 180)}
+              {activeKeyword.hebrew_greek ? ` (${activeKeyword.hebrew_greek})` : ""}:
+              <TranslatableText
+                text={shortText(activeKeyword.definition, 180)}
+                className="mt-1"
+                showOriginalToggle={false}
+              />
             </span>
           )}
         </span>

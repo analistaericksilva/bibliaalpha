@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { MessageSquare, X, BookOpenText, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { bibleBooks } from "@/data/bibleBooks";
 import { cn } from "@/lib/utils";
+import TranslatableText from "@/components/TranslatableText";
 
 interface StudyNote {
   id: string;
@@ -20,6 +22,85 @@ interface VerseCommentPopupProps {
   verse: number | null;
   onClose: () => void;
   onOpenAllNotes?: () => void;
+  onNavigate?: (bookId: string, chapter: number, verse?: number) => void;
+}
+
+const abbrevToId: Record<string, string> = {};
+const nameToId: Record<string, string> = {};
+
+bibleBooks.forEach((book) => {
+  abbrevToId[book.abbrev.toLowerCase()] = book.id;
+  nameToId[book.name.toLowerCase()] = book.id;
+  abbrevToId[book.id] = book.id;
+});
+
+function parseReference(refStr: string) {
+  const match = refStr
+    .trim()
+    .match(/^(\d?\s?[A-Za-zÀ-ú]+(?:\s+[A-Za-zÀ-ú]+)*)\s+(\d+)(?:[.:](\d+))?/);
+
+  if (!match) return null;
+
+  const rawBook = match[1].trim();
+  const chapter = Number(match[2]);
+  const verse = match[3] ? Number(match[3]) : undefined;
+
+  const compact = rawBook.replace(/\s+/g, "").toLowerCase();
+  const spaced = rawBook.toLowerCase();
+
+  const parsedBookId = abbrevToId[compact] || nameToId[spaced] || nameToId[compact];
+  if (!parsedBookId) return null;
+
+  return { bookId: parsedBookId, chapter, verse };
+}
+
+function renderContentWithRefs(
+  text: string,
+  onNavigate?: (bookId: string, chapter: number, verse?: number) => void
+) {
+  if (!onNavigate) return <span className="whitespace-pre-line">{text}</span>;
+
+  const refRegex = /((?:\d\s*)?[A-Za-zÀ-ú]{1,15}(?:\s+[A-Za-zÀ-ú]{1,15})*)\s+(\d+)[.:](\d+)(?:-(\d+))?/g;
+  const parts: JSX.Element[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = refRegex.exec(text)) !== null) {
+    const matchedText = match[0];
+    const parsed = parseReference(matchedText);
+
+    if (match.index > lastIndex) {
+      parts.push(<span key={`txt-${lastIndex}`}>{text.slice(lastIndex, match.index)}</span>);
+    }
+
+    if (parsed) {
+      parts.push(
+        <button
+          key={`ref-${match.index}`}
+          type="button"
+          onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
+          className="underline underline-offset-2 decoration-primary/40 hover:decoration-primary text-primary/90 hover:text-primary transition-colors"
+        >
+          {matchedText}
+        </button>
+      );
+    } else {
+      parts.push(<span key={`raw-ref-${match.index}`}>{matchedText}</span>);
+    }
+
+    lastIndex = match.index + matchedText.length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(<span key={`txt-${lastIndex}`}>{text.slice(lastIndex)}</span>);
+  }
+
+  return parts.length ? <span className="whitespace-pre-line">{parts}</span> : <span className="whitespace-pre-line">{text}</span>;
+}
+
+function shortText(text: string, maxChars = 260) {
+  const clean = text.replace(/\s+/g, " ").trim();
+  return clean.length > maxChars ? `${clean.slice(0, maxChars).trimEnd()}…` : clean;
 }
 
 const VerseCommentPopup = ({
@@ -29,9 +110,17 @@ const VerseCommentPopup = ({
   verse,
   onClose,
   onOpenAllNotes,
+  onNavigate,
 }: VerseCommentPopupProps) => {
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState<StudyNote[]>([]);
+  const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({});
+
+  const handleNavigate = (targetBookId: string, targetChapter: number, targetVerse?: number) => {
+    if (!onNavigate) return;
+    onNavigate(targetBookId, targetChapter, targetVerse);
+    onClose();
+  };
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -55,6 +144,7 @@ const VerseCommentPopup = ({
       });
 
       setNotes(relevant);
+      setExpandedNotes({});
       setLoading(false);
     };
 
@@ -73,7 +163,7 @@ const VerseCommentPopup = ({
   if (!open || !verse) return null;
 
   return (
-    <div className="fixed right-4 bottom-10 z-50 w-[min(480px,calc(100vw-2rem))] rounded-2xl border border-border/80 bg-card/95 backdrop-blur-xl shadow-2xl animate-fade-in-up">
+    <div className="fixed right-4 bottom-10 z-50 w-[min(520px,calc(100vw-2rem))] rounded-2xl border border-border/80 bg-card/95 backdrop-blur-xl shadow-2xl animate-fade-in-up">
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border/70">
         <MessageSquare className="w-4 h-4 text-primary" />
         <p className="text-sm font-semibold">Comentário • v.{verse}</p>
@@ -87,7 +177,7 @@ const VerseCommentPopup = ({
         </button>
       </div>
 
-      <div className="max-h-[55vh] overflow-y-auto px-3 py-3 space-y-3">
+      <div className="max-h-[80vh] overflow-y-auto px-3 py-3 space-y-3">
         {loading ? (
           <div className="py-8 flex items-center justify-center text-muted-foreground text-sm gap-2">
             <Loader2 className="w-4 h-4 animate-spin" /> Carregando comentário...
@@ -108,12 +198,36 @@ const VerseCommentPopup = ({
             <div key={source} className="rounded-xl border border-border/70 bg-background/70 p-3">
               <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-2">{source}</p>
               <div className="space-y-2">
-                {sourceNotes.map((note) => (
-                  <div key={note.id} className="text-sm leading-relaxed text-foreground/90">
-                    {note.title && <p className="font-semibold mb-1">{note.title}</p>}
-                    <p className={cn("whitespace-pre-line", note.content.length > 900 && "line-clamp-6")}>{note.content}</p>
-                  </div>
-                ))}
+                {sourceNotes.map((note) => {
+                  const isExpanded = Boolean(expandedNotes[note.id]);
+                  const canCollapse = note.content.length > 300;
+
+                  return (
+                    <div key={note.id} className="text-sm leading-relaxed text-foreground/90">
+                      {note.title && <p className="font-semibold mb-1">{note.title}</p>}
+
+                      {isExpanded || !canCollapse ? (
+                        <TranslatableText
+                          text={note.content}
+                          className="text-sm leading-relaxed"
+                          renderText={(content) => renderContentWithRefs(content, onNavigate ? handleNavigate : undefined)}
+                        />
+                      ) : (
+                        <p className={cn("whitespace-pre-line")}>{shortText(note.content)}</p>
+                      )}
+
+                      {canCollapse && (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedNotes((prev) => ({ ...prev, [note.id]: !isExpanded }))}
+                          className="mt-1 text-[11px] text-primary hover:underline"
+                        >
+                          {isExpanded ? "Recolher" : "Abrir completo"}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))

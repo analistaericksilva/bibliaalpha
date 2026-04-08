@@ -23,10 +23,9 @@ import Notepad from "@/components/Notepad";
 import { useUserAnnotations } from "@/hooks/useUserAnnotations";
 import ReaderSettingsBar from "@/components/ReaderSettingsBar";
 import QuickAccessToolbar from "@/components/QuickAccessToolbar";
-import ModuleManager from "@/components/ModuleManager";
 import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, FileText, Search, BookOpen, Library, Map, Users, PanelTopClose, Keyboard, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, FileText, Search, BookOpen, Library, Map, Users, Keyboard, Star } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -164,7 +163,6 @@ const Reader = () => {
   const [showNotepad, setShowNotepad] = useState(false);
   const [showVerseCommentPopup, setShowVerseCommentPopup] = useState(false);
   const [showCompareMode, setShowCompareMode] = useState(false);
-  const [showModuleManager, setShowModuleManager] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
 
   const [showLexicon, setShowLexicon] = useState(false);
@@ -684,7 +682,6 @@ const Reader = () => {
                     { label: "Busca", action: () => setShowSearch(true) },
                     { label: "Notas", action: () => setShowNotes(true) },
                     { label: "Dicionário", action: () => setShowDictionary(true) },
-                    { label: "Módulos", action: () => setShowModuleManager(true) },
                     { label: "Comandos", action: () => setCommandOpen(true) },
                   ].map((item) => (
                     <button
@@ -720,9 +717,6 @@ const Reader = () => {
                   </button>
                   <button onClick={() => setShowPeople(true)} className="reader-icon-button" title="Personagens" type="button">
                     <Users className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => setShowModuleManager(true)} className="reader-icon-button" title="Gerenciador de módulos" type="button">
-                    <PanelTopClose className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => {
@@ -901,6 +895,7 @@ const Reader = () => {
             bookId={currentBook}
             chapter={currentChapter}
             verse={selectedVerse}
+            onNavigate={goToChapter}
             onClose={() => setShowVerseCommentPopup(false)}
             onOpenAllNotes={() => {
               setShowVerseCommentPopup(false);
@@ -938,28 +933,6 @@ const Reader = () => {
       <LexiconPanel open={showLexicon} onClose={() => setShowLexicon(false)} />
       <PeoplePanel open={showPeople} onClose={() => setShowPeople(false)} />
       <Notepad open={showNotepad} onClose={() => setShowNotepad(false)} />
-
-      {showModuleManager && (
-        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm p-4 md:p-8 overflow-auto">
-          <div className="max-w-5xl mx-auto space-y-3">
-            <div className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-2">
-              <div>
-                <p className="text-sm font-semibold">Gerenciador de Módulos</p>
-                <p className="text-xs text-muted-foreground">Instale recursos para expandir sua biblioteca de estudo</p>
-              </div>
-              <button
-                type="button"
-                className="reader-icon-button"
-                onClick={() => setShowModuleManager(false)}
-                aria-label="Fechar gerenciador de módulos"
-              >
-                <ChevronRight className="w-4 h-4 rotate-180" />
-              </button>
-            </div>
-            <ModuleManager />
-          </div>
-        </div>
-      )}
 
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
         <CommandInput placeholder="Digite um comando ou painel..." />
@@ -1018,10 +991,6 @@ const Reader = () => {
             <CommandItem onSelect={() => { setShowNotepad(true); setCommandOpen(false); }}>
               <FileText className="mr-2 h-4 w-4" />
               Bloco de notas
-            </CommandItem>
-            <CommandItem onSelect={() => { setShowModuleManager(true); setCommandOpen(false); }}>
-              <PanelTopClose className="mr-2 h-4 w-4" />
-              Gerenciador de módulos
             </CommandItem>
           </CommandGroup>
         </CommandList>

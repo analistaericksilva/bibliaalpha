@@ -4,6 +4,7 @@ import { X, Loader2, Link2, BookOpen, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { bibleBooks } from "@/data/bibleBooks";
+import TranslatableText from "@/components/TranslatableText";
 
 // --- Types ---
 
@@ -65,27 +66,25 @@ function renderContentWithRefs(
 ) {
   if (!onNavigate) return <span className="font-serif">{text}</span>;
 
-  const refRegex = /(\d?\s?[A-ZÀ-Ú][a-zà-ú]+)\s+(\d+)[.:](\d+)(?:-(\d+))?/g;
+  const refRegex = /((?:\d\s*)?[A-Za-zÀ-ú]{1,15}(?:\s+[A-Za-zÀ-ú]{1,15})*)\s+(\d+)[.:](\d+)(?:-(\d+))?/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
   while ((match = refRegex.exec(text)) !== null) {
     const fullMatch = match[0];
-    const abbrev = match[1].replace(/\s/g, "").toLowerCase();
-    const bookId = abbrevToId[abbrev] || nameToId[abbrev];
+    const parsed = parseReference(fullMatch);
 
-    if (bookId) {
+    if (parsed) {
       if (match.index > lastIndex) {
         parts.push(<span key={`t${lastIndex}`} className="font-serif">{text.slice(lastIndex, match.index)}</span>);
       }
-      const ch = parseInt(match[2], 10);
-      const vs = parseInt(match[3], 10);
+
       parts.push(
         <button
           key={`r${match.index}`}
           className="text-primary hover:underline cursor-pointer font-serif"
-          onClick={() => onNavigate(bookId, ch, vs)}
+          onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
         >
           {fullMatch}
         </button>
@@ -330,9 +329,10 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                           {entry.hebrew_greek}
                         </p>
                       )}
-                      <p className="text-[13px] comment-strong leading-[1.8]">
-                        {entry.definition}
-                      </p>
+                      <TranslatableText
+                        text={entry.definition}
+                        className="text-[13px] comment-strong leading-[1.8]"
+                      />
                       {/* Render references as clickable */}
                       {entry.references_list && Array.isArray(entry.references_list) && entry.references_list.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -405,9 +405,11 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                                 </span>
                               )}
                             </div>
-                            <div className="text-[13px] comment-strong leading-[1.8] whitespace-pre-line">
-                              {renderContentWithRefs(note.content, onNavigate ? handleNavigate : undefined)}
-                            </div>
+                            <TranslatableText
+                              text={note.content}
+                              className="text-[13px] comment-strong leading-[1.8] whitespace-pre-line"
+                              renderText={(content) => renderContentWithRefs(content, onNavigate ? handleNavigate : undefined)}
+                            />
                           </div>
                         ))}
                       </div>
@@ -453,9 +455,11 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
                               )}
                             </div>
                           </div>
-                          <div className="text-[13px] comment-strong leading-[1.8] whitespace-pre-line">
-                            {renderContentWithRefs(note.content, onNavigate ? handleNavigate : undefined)}
-                          </div>
+                          <TranslatableText
+                            text={note.content}
+                            className="text-[13px] comment-strong leading-[1.8] whitespace-pre-line"
+                            renderText={(content) => renderContentWithRefs(content, onNavigate ? handleNavigate : undefined)}
+                          />
                         </div>
                       ))}
                     </div>
