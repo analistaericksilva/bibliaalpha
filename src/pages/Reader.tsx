@@ -452,40 +452,59 @@ const Reader = () => {
   useEffect(() => {
     const container = readingContainerRef.current;
     let hideTimer: number | undefined;
-    let lastScrollTop = 0;
-    let hasScrolledDown = false;
+    let lastScrollTop = getCurrentScrollTop();
 
-    const scheduleHide = () => {
+    const inactivityDelayMs = 5000;
+    const readingThreshold = 96;
+
+    const clearHideTimer = () => {
       window.clearTimeout(hideTimer);
-      if (hasScrolledDown) {
-        hideTimer = window.setTimeout(() => {
-          setIsHeaderVisible(false);
-          setIsFooterVisible(false);
-        }, 5000);
-      }
     };
+
+    const isInReadingZone = () => getCurrentScrollTop() > readingThreshold;
 
     const revealHeaderAndFooter = () => {
       setIsHeaderVisible(true);
       setIsFooterVisible(true);
-      hasScrolledDown = false;
+    };
+
+    const scheduleHide = () => {
+      clearHideTimer();
+
+      if (!isInReadingZone()) {
+        return;
+      }
+
+      hideTimer = window.setTimeout(() => {
+        if (isInReadingZone()) {
+          setIsHeaderVisible(false);
+          setIsFooterVisible(false);
+        }
+      }, inactivityDelayMs);
+    };
+
+    const onUserInteraction = () => {
+      revealHeaderAndFooter();
       scheduleHide();
     };
 
     const onScroll = () => {
       const currentScrollTop = getCurrentScrollTop();
-      if (currentScrollTop < lastScrollTop) {
+      const isScrollingUp = currentScrollTop < lastScrollTop;
+      lastScrollTop = currentScrollTop;
+
+      if (isScrollingUp || currentScrollTop <= readingThreshold) {
         setIsHeaderVisible(true);
         setIsFooterVisible(true);
-        hasScrolledDown = false;
-      } else if (currentScrollTop > 100) {
-        hasScrolledDown = true;
+      } else {
+        revealHeaderAndFooter();
       }
-      lastScrollTop = currentScrollTop;
+
       scheduleHide();
     };
 
     revealHeaderAndFooter();
+    scheduleHide();
 
     const useContainer = container && isContainerScrollable();
     if (useContainer) {
@@ -498,11 +517,11 @@ const Reader = () => {
 
     interactionEvents.forEach((eventName) => {
       const passive = eventName !== "keydown";
-      window.addEventListener(eventName, revealHeaderAndFooter, { passive });
+      window.addEventListener(eventName, onUserInteraction, { passive });
     });
 
     return () => {
-      window.clearTimeout(hideTimer);
+      clearHideTimer();
       if (useContainer) {
         container.removeEventListener("scroll", onScroll);
       } else {
@@ -510,7 +529,7 @@ const Reader = () => {
       }
 
       interactionEvents.forEach((eventName) => {
-        window.removeEventListener(eventName, revealHeaderAndFooter);
+        window.removeEventListener(eventName, onUserInteraction);
       });
     };
   }, [getCurrentScrollTop, isContainerScrollable]);
@@ -801,7 +820,7 @@ const Reader = () => {
           <div className="flex-1 flex flex-col min-w-0">
             <header
               className={cn(
-                "sticky top-0 z-50 overflow-hidden transition-all duration-500 ease-out",
+                "sticky top-0 z-50 overflow-hidden transition-[max-height,opacity,transform,padding,border-color,background-color,box-shadow] duration-300 ease-out will-change-transform", 
                 isHeaderVisible
                   ? "max-h-[220px] px-2 sm:px-3 pt-1.5 pb-1.5 bg-background/88 backdrop-blur-md border-b border-border/55 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] opacity-100 translate-y-0"
                   : "max-h-0 px-2 sm:px-3 pt-0 pb-0 border-b-0 bg-transparent shadow-none opacity-0 -translate-y-2 pointer-events-none"
