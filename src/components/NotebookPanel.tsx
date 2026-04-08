@@ -214,17 +214,18 @@ const NotebookPanel = ({
         .eq("chapter", chapter)
         .order("verse_start");
 
-      let { data } = await query;
+      const { data: rawData } = await query;
+      let filtered = (rawData as unknown as UserAnnotation[]) || [];
 
       if (selectedVerse) {
-        data = (data as UserAnnotation[])?.filter(
+        filtered = filtered.filter(
           (a) =>
             a.verse_start <= selectedVerse &&
             (a.verse_end ? a.verse_end >= selectedVerse : a.verse_start === selectedVerse)
         );
       }
 
-      setAnnotations(data || []);
+      setAnnotations(filtered);
       setLoading(false);
     };
 
