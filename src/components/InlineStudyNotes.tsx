@@ -95,7 +95,7 @@ function renderContentWithRefs(
           key={`ref-${match.index}`}
           type="button"
           onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
-          className="underline underline-offset-2 decoration-primary/40 hover:decoration-primary text-primary/90 hover:text-primary transition-colors"
+          className="verse-reference-link"
         >
           {matchedText}
         </button>
@@ -310,7 +310,7 @@ const InlineStudyNotes = ({
                     key={`${ref}-${idx}`}
                     type="button"
                     onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
-                    className="underline underline-offset-2 decoration-primary/40 hover:decoration-primary text-primary/90 hover:text-primary transition-colors"
+                    className="verse-reference-link"
                   >
                     {ref}
                   </button>
@@ -352,8 +352,8 @@ const InlineStudyNotes = ({
           </span>
 
           {activeKeyword && (
-            <span className="block mt-2 rounded-md bg-muted/40 border border-border/60 px-3 py-2 text-[12px] leading-6 text-foreground/85">
-              <strong className="font-semibold text-foreground">{activeKeyword.term}</strong>
+            <span className="block mt-2 rounded-md bg-muted/40 border border-border/60 px-3 py-2 text-[12px] leading-6 text-comment-black">
+              <strong className="font-semibold text-reader-black">{activeKeyword.term}</strong>
               {activeKeyword.hebrew_greek ? ` (${activeKeyword.hebrew_greek})` : ""}:
               <TranslatableText
                 text={shortText(activeKeyword.definition, 180)}

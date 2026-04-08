@@ -79,7 +79,7 @@ function renderContentWithRefs(
           key={`ref-${match.index}`}
           type="button"
           onClick={() => onNavigate(parsed.bookId, parsed.chapter, parsed.verse)}
-          className="underline underline-offset-2 decoration-primary/40 hover:decoration-primary text-primary/90 hover:text-primary transition-colors"
+          className="verse-reference-link"
         >
           {matchedText}
         </button>
@@ -203,20 +203,20 @@ const VerseCommentPopup = ({
                   const canCollapse = note.content.length > 300;
 
                   return (
-                    <div key={note.id} className="text-sm leading-relaxed text-foreground/90">
+                    <div key={note.id} className="text-sm leading-relaxed text-comment-black">
                       {note.title && <p className="font-semibold mb-1">{note.title}</p>}
 
                       {isExpanded || !canCollapse ? (
                         <TranslatableText
                           text={note.content}
-                          className="text-sm leading-relaxed"
+                          className="text-sm leading-relaxed text-comment-black"
                           renderText={(content) => renderContentWithRefs(content, onNavigate ? handleNavigate : undefined)}
                           forceTranslate
                         />
                       ) : (
                         <TranslatableText
                           text={shortText(note.content)}
-                          className={cn("whitespace-pre-line")}
+                          className={cn("whitespace-pre-line text-comment-black")}
                           showOriginalToggle={false}
                           forceTranslate
                         />

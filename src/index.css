@@ -64,6 +64,8 @@
     --comfort-warm: 220 10% 98%;
     --ink: 220 13% 18%;
     --ink-light: 220 10% 36%;
+    --reader-text-black: 0 0% 6%;
+    --reader-verse-purple: 268 60% 27%;
 
     --sidebar-background: 220 14% 97%;
     --sidebar-foreground: 220 13% 18%;
@@ -114,6 +116,8 @@
     --comfort-warm: 220 12% 12%;
     --ink: 220 10% 90%;
     --ink-light: 220 10% 70%;
+    --reader-text-black: 220 10% 90%;
+    --reader-verse-purple: 270 72% 80%;
     
     --sidebar-background: 220 16% 8%;
     --sidebar-foreground: 220 10% 90%;
@@ -160,6 +164,8 @@
     --comfort-warm: 220 12% 99%;
     --ink: 220 13% 18%;
     --ink-light: 220 10% 36%;
+    --reader-text-black: 0 0% 6%;
+    --reader-verse-purple: 268 60% 27%;
 
     --sidebar-background: 220 14% 98%;
     --sidebar-foreground: 220 13% 18%;
@@ -220,7 +226,7 @@
   .comment-strong {
     font-family: var(--font-sans);
     font-weight: 400;
-    color: hsl(var(--foreground));
+    color: hsl(var(--reader-text-black));
   }
 
   .reading-ai {
@@ -228,12 +234,12 @@
     line-height: 1.8;
     letter-spacing: 0.005em;
     font-weight: 400;
-    color: hsl(var(--ink));
+    color: hsl(var(--reader-text-black));
   }
 
   .reading-ai sup {
     font-weight: 600;
-    color: hsl(var(--primary));
+    color: hsl(var(--reader-verse-purple));
   }
 
   /* Manus AI Chat Style */
@@ -281,6 +287,35 @@
   
   .text-ink-light {
     color: hsl(var(--ink-light));
+  }
+
+  .text-reader-black {
+    color: hsl(var(--reader-text-black));
+  }
+
+  .text-comment-black {
+    color: hsl(var(--reader-text-black));
+  }
+
+  .verse-text-lilac {
+    color: hsl(var(--reader-verse-purple));
+  }
+
+  .verse-reference-color {
+    color: hsl(var(--reader-verse-purple));
+  }
+
+  .verse-reference-link {
+    color: hsl(var(--reader-verse-purple));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: hsl(var(--reader-verse-purple) / 0.45);
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  }
+
+  .verse-reference-link:hover {
+    color: hsl(var(--reader-verse-purple));
+    text-decoration-color: hsl(var(--reader-verse-purple));
   }
 
   .bg-comfort {
@@ -411,7 +446,7 @@
   font-size: 1rem;
   line-height: 1.72;
   letter-spacing: 0.001em;
-  color: hsl(var(--ink));
+  color: hsl(var(--reader-text-black));
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
@@ -431,14 +466,14 @@
 
 .reader-inline-verse .verse-number {
   opacity: 1;
-  color: #2E1065;
+  color: hsl(var(--reader-verse-purple));
   transition: color 0.12s ease, opacity 0.12s ease;
 }
 
 .reader-inline-verse:hover .verse-number,
 .reader-inline-verse.is-active .verse-number {
   opacity: 1;
-  color: #1F0A44;
+  color: hsl(var(--reader-verse-purple));
 }
 
 .reader-content input,
@@ -454,7 +489,7 @@
   vertical-align: super;
   font-size: 0.58em;
   margin-right: 1px;
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--reader-verse-purple));
   font-family: var(--font-sans);
   font-weight: 600;
 }
@@ -649,7 +684,7 @@
 }
 
 .reader-template-study .verse-number {
-  color: #2E1065;
+  color: hsl(var(--reader-verse-purple));
   opacity: 1;
 }
 

@@ -150,7 +150,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
                           className="p-3 rounded-lg bg-muted/30 border border-border/50"
                         >
                           <div className="flex items-center gap-2 mb-1.5">
-                            <span className="text-[11px] font-medium text-muted-foreground">
+                            <span className="text-[11px] font-medium verse-reference-color">
                               v. {note.verse_start}{note.verse_end ? `–${note.verse_end}` : ""}
                             </span>
                             {note.title && (
@@ -161,7 +161,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
                           </div>
                           <TranslatableText
                             text={note.content.length > 300 ? note.content.slice(0, 300) + "..." : note.content}
-                            className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-line"
+                            className="text-[13px] text-comment-black leading-relaxed whitespace-pre-line"
                             showOriginalToggle={false}
                             forceTranslate
                           />

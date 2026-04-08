@@ -189,6 +189,7 @@ const Reader = () => {
   const [noteVerses, setNoteVerses] = useState<Set<number>>(new Set());
   const [crossRefVerses, setCrossRefVerses] = useState<Set<number>>(new Set());
   const [actionMenu, setActionMenu] = useState<{ verse: number; x: number; y: number } | null>(null);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [navHistory, setNavHistory] = useState<Array<{ bookId: string; chapter: number; verse?: number }>>([]);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
   const readingContainerRef = useRef<HTMLElement | null>(null);
@@ -446,6 +447,44 @@ const Reader = () => {
       }
     };
   }, [lastReadingKey, currentBook, currentChapter, persistLastReading, isContainerScrollable]);
+
+  useEffect(() => {
+    if (!showHeaderFooter) {
+      setIsHeaderVisible(false);
+      return;
+    }
+
+    const container = readingContainerRef.current;
+    let hideTimer: number | undefined;
+
+    const onReaderInteraction = () => {
+      setIsHeaderVisible(true);
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => {
+        if (getCurrentScrollTop() > 36) {
+          setIsHeaderVisible(false);
+        }
+      }, 5000);
+    };
+
+    onReaderInteraction();
+
+    const useContainer = container && isContainerScrollable();
+    if (useContainer) {
+      container.addEventListener("scroll", onReaderInteraction, { passive: true });
+    } else {
+      window.addEventListener("scroll", onReaderInteraction, { passive: true });
+    }
+
+    return () => {
+      window.clearTimeout(hideTimer);
+      if (useContainer) {
+        container.removeEventListener("scroll", onReaderInteraction);
+      } else {
+        window.removeEventListener("scroll", onReaderInteraction);
+      }
+    };
+  }, [showHeaderFooter, currentBook, currentChapter, getCurrentScrollTop, isContainerScrollable]);
 
   useEffect(() => {
     if (loading || verses.length === 0) return;
@@ -731,7 +770,14 @@ const Reader = () => {
             onToggleCompareMode={() => setShowCompareMode((p) => !p)}
           />
           <div className="flex-1 flex flex-col min-w-0">
-            <header className="sticky top-0 z-50 px-3 pt-2 pb-2 bg-background/92 backdrop-blur-xl border-b border-border/60 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)]">
+            <header
+              className={cn(
+                "sticky top-0 z-50 overflow-hidden transition-all duration-300",
+                showHeaderFooter && isHeaderVisible
+                  ? "max-h-[320px] px-3 pt-2 pb-2 bg-background/92 backdrop-blur-xl border-b border-border/60 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] opacity-100"
+                  : "max-h-0 px-3 pt-0 pb-0 border-b-0 bg-transparent shadow-none opacity-0 pointer-events-none"
+              )}
+            >
               <div className="rounded-2xl border border-border/70 bg-card/85 shadow-sm browseros-header-shell">
                 <div className="flex flex-wrap md:flex-nowrap items-center gap-2 px-2 md:px-3 py-2 border-b border-border/60">
                   <SidebarTrigger className="h-8 w-8 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground">
@@ -899,7 +945,7 @@ const Reader = () => {
 
                   {viewMode === "paragraph" ? (
                     <article className="reader-main-paper browseros-reader-card p-4 sm:p-5 md:p-8" style={{ fontSize: `${fontSize}px` }}>
-                      <div className="reader-content reader-content-flow text-foreground/95 select-text">
+                      <div className="reader-content reader-content-flow text-reader-black select-text">
                         {verses.map((v) => {
                           const speechClass = jesusSpeechVerses.has(v.verse)
                             ? "text-jesus"
@@ -921,13 +967,13 @@ const Reader = () => {
                               className={cn(
                                 "reader-inline-verse inline cursor-pointer transition-colors",
                                 hlBg,
-                                isActive && "is-active text-primary",
+                                isActive && "is-active text-[#3C166C]",
                               )}
                               onClick={() => handleVerseClick(v.verse)}
                               onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                             >
-                              <sup className={cn("verse-number text-[#2E1065] font-semibold", isActive && "text-[#1F0A44]")}>{v.verse}</sup>
-                              <span className={speechClass}>{v.text}</span>
+                              <sup className={cn("verse-number verse-reference-color font-semibold", isActive && "text-[#2F1257]")}>{v.verse}</sup>
+                              <span className={cn("verse-text-lilac", speechClass)}>{v.text}</span>
                               {isActive && showInlineNotes && hasNote && <span className="ml-1 text-[10px] text-accent">✎</span>}
                               {isActive && fav && <span className="ml-1 text-[10px] text-destructive">♥</span>}
                               {isActive && pNote && <span className="ml-1 text-[10px] text-primary">●</span>}
@@ -964,15 +1010,15 @@ const Reader = () => {
                             className={cn(
                               "reader-verse-line px-1 cursor-pointer transition-colors leading-[1.75]",
                               hlBg,
-                              isActive && "text-primary underline decoration-primary/40 underline-offset-[3px]",
+                              isActive && "text-[#3C166C] underline decoration-[#3C166C]/40 underline-offset-[3px]",
                             )}
                             onClick={() => handleVerseClick(v.verse)}
                             onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                             role="button"
                             tabIndex={0}
                           >
-                            <sup className="verse-number text-[#2E1065] font-semibold">{v.verse}</sup>
-                            <span className={speechClass}>{v.text}</span>
+                            <sup className="verse-number verse-reference-color font-semibold">{v.verse}</sup>
+                            <span className={cn("verse-text-lilac", speechClass)}>{v.text}</span>
                           </div>
                         );
                       })}
@@ -1053,10 +1099,12 @@ const Reader = () => {
               </div>
             </main>
 
-            <footer className="h-8 border-t border-border/60 bg-card/70 text-muted-foreground px-3 text-[11px] flex items-center justify-between backdrop-blur">
-              <span>{book?.name} {currentChapter}</span>
-              <span>{verses.length} versículos • {selectedVerse ? `v.${selectedVerse} selecionado` : "pronto"}</span>
-            </footer>
+            {showHeaderFooter && (
+              <footer className="h-8 border-t border-border/60 bg-card/70 text-muted-foreground px-3 text-[11px] flex items-center justify-between backdrop-blur">
+                <span>{book?.name} {currentChapter}</span>
+                <span>{verses.length} versículos • {selectedVerse ? `v.${selectedVerse} selecionado` : "pronto"}</span>
+              </footer>
+            )}
             </div>
 
           <VerseCommentPopup
