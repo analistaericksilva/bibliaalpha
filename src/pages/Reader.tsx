@@ -784,7 +784,7 @@ const Reader = () => {
 
                   {viewMode === "paragraph" ? (
                     <article className="reader-main-paper browseros-reader-card p-5 md:p-8" style={{ fontSize: `${fontSize}px` }}>
-                      <div className="reader-content leading-[2] tracking-[0.003em] text-foreground/90 select-text">
+                      <div className="reader-content reader-content-flow text-foreground/95 select-text">
                         {verses.map((v) => {
                           const speechClass = jesusSpeechVerses.has(v.verse)
                             ? "text-jesus"
@@ -804,19 +804,19 @@ const Reader = () => {
                                 verseRefs.current[v.verse] = el;
                               }}
                               className={cn(
-                                "inline cursor-pointer transition-colors",
+                                "reader-inline-verse inline cursor-pointer transition-colors",
                                 hlBg,
-                                isActive && "text-primary underline decoration-primary/40 underline-offset-[3px]",
+                                isActive && "is-active text-primary",
                               )}
                               onClick={() => handleVerseClick(v.verse)}
                               onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
                             >
                               <sup className={cn("verse-number", isActive && "text-primary")}>{v.verse}</sup>
                               <span className={speechClass}>{v.text}</span>
-                              {showInlineNotes && hasNote && <span className="ml-1 text-[10px] text-accent">✎</span>}
-                              {fav && <span className="ml-1 text-[10px] text-destructive">♥</span>}
-                              {pNote && <span className="ml-1 text-[10px] text-primary">●</span>}
-                              {showCrossRefs && hasCrossRef && (
+                              {isActive && showInlineNotes && hasNote && <span className="ml-1 text-[10px] text-accent">✎</span>}
+                              {isActive && fav && <span className="ml-1 text-[10px] text-destructive">♥</span>}
+                              {isActive && pNote && <span className="ml-1 text-[10px] text-primary">●</span>}
+                              {isActive && showCrossRefs && hasCrossRef && (
                                 <CrossReferenceLink
                                   bookId={currentBook}
                                   chapter={currentChapter}
@@ -831,7 +831,7 @@ const Reader = () => {
                       </div>
                     </article>
                   ) : (
-                    <div className="space-y-1.5" style={{ fontSize: `${fontSize}px` }}>
+                    <div className="space-y-0.5" style={{ fontSize: `${fontSize}px` }}>
                       {verses.map((v) => {
                         const speechClass = jesusSpeechVerses.has(v.verse)
                           ? "text-jesus"
@@ -847,7 +847,7 @@ const Reader = () => {
                               verseRefs.current[v.verse] = el;
                             }}
                             className={cn(
-                              "reader-verse-line px-1 cursor-pointer transition-colors",
+                              "reader-verse-line px-1 cursor-pointer transition-colors leading-[1.75]",
                               hlBg,
                               isActive && "text-primary underline decoration-primary/40 underline-offset-[3px]",
                             )}

@@ -384,12 +384,34 @@
 .reader-content {
   font-family: var(--font-sans);
   font-size: 1rem;
-  line-height: 1.85;
+  line-height: 1.72;
+  letter-spacing: 0.001em;
   color: hsl(var(--ink));
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+.reader-content-flow {
+  text-align: justify;
+  text-wrap: pretty;
+  hyphens: auto;
+}
+
+.reader-inline-verse {
+  border-radius: 0.25rem;
+  padding: 0.01rem 0.03rem;
+}
+
+.reader-inline-verse .verse-number {
+  opacity: 0.45;
+  transition: opacity 0.12s ease;
+}
+
+.reader-inline-verse:hover .verse-number,
+.reader-inline-verse.is-active .verse-number {
+  opacity: 0.95;
 }
 
 .reader-content input,
@@ -403,8 +425,8 @@
 /* Verse number */
 .verse-number {
   vertical-align: super;
-  font-size: 0.65em;
-  margin-right: 2px;
+  font-size: 0.58em;
+  margin-right: 1px;
   color: hsl(var(--muted-foreground));
   font-family: var(--font-sans);
   font-weight: 600;
@@ -478,14 +500,14 @@
 @media (min-width: 768px) {
   .reader-content {
     font-size: 1.05rem;
-    line-height: 1.9;
+    line-height: 1.78;
   }
 }
 
 @media (min-width: 1024px) {
   .reader-content {
     font-size: 1.1rem;
-    line-height: 2;
+    line-height: 1.82;
   }
 }
 
