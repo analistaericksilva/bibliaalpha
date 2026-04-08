@@ -13,7 +13,7 @@ import UserPanel from "@/components/UserPanel";
 import BibleMapPanel from "@/components/BibleMapPanel";
 import VerseActionMenu from "@/components/VerseActionMenu";
 import ChapterNavigation from "@/components/ChapterNavigation";
-import CommentsSidebar from "@/components/CommentsSidebar";
+import VerseCommentPopup from "@/components/VerseCommentPopup";
 
 import LexiconPanel from "@/components/LexiconPanel";
 import PeoplePanel from "@/components/PeoplePanel";
@@ -26,7 +26,7 @@ import QuickAccessToolbar from "@/components/QuickAccessToolbar";
 import ModuleManager from "@/components/ModuleManager";
 import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, FileText, Search, BookOpen, Library, Map, Users, Settings2, PanelTopClose, Keyboard } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, FileText, Search, BookOpen, Library, Map, Users, Settings2, PanelTopClose, Keyboard, Star } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -162,7 +162,7 @@ const Reader = () => {
   const [showUserPanel, setShowUserPanel] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showNotepad, setShowNotepad] = useState(false);
-  const [showRightPanel, setShowRightPanel] = useState(false);
+  const [showVerseCommentPopup, setShowVerseCommentPopup] = useState(false);
   const [showCompareMode, setShowCompareMode] = useState(false);
   const [showModuleManager, setShowModuleManager] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
@@ -322,6 +322,10 @@ const Reader = () => {
   useEffect(() => { fetchVerses(currentBook, currentChapter); }, [currentBook, currentChapter]);
 
   useEffect(() => {
+    setShowVerseCommentPopup(false);
+  }, [currentBook, currentChapter]);
+
+  useEffect(() => {
     if (!loading && verses.length > 0) recordReading();
   }, [currentBook, currentChapter, loading, verses.length, recordReading]);
 
@@ -392,19 +396,6 @@ const Reader = () => {
 
     return () => window.clearTimeout(timeout);
   }, [loading, verses.length, currentBook, currentChapter, isContainerScrollable]);
-
-  // TheWord-style keyboard shortcuts
-  useEffect(() => {
-    const handleNavigate = (e: Event) => {
-      const customEvent = e as CustomEvent<{ bookId: string; chapter: number; verse?: number }>;
-      const { bookId, chapter, verse } = customEvent.detail || {};
-      if (!bookId || !chapter) return;
-      goToChapter(bookId, chapter, verse);
-    };
-
-    window.addEventListener("navigate-to-verse", handleNavigate);
-    return () => window.removeEventListener("navigate-to-verse", handleNavigate);
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -537,6 +528,18 @@ const Reader = () => {
     }
   }, [currentBook, currentChapter, scrollReaderToTop]);
 
+  useEffect(() => {
+    const handleNavigate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ bookId: string; chapter: number; verse?: number }>;
+      const { bookId, chapter, verse } = customEvent.detail || {};
+      if (!bookId || !chapter) return;
+      goToChapter(bookId, chapter, verse);
+    };
+
+    window.addEventListener("navigate-to-verse", handleNavigate);
+    return () => window.removeEventListener("navigate-to-verse", handleNavigate);
+  }, [goToChapter]);
+
   const goBack = () => {
     if (navHistory.length === 0) return;
     const prev = navHistory[navHistory.length - 1];
@@ -572,14 +575,14 @@ const Reader = () => {
   };
 
   const handleVerseClick = (verseNum: number) => {
-    // Abre notas manualmente para versos sem referências pré-carregadas
     setLastFocusedVerse(verseNum);
     const newSelectedVerse = selectedVerse === verseNum ? null : verseNum;
     setSelectedVerse(newSelectedVerse);
-    
-    // Abre o painel lateral automaticamente ao selecionar um versículo
-    if (newSelectedVerse && !showRightPanel) {
-      setShowRightPanel(true);
+
+    if (newSelectedVerse) {
+      setShowVerseCommentPopup(true);
+    } else {
+      setShowVerseCommentPopup(false);
     }
   };
 
@@ -603,17 +606,6 @@ const Reader = () => {
   const openUserPanel = (tab: UserPanelTab) => {
     setUserPanelTab(tab);
     setShowUserPanel(true);
-  };
-
-  const toggleIntelligencePanel = () => {
-    if (!selectedVerse && !lastFocusedVerse) {
-      const firstVerse = verses[0]?.verse || null;
-      if (firstVerse) {
-        setSelectedVerse(firstVerse);
-        setLastFocusedVerse(firstVerse);
-      }
-    }
-    setShowRightPanel((prev) => !prev);
   };
 
   const handleShareChapter = async () => {
@@ -725,9 +717,14 @@ const Reader = () => {
                   <PanelTopClose className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setShowRightPanel(!showRightPanel)}
-                  className={cn("reader-icon-button", showRightPanel && "bg-muted text-foreground")}
-                  title="Comentários"
+                  onClick={() => {
+                    const targetVerse = selectedVerse ?? verses[0]?.verse ?? null;
+                    if (!targetVerse) return;
+                    setSelectedVerse(targetVerse);
+                    setShowVerseCommentPopup((prev) => !prev || targetVerse !== selectedVerse);
+                  }}
+                  className={cn("reader-icon-button", showVerseCommentPopup && "bg-muted text-foreground")}
+                  title="Comentário do versículo"
                   type="button"
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -775,79 +772,100 @@ const Reader = () => {
 
               <div className="mt-6" />
 
-              {/* Verses - Chat Layout Style */}
+              {/* Texto bíblico */}
               {loading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                 </div>
               ) : (
-                <div className="manus-chat-container font-manus" style={{ fontSize: `${fontSize}px` }}>
+                <div className="space-y-4">
                   {showCompareMode && (
-                    <div className="reader-surface p-3 text-xs text-muted-foreground mb-2">
-                      Modo comparar ativado. Em breve você poderá escolher uma segunda tradução paralela.
+                    <div className="reader-surface p-3 text-xs text-muted-foreground">
+                      Modo comparar ativado. A segunda tradução será liberada assim que houver múltiplas versões no banco.
                     </div>
                   )}
-                  {verses.map((v) => {
-                    const speechClass = jesusSpeechVerses.has(v.verse)
-                      ? "text-jesus"
-                      : getSpeechClass(v.text, currentBook);
-                    const hasNote = noteVerses.has(v.verse);
-                    const hasCrossRef = crossRefVerses.has(v.verse);
-                    const hlColor = getHighlightColor(v.verse);
-                    const fav = isFavorite(v.verse);
-                    const pNote = hasPersonalNote(v.verse);
-                    const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
-                    const isActive = selectedVerse === v.verse;
 
-                    return (
-                      <div
-                        key={v.verse}
-                        ref={(el) => { verseRefs.current[v.verse] = el; }}
-                        className={cn(
-                          "manus-chat-bubble cursor-pointer group",
-                          isActive && "verse-active",
-                          hlBg
-                        )}
-                        onClick={() => handleVerseClick(v.verse)}
-                        onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="flex flex-col items-center gap-1 shrink-0 mt-1">
-                            <span className={cn(
-                              "text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors",
-                              isActive && "bg-primary text-white"
-                            )}>
-                              {v.verse}
-                            </span>
-                            {fav && <span className="text-[10px] text-destructive animate-pulse">♥</span>}
-                            {pNote && <span className="text-[10px] text-accent">✎</span>}
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            <p className={cn(
-                              "leading-relaxed tracking-tight text-foreground/90",
-                              speechClass,
-                              "selection:bg-primary/20"
-                            )}>
-                              {v.text}
-                            </p>
-                            
-                            {(showCrossRefs && hasCrossRef) && (
-                              <div className="flex flex-wrap gap-2 mt-2">
+                  {viewMode === "paragraph" ? (
+                    <article className="reader-main-paper browseros-reader-card p-5 md:p-8" style={{ fontSize: `${fontSize}px` }}>
+                      <div className="reader-content leading-[2] tracking-[0.003em] text-foreground/90 select-text">
+                        {verses.map((v) => {
+                          const speechClass = jesusSpeechVerses.has(v.verse)
+                            ? "text-jesus"
+                            : getSpeechClass(v.text, currentBook);
+                          const hasNote = noteVerses.has(v.verse);
+                          const hasCrossRef = crossRefVerses.has(v.verse);
+                          const hlColor = getHighlightColor(v.verse);
+                          const fav = isFavorite(v.verse);
+                          const pNote = hasPersonalNote(v.verse);
+                          const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
+                          const isActive = selectedVerse === v.verse;
+
+                          return (
+                            <span
+                              key={v.verse}
+                              ref={(el) => {
+                                verseRefs.current[v.verse] = el;
+                              }}
+                              className={cn(
+                                "inline rounded-md px-1 py-[1px] cursor-pointer transition-colors",
+                                hlBg,
+                                isActive && "bg-primary/15 ring-1 ring-primary/40",
+                              )}
+                              onClick={() => handleVerseClick(v.verse)}
+                              onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
+                            >
+                              <sup className={cn("verse-number", isActive && "text-primary")}>{v.verse}</sup>
+                              <span className={speechClass}>{v.text}</span>
+                              {showInlineNotes && hasNote && <span className="ml-1 text-[10px] text-accent">✎</span>}
+                              {fav && <span className="ml-1 text-[10px] text-destructive">♥</span>}
+                              {pNote && <span className="ml-1 text-[10px] text-primary">●</span>}
+                              {showCrossRefs && hasCrossRef && (
                                 <CrossReferenceLink
                                   bookId={currentBook}
                                   chapter={currentChapter}
                                   verse={v.verse}
-                                  className="manus-reference text-[11px]"
+                                  className="inline-flex align-middle ml-1"
                                 />
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                              )}
+                              {" "}
+                            </span>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                  
-                  {/* Applications Section at the end of the chapter */}
+                    </article>
+                  ) : (
+                    <div className="space-y-2" style={{ fontSize: `${fontSize}px` }}>
+                      {verses.map((v) => {
+                        const speechClass = jesusSpeechVerses.has(v.verse)
+                          ? "text-jesus"
+                          : getSpeechClass(v.text, currentBook);
+                        const hlColor = getHighlightColor(v.verse);
+                        const hlBg = hlColor ? HIGHLIGHT_BG[hlColor] || "" : "";
+                        const isActive = selectedVerse === v.verse;
+
+                        return (
+                          <button
+                            key={v.verse}
+                            type="button"
+                            ref={(el) => {
+                              verseRefs.current[v.verse] = el;
+                            }}
+                            className={cn(
+                              "w-full text-left reader-main-paper p-3 transition-colors",
+                              hlBg,
+                              isActive && "ring-1 ring-primary/40",
+                            )}
+                            onClick={() => handleVerseClick(v.verse)}
+                            onContextMenu={(e) => handleVerseLongPress(v.verse, e)}
+                          >
+                            <sup className="verse-number">{v.verse}</sup>
+                            <span className={speechClass}>{v.text}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   <BibleApplications />
                 </div>
               )}
@@ -874,13 +892,16 @@ const Reader = () => {
             </footer>
             </div>
 
-          <CommentsSidebar
+          <VerseCommentPopup
+            open={showVerseCommentPopup}
             bookId={currentBook}
             chapter={currentChapter}
-            selectedVerse={selectedVerse}
-            onNavigate={goToChapter}
-            open={showRightPanel}
-            onClose={() => setShowRightPanel(false)}
+            verse={selectedVerse}
+            onClose={() => setShowVerseCommentPopup(false)}
+            onOpenAllNotes={() => {
+              setShowVerseCommentPopup(false);
+              setShowNotes(true);
+            }}
           />
         </div>
       </div>
@@ -966,6 +987,10 @@ const Reader = () => {
               <FileText className="mr-2 h-4 w-4" />
               Notas de estudo
             </CommandItem>
+            <CommandItem onSelect={() => { setShowDictionary(true); setCommandOpen(false); }}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              Dicionário bíblico
+            </CommandItem>
             <CommandItem onSelect={() => { setShowLexicon(true); setCommandOpen(false); }}>
               <Library className="mr-2 h-4 w-4" />
               Léxico Strong
@@ -977,6 +1002,18 @@ const Reader = () => {
             <CommandItem onSelect={() => { setShowPeople(true); setCommandOpen(false); }}>
               <Users className="mr-2 h-4 w-4" />
               Personagens bíblicos
+            </CommandItem>
+            <CommandItem onSelect={() => { openUserPanel("history"); setCommandOpen(false); }}>
+              <Keyboard className="mr-2 h-4 w-4" />
+              Histórico de leitura
+            </CommandItem>
+            <CommandItem onSelect={() => { openUserPanel("favorites"); setCommandOpen(false); }}>
+              <Star className="mr-2 h-4 w-4" />
+              Favoritos
+            </CommandItem>
+            <CommandItem onSelect={() => { setShowNotepad(true); setCommandOpen(false); }}>
+              <FileText className="mr-2 h-4 w-4" />
+              Bloco de notas
             </CommandItem>
             <CommandItem onSelect={() => { setShowModuleManager(true); setCommandOpen(false); }}>
               <PanelTopClose className="mr-2 h-4 w-4" />
