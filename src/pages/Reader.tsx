@@ -29,7 +29,7 @@ import StrongNumberDisplay from "@/components/StrongNumberDisplay";
 import { useReaderSettings } from "@/contexts/ReaderSettingsContext";
 import { ChevronLeft, ChevronRight, Loader2, ArrowLeft, Menu, MessageCircle, AlignLeft, List, Database } from "lucide-react";
 
-const CrossRefsPanel = lazy(() => import("@/components/CrossRefsPanel"));
+import CrossReferenceLink from "@/components/CrossReferenceLink";
 const MedievalTheologiansPanel = lazy(() => import("@/components/MedievalTheologiansPanel"));
 const NotebookPanel = lazy(() => import("@/components/NotebookPanel"));
 const InterlinearView = lazy(() => import("@/components/InterlinearView"));
@@ -713,13 +713,11 @@ const Reader = () => {
                         </sup>
                         <span className={`flex-1 ${speechClass}`}>{v.text}</span>
                         {showCrossRefs && hasCrossRef && (
-                          <button
-                            className="shrink-0 align-super text-[10px] font-sans underline underline-offset-2 decoration-primary/50 text-primary/90 hover:text-primary cursor-pointer transition-colors"
-                            onClick={(e) => { e.stopPropagation(); handleVerseClick(v.verse); }}
-                            aria-label={`Ver referências do versículo ${v.verse}`}
-                          >
-                            ↗
-                          </button>
+                          <CrossReferenceLink
+                            bookId={currentBook}
+                            chapter={currentChapter}
+                            verse={v.verse}
+                          />
                         )}
                       </div>
                     );
@@ -760,13 +758,11 @@ const Reader = () => {
                             </sup>
                             <span className={speechClass}>{v.text}</span>
                             {showCrossRefs && hasCrossRef && (
-                              <button
-                                className="ml-1 align-super text-[10px] font-sans underline underline-offset-2 decoration-primary/50 text-primary/90 hover:text-primary cursor-pointer transition-colors"
-                                onClick={() => handleVerseClick(v.verse)}
-                                aria-label={`Ver referências do versículo ${v.verse}`}
-                              >
-                                ↗
-                              </button>
+                              <CrossReferenceLink
+                                bookId={currentBook}
+                                chapter={currentChapter}
+                                verse={v.verse}
+                              />
                             )}
                           </span>
                         </span>
