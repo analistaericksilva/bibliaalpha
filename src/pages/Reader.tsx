@@ -340,7 +340,7 @@ const Reader = () => {
     const notesPromise = supabase.from("study_notes").select("verse_start").eq("book_id", bookId).eq("chapter", chapter);
     const crossRefsPromise = supabase.from("bible_cross_references").select("verse").eq("book_id", bookId).eq("chapter", chapter);
     const jesusSpeechPromise = ntBooks.has(bookId)
-      ? supabase.from("jesus_speech").select("verse").eq("book_id", bookId).eq("chapter", chapter)
+      ? (supabase as any).from("jesus_speech").select("verse").eq("book_id", bookId).eq("chapter", chapter)
       : Promise.resolve({ data: [] as Array<{ verse: number | null }>, error: null });
 
     let resolvedVerses: Verse[] = [];
