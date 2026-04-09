@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { 
   FileText, Edit, View, BookOpen, Search, Settings, HelpCircle, 
-  ChevronDown, ChevronRight, Plus, Save, Print, FolderOpen,
-  Undo, Redo, Cut, Copy, Paste, Bold, Italic, Underline, Highlight,
+  ChevronDown, ChevronRight, Plus, Save, Printer, FolderOpen,
+  Undo, Redo, Scissors, Copy, ClipboardPaste, Bold, Italic, Underline, Highlighter,
   AlignLeft, AlignCenter, AlignRight, List, ListOrdered,
   ArrowLeft, ArrowRight, ArrowUp, ArrowDown,
-  Home, End, PageForward, PageBack,
+  Home, Send, ChevronsRight, ChevronsLeft,
   Book, Bookmark, Star, Clock, History,
   Map, Users, FileSignature, Library, Database,
   MessageSquare, X, Menu, MoreHorizontal
@@ -47,7 +47,7 @@ const WordStyleLayout = ({
         { icon: FolderOpen, label: "Abrir", shortcut: "Ctrl+A" },
         { icon: Save, label: "Salvar", shortcut: "Ctrl+S" },
         { type: "separator" },
-        { icon: Print, label: "Imprimir", shortcut: "Ctrl+P" },
+        { icon: Printer, label: "Imprimir", shortcut: "Ctrl+P" },
         { type: "separator" },
         { label: "Sair", shortcut: "Alt+F4" },
       ]
@@ -59,9 +59,9 @@ const WordStyleLayout = ({
         { icon: Undo, label: "Desfazer", shortcut: "Ctrl+Z" },
         { icon: Redo, label: "Refazer", shortcut: "Ctrl+Y" },
         { type: "separator" },
-        { icon: Cut, label: "Recortar", shortcut: "Ctrl+X" },
+        { icon: Scissors, label: "Recortar", shortcut: "Ctrl+X" },
         { icon: Copy, label: "Copiar", shortcut: "Ctrl+C" },
-        { icon: Paste, label: "Colar", shortcut: "Ctrl+V" },
+        { icon: ClipboardPaste, label: "Colar", shortcut: "Ctrl+V" },
       ]
     },
     {

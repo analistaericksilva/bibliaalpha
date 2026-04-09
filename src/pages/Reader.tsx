@@ -340,7 +340,7 @@ const Reader = () => {
     const notesPromise = supabase.from("study_notes").select("verse_start").eq("book_id", bookId).eq("chapter", chapter);
     const crossRefsPromise = supabase.from("bible_cross_references").select("verse").eq("book_id", bookId).eq("chapter", chapter);
     const jesusSpeechPromise = ntBooks.has(bookId)
-      ? supabase.from("jesus_speech").select("verse").eq("book_id", bookId).eq("chapter", chapter)
+      ? (supabase as any).from("jesus_speech").select("verse").eq("book_id", bookId).eq("chapter", chapter)
       : Promise.resolve({ data: [] as Array<{ verse: number | null }>, error: null });
 
     let resolvedVerses: Verse[] = [];
@@ -659,31 +659,31 @@ const Reader = () => {
           readerSettings.setViewMode(viewMode === "paragraph" ? "verse" : "paragraph");
           break;
         case "s":
-          readerSettings.setShowStrongNumbers();
+          readerSettings.toggleShowStrongNumbers();
           break;
         case "m":
-          readerSettings.setShowMorphology();
+          readerSettings.toggleShowMorphology();
           break;
         case "x":
-          readerSettings.setShowCrossRefs();
+          readerSettings.toggleShowCrossRefs();
           break;
         case "n":
-          readerSettings.setShowInlineNotes();
+          readerSettings.toggleShowInlineNotes();
           break;
         case "l":
-          readerSettings.setShowCommentaryLinks();
+          readerSettings.setShowCommentaryLinks(!readerSettings.showCommentaryLinks);
           break;
         case "d":
-          readerSettings.setWordLookupEnabled();
+          readerSettings.toggleWordLookupEnabled();
           break;
         case "q":
-          readerSettings.setShowHeaderFooter();
+          readerSettings.setShowHeaderFooter(!readerSettings.showHeaderFooter);
           break;
         case "u":
-          readerSettings.setShowUserHighlights();
+          readerSettings.setShowUserHighlights(!readerSettings.showUserHighlights);
           break;
         case "f":
-          readerSettings.setShowFootnotes();
+          readerSettings.setShowFootnotes(!readerSettings.showFootnotes);
           break;
         case "j":
           // Palavra de Jesus - highlight especial
