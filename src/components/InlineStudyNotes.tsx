@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { bibleBooks } from "@/data/bibleBooks";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import TranslatableText from "@/components/TranslatableText";
+import { sanitizeStudyNotes, sanitizeNoteContents } from "@/lib/studyNotesFilter";
 
 interface StudyNote {
   id: string;
@@ -165,7 +166,7 @@ const InlineStudyNotes = ({
 
       if (!mounted) return;
 
-      const allNotes = ((notesRes.data as StudyNote[]) || []).filter(
+      const allNotes = sanitizeStudyNotes(((notesRes.data as StudyNote[]) || [])).filter(
         (note) =>
           note.verse_start <= verse &&
           (note.verse_end ? note.verse_end >= verse : note.verse_start === verse)
@@ -175,8 +176,8 @@ const InlineStudyNotes = ({
 
       const refs = Array.from(
         new Set(
-          ((concRes.data as Array<{ content: string }>) || [])
-            .flatMap((row) => row.content.split(";"))
+          sanitizeNoteContents(((concRes.data as Array<{ content: string }>) || []).map((row) => row.content))
+            .flatMap((text) => text.split(";"))
             .map((r) => r.trim())
             .filter(Boolean)
         )

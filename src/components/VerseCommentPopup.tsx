@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { bibleBooks } from "@/data/bibleBooks";
 import { cn } from "@/lib/utils";
 import TranslatableText from "@/components/TranslatableText";
+import { sanitizeStudyNotes } from "@/lib/studyNotesFilter";
 
 interface StudyNote {
   id: string;
@@ -143,7 +144,7 @@ const VerseCommentPopup = ({
         return startsBeforeOrOnVerse && endsAfterOrOnVerse;
       });
 
-      setNotes(relevant);
+      setNotes(sanitizeStudyNotes(relevant as StudyNote[]));
       setExpandedNotes({});
       setLoading(false);
     };

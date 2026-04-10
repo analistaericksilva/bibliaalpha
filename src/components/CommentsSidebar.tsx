@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown, ChevronRight, MessageCircle, X } from "lucide-react";
 import TranslatableText from "@/components/TranslatableText";
+import { sanitizeStudyNotes } from "@/lib/studyNotesFilter";
 
 interface CommentsSidebarProps {
   bookId: string;
@@ -36,7 +37,7 @@ const CommentsSidebar = ({ bookId, chapter, selectedVerse, onNavigate, open, onC
       .eq("book_id", bookId)
       .eq("chapter", chapter)
       .order("verse_start", { ascending: true });
-    if (data) setNotes(data);
+    if (data) setNotes(sanitizeStudyNotes(data as StudyNote[]));
     setLoading(false);
   }, [bookId, chapter]);
 

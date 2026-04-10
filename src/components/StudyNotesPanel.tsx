@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { bibleBooks } from "@/data/bibleBooks";
 import TranslatableText from "@/components/TranslatableText";
+import { sanitizeStudyNotes } from "@/lib/studyNotesFilter";
 
 // --- Tipos ---
 
@@ -222,8 +223,8 @@ const StudyNotesPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavi
         );
       }
 
-      setNotes(filteredNotes);
-      setConcordanceRefs((concRes.data as StudyNote[]) || []);
+      setNotes(sanitizeStudyNotes(filteredNotes as StudyNote[]));
+      setConcordanceRefs(sanitizeStudyNotes(((concRes.data as StudyNote[]) || [])));
 
       // Filtra verbetes do dicionário que combinam com a referência do versículo
       const allDict = (dictRes.data as DictEntry[]) || [];

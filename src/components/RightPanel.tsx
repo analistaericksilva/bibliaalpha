@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import TranslatableText from "@/components/TranslatableText";
+import { sanitizeStudyNotes } from "@/lib/studyNotesFilter";
 
 interface RightPanelProps {
   open: boolean;
@@ -92,7 +93,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
       const relevantNotes = data.filter(n => 
         n.verse_start <= verse && (n.verse_end === null || n.verse_end >= verse)
       );
-      setNotes(relevantNotes);
+      setNotes(sanitizeStudyNotes(relevantNotes as StudyNote[]));
     }
     setLoadingNotes(false);
   };
@@ -118,7 +119,7 @@ const RightPanel = ({ open, onClose, bookId, chapter, selectedVerse, onNavigate 
       .eq("book_id", bookId)
       .eq("chapter", chapter)
       .order("verse_start", { ascending: true });
-    if (data) setNotes(data);
+    if (data) setNotes(sanitizeStudyNotes(data as StudyNote[]));
     setLoadingNotes(false);
   };
 
