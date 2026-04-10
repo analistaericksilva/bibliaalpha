@@ -38,7 +38,7 @@ const tourSteps: TourStep[] = [
     icon: BookOpen,
     title: "Notas de Estudo",
     description:
-      "Cada versículo pode conter notas de grandes teólogos como Matthew Henry, Martinho Lutero, João Calvino, Charles Spurgeon e John Wesley. Toque no ícone de nota ao lado do versículo para acessá-las.",
+      "Cada versículo contém notas de grandes teólogos como Agostinho, João Crisóstomo, João Calvino, Martinho Lutero, Jonathan Edwards, Charles Spurgeon e outros. Toque no ícone de nota ao lado do versículo para acessá-las.",
     color: "text-amber-500",
   },
   {

@@ -39,10 +39,16 @@ bibleBooks.forEach((book) => {
 });
 
 const SOURCE_LABELS: Record<string, string> = {
-  matthew_henry: "Matthew Henry",
+  patristic: "Patrística",
+  reformed: "Reformado",
+  puritan: "Puritano",
   sermon: "Sermão",
   commentary: "Comentário",
   concordance: "Referência",
+  augustine: "Agostinho",
+  calvin: "João Calvino",
+  luther: "Martinho Lutero",
+  spurgeon: "Charles Spurgeon",
 };
 
 function parseReference(refStr: string) {

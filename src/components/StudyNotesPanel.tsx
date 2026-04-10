@@ -132,12 +132,21 @@ function renderClickableRefs(
 // --- Rótulos de fonte ---
 
 const SOURCE_LABELS: Record<string, { label: string; subtitle: string }> = {
-  matthew_henry: { label: "MATTHEW HENRY", subtitle: "Comentário Devocional" },
+  agostinho: { label: "AGOSTINHO", subtitle: "Pai da Igreja" },
+  crisostomo: { label: "JOÃO CRISÓSTOMO", subtitle: "Pai da Igreja" },
+  calvino: { label: "JOÃO CALVINO", subtitle: "Reformador" },
+  lutero: { label: "MARTINHO LUTERO", subtitle: "Reformador" },
+  spurgeon: { label: "CHARLES SPURGEON", subtitle: "Puritano" },
+  edwards: { label: "JONATHAN EDWARDS", subtitle: "Puritano" },
+  owen: { label: "JOHN OWEN", subtitle: "Puritano" },
+  baxter: { label: "RICHARD BAXTER", subtitle: "Puritano" },
+  watson: { label: "THOMAS WATSON", subtitle: "Puritano" },
+  flavel: { label: "JOHN FLAVEL", subtitle: "Puritano" },
   sermon: { label: "SERMÕES", subtitle: "Pregações Clássicas" },
   commentary: { label: "NOTA DE ESTUDO", subtitle: "Comentário" },
 };
 
-const TYPE_ORDER = ["matthew_henry", "sermon", "commentary"];
+const TYPE_ORDER = ["agostinho", "crisostomo", "calvino", "lutero", "spurgeon", "edwards", "owen", "baxter", "watson", "flavel", "sermon", "commentary"];
 
 // --- Auxiliar: compara referências do dicionário com o versículo atual ---
 
