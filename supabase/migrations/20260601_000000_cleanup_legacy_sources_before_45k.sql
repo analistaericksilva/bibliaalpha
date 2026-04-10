@@ -1,8 +1,5 @@
--- ============================================================================
--- BIBLIA ALPHA - PURGA FINAL DE FONTES LEGADAS
--- Data: 2026-04-09
--- Objetivo: manter somente autores curados de domínio público / uso permitido
--- ============================================================================
+-- LIMPEZA PRÉ-EXPANSÃO 45K
+-- Mantém somente autores curados e remove fontes legadas.
 
 BEGIN;
 
@@ -19,5 +16,3 @@ WHERE COALESCE(source, '') = ''
    );
 
 COMMIT;
-
-SELECT 'PURGA FINAL CONCLUIDA' AS status;

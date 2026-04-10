@@ -1,23 +1,27 @@
 -- ============================================================================
 -- BIBLIA ALPHA - UPGRADE TEOLÓGICO COMPLETO
 -- LOTE 1: ~1.000 comentários
--- Ações: Remoção de Matthew Henry + Comentários Patrísticos (Gênesis-Deuteronômio)
+-- Ações: Limpeza de fontes legadas + Comentários Patrísticos (Gênesis-Deuteronômio)
 -- Data: 2025-01-09
 -- ============================================================================
 
 BEGIN;
 
 -- =============================================================================
--- PASSO 1: REMOÇÃO COMPLETA DE MATTHEW HENRY
+-- PASSO 1: LIMPEZA DE FONTES LEGADAS
 -- =============================================================================
 
--- Remover todos os comentários de Matthew Henry da tabela study_notes
-DELETE FROM public.study_notes 
-WHERE source = 'Matthew Henry' 
-   OR content LIKE '%Matthew Henry%'
-   OR title = 'Matthew Henry'
-   OR source LIKE '%Henry%'
-   OR title LIKE '%Matthew%';
+DELETE FROM public.study_notes
+WHERE COALESCE(source, '') = ''
+   OR source NOT IN (
+    'Agostinho de Hipona','João Crisóstomo','Jerônimo','Orígenes','Atanásio','Gregório de Nissa','Basílio de Cesareia',
+    'Tomás de Aquino','Anselmo de Cantuária','Bernardo de Claraval',
+    'Martinho Lutero','João Calvino','Ulrich Zwingli','John Knox','Martin Bucer','Heinrich Bullinger','Theodore Beza',
+    'Jonathan Edwards','John Owen','Richard Baxter','Thomas Watson','John Flavel','Stephen Charnock','Thomas Goodwin','William Perkins','William Gurnall','Thomas Boston','John Brown of Haddington',
+    'John Wesley','George Whitefield','Charles Finney','Dwight L. Moody','R. A. Torrey',
+    'Charles Hodge','A. A. Hodge','Charles Spurgeon','Andrew Murray','E. M. Bounds','F. B. Meyer','Alexander Maclaren','B. B. Warfield','Louis Berkhof','Herman Bavinck',
+    'Albert Barnes','Adam Clarke','John Gill','Jamieson-Fausset-Brown','Joseph Benson','Octavius Winslow'
+   );
 
 -- =============================================================================
 -- PASSO 2: COMENTÁRIOS PATRÍSTICOS - PENTATEUCO (Gênesis a Deuteronômio)

@@ -1,18 +1,18 @@
--- MIGRATION: Remove ALL Matthew Henry Comments
+-- MIGRATION: Remove comentário legado e manter apenas autores curados
 -- Date: 2025-01-09
--- Purpose: Complete removal of Matthew Henry before adding Patristic comments
 
--- Delete ALL study notes by Matthew Henry
-DELETE FROM public.study_notes 
-WHERE source ILIKE '%Matthew Henry%' 
-   OR source ILIKE '%MH%'
-   OR source ILIKE '%Mathew Henry%'
-   OR source ILIKE '%M. Henry%';
+BEGIN;
 
--- Delete any references in metadata
-DELETE FROM public.study_notes 
-WHERE content ILIKE '%Matthew Henry%' 
-   AND source ILIKE '%Matthew Henry%';
+DELETE FROM public.study_notes
+WHERE COALESCE(source, '') = ''
+   OR source NOT IN (
+    'Agostinho de Hipona','João Crisóstomo','Jerônimo','Orígenes','Atanásio','Gregório de Nissa','Basílio de Cesareia',
+    'Tomás de Aquino','Anselmo de Cantuária','Bernardo de Claraval',
+    'Martinho Lutero','João Calvino','Ulrich Zwingli','John Knox','Martin Bucer','Heinrich Bullinger','Theodore Beza',
+    'Jonathan Edwards','John Owen','Richard Baxter','Thomas Watson','John Flavel','Stephen Charnock','Thomas Goodwin','William Perkins','William Gurnall','Thomas Boston','John Brown of Haddington',
+    'John Wesley','George Whitefield','Charles Finney','Dwight L. Moody','R. A. Torrey',
+    'Charles Hodge','A. A. Hodge','Charles Spurgeon','Andrew Murray','E. M. Bounds','F. B. Meyer','Alexander Maclaren','B. B. Warfield','Louis Berkhof','Herman Bavinck',
+    'Albert Barnes','Adam Clarke','John Gill','Jamieson-Fausset-Brown','Joseph Benson','Octavius Winslow'
+   );
 
--- Log the cleanup
-COMMENT ON TABLE public.study_notes IS 'Study notes - Matthew Henry removed on 2025-01-09, replaced with Patristic theologians';
+COMMIT;
