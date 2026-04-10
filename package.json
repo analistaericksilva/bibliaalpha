@@ -14,8 +14,7 @@
     "upgrade:resources:manifest": "node scripts/bible-intelligence/build-resource-manifest.mjs",
     "upgrade:crossrefs:prepare": "node scripts/bible-intelligence/import-crossrefs-json.mjs",
     "upgrade:macula:prepare": "node scripts/bible-intelligence/import-macula-tsv.mjs",
-    "upgrade:matthew-henry:prepare": "node scripts/bible-intelligence/import-matthew-henry-ccel.mjs",
-    "upgrade:bible-intelligence": "npm run upgrade:resources:manifest && npm run upgrade:crossrefs:prepare && npm run upgrade:macula:prepare && npm run upgrade:matthew-henry:prepare"
+    "upgrade:bible-intelligence": "npm run upgrade:resources:manifest && npm run upgrade:crossrefs:prepare && npm run upgrade:macula:prepare"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",

@@ -2,7 +2,7 @@
 
 -- LOTE 3: Livros Históricos e Poéticos
 
--- 45 novas notas - Calvino, Owen, Henry, Lutero
+-- 45 novas notas - Calvino, Owen, Lutero, Crisóstomo
 
 -- =====================================================
 
@@ -42,9 +42,9 @@ INSERT INTO public.study_notes (verse_id, note_type, content, author) VALUES
 
 ('ruth1:16', 'aplicacao', 'A verdadeira fé implica ruptura com o passado e lealdade incondicional a Deus.', 'João Calvino'),
 
-('ruth2:12', 'explicativa', 'Boaz reconhece a fé de Rute. A recompensa de Deus está sob Suas asas protetoras.', 'Matthew Henry'),
+('ruth2:12', 'explicativa', 'Boaz reconhece a fé de Rute. A recompensa de Deus está sob Suas asas protetoras.', 'João Calvino'),
 
-('ruth2:12', 'aplicacao', 'Deus recompensa quem busca refúgio Nele. Confie em Sua proteção.', 'Matthew Henry'),
+('ruth2:12', 'aplicacao', 'Deus recompensa quem busca refúgio Nele. Confie em Sua proteção.', 'João Calvino'),
 
 ('ruth3:18', 'explicativa', 'Naomi instrui Rute a esperar. Boaz agirá, pois é homem de honra. Confiança na providência.', 'Thomas Watson'),
 
@@ -90,9 +90,9 @@ INSERT INTO public.study_notes (verse_id, note_type, content, author) VALUES
 
 ('2samuel11:2', 'aplicacao', 'Mantenha-se ocupado em deveres. Ociosidade é oficina do diabo.', 'John Owen'),
 
-('2samuel12:13', 'explicativa', 'Davi confessa sem desculpa. A confissão verdadeira aceita culpa total; Deus perdoa.', 'Matthew Henry'),
+('2samuel12:13', 'explicativa', 'Davi confessa sem desculpa. A confissão verdadeira aceita culpa total; Deus perdoa.', 'João Calvino'),
 
-('2samuel12:13', 'aplicacao', 'Confesse seus pecados sem minimizar. Deus é fiel para perdoar.', 'Matthew Henry'),
+('2samuel12:13', 'aplicacao', 'Confesse seus pecados sem minimizar. Deus é fiel para perdoar.', 'João Calvino'),
 
 ('2samuel23:15', 'explicativa', 'Três valentes arriscam vida por água do poço de Belém. Sacrifício leal por Davi.', 'Martinho Lutero');
 
@@ -110,9 +110,9 @@ INSERT INTO public.study_notes (verse_id, note_type, content, author) VALUES
 
 ('1kings8:27', 'aplicacao', 'Não limite Deus a edifícios ou formas. Ele é infinitamente maior.', 'João Calvino'),
 
-('1kings17:6', 'explicativa', 'Corvos alimentam Elias. Deus usa meios extraordinários para Sua providência.', 'Matthew Henry'),
+('1kings17:6', 'explicativa', 'Corvos alimentam Elias. Deus usa meios extraordinários para Sua providência.', 'João Calvino'),
 
-('1kings17:6', 'aplicacao', 'Deus pode prover por meios inesperados. Confie em Sua providência.', 'Matthew Henry'),
+('1kings17:6', 'aplicacao', 'Deus pode prover por meios inesperados. Confie em Sua providência.', 'João Calvino'),
 
 ('1kings18:21', 'explicativa', 'Elias desafia: até quando coxear entre dois pensamentos? Indecisão é insulto a Deus.', 'Martinho Lutero'),
 
@@ -130,9 +130,9 @@ INSERT INTO public.study_notes (verse_id, note_type, content, author) VALUES
 
 ('2kings5:13', 'aplicacao', 'Não despreze a simplicidade da mensagem divina. A salvação é simples.', 'Thomas Watson'),
 
-('2kings22:19', 'explicativa', 'Josias tem coração brando, humilha-se perante Deus. Deus atende à humildade sincera.', 'Matthew Henry'),
+('2kings22:19', 'explicativa', 'Josias tem coração brando, humilha-se perante Deus. Deus atende à humildade sincera.', 'João Calvino'),
 
-('2kings22:19', 'aplicacao', 'Humilhe-se perante a Palavra de Deus. Ela é espelho de nossa alma.', 'Matthew Henry');
+('2kings22:19', 'aplicacao', 'Humilhe-se perante a Palavra de Deus. Ela é espelho de nossa alma.', 'João Calvino');
 
 
 
@@ -156,9 +156,9 @@ INSERT INTO public.study_notes (verse_id, note_type, content, author) VALUES
 
 INSERT INTO public.study_notes (verse_id, note_type, content, author) VALUES
 
-('2chronicles7:14', 'explicativa', 'Condições de bênção: humilhar-se, orar, buscar, converter-se dos maus caminhos.', 'Matthew Henry'),
+('2chronicles7:14', 'explicativa', 'Condições de bênção: humilhar-se, orar, buscar, converter-se dos maus caminhos.', 'João Calvino'),
 
-('2chronicles7:14', 'aplicacao', 'A chave do avivamento não é técnica, mas arrependimento genuíno.', 'Matthew Henry'),
+('2chronicles7:14', 'aplicacao', 'A chave do avivamento não é técnica, mas arrependimento genuíno.', 'João Calvino'),
 
 ('2chronicles15:2', 'explicativa', 'Azarias profetiza: Deus está com vocês se estiverem com Ele. Condicionalidade da comunhão.', 'João Calvino'),
 
@@ -190,7 +190,7 @@ INSERT INTO public.study_notes (verse_id, note_type, content, author) VALUES
 
 ('nehemiah1:4', 'aplicacao', 'Não se contente com tristeza. Converta em oração e ação.', 'John Owen'),
 
-('nehemiah2:18', 'explicativa', 'Neemias testemunha da mão de seu Deus. Quando Deus move, os corações respondem.', 'Matthew Henry'),
+('nehemiah2:18', 'explicativa', 'Neemias testemunha da mão de seu Deus. Quando Deus move, os corações respondem.', 'João Calvino'),
 
 ('nehemiah4:14', 'explicativa', 'Neemias motiva: lembrem-se do Senhor, grande e temível. Memória de Deus fortalece na batalha.', 'João Calvino'),
 

@@ -4,7 +4,7 @@
 
 -- Sem sobrescrever conteúdo existente (novos IDs UUID)
 
--- Distribuição teológica: 70% Reformada (Calvino, Henry, Puritanos), 20% Pais da Igreja, 10% Wesley/Finney/Torrey
+-- Distribuição teológica: 70% Reformada (Calvino, Puritanos), 20% Pais da Igreja, 10% Wesley/Finney/Torrey
 
 
 

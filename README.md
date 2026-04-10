@@ -123,7 +123,6 @@ scripts/bible-intelligence/
 ├── build-resource-manifest.mjs      # Descobre links dos hubs awesome-*
 ├── import-crossrefs-json.mjs        # Converte JSON de refs em grafo SQL/CSV
 ├── import-macula-tsv.mjs            # Converte TSV MACULA em tabelas normalizadas
-├── import-matthew-henry-ccel.mjs    # CCEL HTML -> parser/normalizador -> SQL UPSERT
 └── book-id-map.mjs                  # Mapeamento OSIS -> IDs internos
 ```
 

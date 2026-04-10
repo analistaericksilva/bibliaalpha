@@ -1,5 +1,0 @@
-DELETE Matthew Henry comments completely
-
-- SQL migration to remove ALL Matthew Henry notes
-- Prepare database for Patristic theologians replacement
-- Lote 0 of 45 in theological upgrade
