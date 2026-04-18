@@ -29,7 +29,7 @@ jobs:
         with:
           host: 5.183.10.171
           username: u876483543
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           port: 65002
           source: dist/*
           target: /home/u876483543/domains/bibliaalpha.studiologos.com.br/public_html
