@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db, UserProfile } from '../services/firebase';
 import { Shield, Trash2, CheckCircle, XCircle } from 'lucide-react';
 
@@ -25,7 +25,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
 
   const handleUpdateStatus = async (id: string, status: 'approved' | 'blocked' | 'pending') => {
     try {
-      await updateDoc(doc(db, 'users', id), { status, updatedAt: new Date() });
+      await updateDoc(doc(db, 'users', id), { status, updatedAt: serverTimestamp() });
     } catch (error) {
       console.error(error);
       alert('Erro ao atualizar status.');
