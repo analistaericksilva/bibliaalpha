@@ -2,12 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── 0. Global Safety Net ───────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // ── Funções Auxiliares ─────────────────────────────────────────────────
     function isSignedIn() {
       return request.auth != null;
     }
@@ -26,29 +24,15 @@ service cloud.firestore {
       );
     }
 
-    function isApprovedUser() {
-      return isAdmin() || (
-        isSignedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved'
-      );
+    function isValidUser(data) {
+      let validEmail  = data.get('email', '')  is string && data.get('email', '').size()  <= 100;
+      let validNome   = data.get('nome', '')   is string && data.get('nome', '').size()   <= 100;
+      let validFoto   = data.get('foto', '')   is string && data.get('foto', '').size()   <= 1000;
+      let validStatus = data.get('status', '') in ['pending', 'approved', 'blocked'];
+      let validAdmin  = !('isAdmin' in data) || data.isAdmin is bool;
+      return validEmail && validNome && validFoto && validStatus && validAdmin;
     }
 
-    // Validação do documento de usuário
-    function isValidUser(data, isCreate) {
-      let hasRequiredKeys = isCreate
-        ? (data.keys().hasAll(['email', 'nome', 'foto', 'status', 'createdAt', 'updatedAt'])
-           && data.keys().size() <= 7)
-        : true;
-      let validEmail   = data.get('email', '')  is string && data.get('email', '').size()  <= 100;
-      let validNome    = data.get('nome', '')    is string && data.get('nome', '').size()   <= 100;
-      let validFoto    = data.get('foto', '')    is string && data.get('foto', '').size()   <= 1000;
-      let validStatus  = data.get('status', '') in ['pending', 'approved', 'blocked'];
-      let validAdminField = !('isAdmin' in data) || data.isAdmin is bool;
-      return hasRequiredKeys && validEmail && validNome && validFoto && validStatus && validAdminField;
-    }
-
-    // ── /users/{userId} ────────────────────────────────────────────────────
     match /users/{userId} {
 
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
@@ -57,25 +41,22 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.auth.uid == userId
         && request.auth.token.email_verified == true
-        && isValidUser(request.resource.data, true)
+        && isValidUser(request.resource.data)
         && request.resource.data.email == request.auth.token.email
-        && request.resource.data.status == 'pending'
-        && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false || isSuperAdmin())
-        && request.resource.data.createdAt == request.time
-        && request.resource.data.updatedAt == request.time;
+        && (
+          (isSuperAdmin() && request.resource.data.status in ['pending', 'approved'])
+          || (!isSuperAdmin() && request.resource.data.status == 'pending')
+        )
+        && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false || isSuperAdmin());
 
       allow update: if isSignedIn()
-        && isValidUser(request.resource.data, false)
+        && isValidUser(request.resource.data)
         && (
-          // Admin pode alterar: status, isAdmin, updatedAt
           (isAdmin()
-            && request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'isAdmin', 'updatedAt'])
-            && request.resource.data.updatedAt == request.time)
+            && request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'isAdmin', 'updatedAt']))
           ||
-          // O próprio usuário pode alterar: nome, foto, updatedAt
           (request.auth.uid == userId
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome', 'foto', 'updatedAt'])
-            && request.resource.data.updatedAt == request.time)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome', 'foto', 'updatedAt']))
         );
 
       allow delete: if isAdmin();
