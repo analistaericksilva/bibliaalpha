@@ -25,21 +25,21 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VITE_GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-          - name: Deploy via FTP to Hostinger
-            continue-on-error: true
-            uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-            with:
-              server: ${{ secrets.FTP_SERVER }}
-              username: ${{ secrets.FTP_USERNAME }}
-              password: ${{ secrets.FTP_PASSWORD }}
-              local-dir: ./dist/
-              server-dir: /
-              dangerous-clean-slate: false
-              protocol: ftps
-              port: 21
-              timeout: 60000
+      - name: Deploy via FTP to Hostinger
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: /
+          dangerous-clean-slate: false
+          protocol: ftps
+          port: 21
+          timeout: 60000
 
-          - name: Deploy to Firebase Hosting
+      - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
