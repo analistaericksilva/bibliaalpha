@@ -1,41 +1,34 @@
 name: Setup Firebase App Hosting
-    on:
-      workflow_dispatch:
+on:
+  workflow_dispatch:
 
-    jobs:
-      setup-apphosting:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v4
+jobs:
+  setup-apphosting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-          - name: Setup Firebase App Hosting via API
-            env:
-              SA_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SENTINELA_AI_489015 }}
-            run: |
-              echo "$SA_JSON" > /tmp/sa.json
-              pip install google-auth requests -q
-              python3 << 'EOF'
-    import json, requests
-    import google.auth.transport.requests
-    from google.oauth2 import service_account
-
-    with open("/tmp/sa.json") as f:
-        sa = json.load(f)
-
-    creds = service_account.Credentials.from_service_account_info(
-        sa,
-        scopes=["https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/firebase"]
-    )
-    creds.refresh(google.auth.transport.requests.Request())
-    token = creds.token
-    project_id = "sentinela-ai-489015"
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-
-    # List existing backends
-    r = requests.get(
-        f"https://firebaseapphosting.googleapis.com/v1beta/projects/{project_id}/locations/-/backends",
-        headers=headers
-    )
-    print("Backends:", r.status_code, r.text[:2000])
-    EOF
-    
+      - name: Check App Hosting via API
+        env:
+          SA_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SENTINELA_AI_489015 }}
+        run: |
+          echo "$SA_JSON" > /tmp/sa.json
+          pip install google-auth requests -q
+          python3 - << 'PYEOF'
+          import json, requests
+          import google.auth.transport.requests
+          from google.oauth2 import service_account
+          with open("/tmp/sa.json") as f:
+              sa = json.load(f)
+          creds = service_account.Credentials.from_service_account_info(
+              sa, scopes=["https://www.googleapis.com/auth/cloud-platform"])
+          creds.refresh(google.auth.transport.requests.Request())
+          token = creds.token
+          project_id = "sentinela-ai-489015"
+          hdrs = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+          r = requests.get(
+              f"https://firebaseapphosting.googleapis.com/v1beta/projects/{project_id}/locations/-/backends",
+              headers=hdrs)
+          print("STATUS:", r.status_code)
+          print("BODY:", r.text[:3000])
+          PYEOF
