@@ -24,9 +24,25 @@ export async function getChapter(bookId: string, chapter: number): Promise<any[]
 }
 
 /**
+ * Safely fetches and parses JSON from the commentary API.
+ * The API returns HTML (text/html) for books/chapters that don't exist
+ * instead of a proper 404 JSON — calling .json() on HTML crashes the app.
+ * This wrapper checks Content-Type before parsing.
+ */
+async function safeCommentaryFetch(url: string): Promise<any | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return null; // silently skip HTML responses
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Splits a long commentary string into clean, readable paragraphs.
- * Each commentary text from the API can be thousands of characters long —
- * we break it into max 2 paragraphs of ~600 chars each for display.
  */
 function splitCommentaryText(rawText: string): string[] {
   const lines = rawText
@@ -56,14 +72,15 @@ function splitCommentaryText(rawText: string): string[] {
 
 /**
  * Fetches verse commentaries from multiple sources.
- * Uses Promise.allSettled so a failure in one source never crashes the app.
+ * Uses Promise.allSettled + safeCommentaryFetch so any failure is silent.
  */
 export async function getVerseCommentaries(bookId: string, chapter: number, verseNumber: number): Promise<any[]> {
   const promises = COMMENTARIES_IDS.map(async (commentaryId) => {
     try {
-      const res = await fetch(`${BIBLE_API_BASE}/c/${commentaryId}/${bookId}/${chapter}.json`);
-      if (!res.ok) return null;
-      const data = await res.json();
+      const data = await safeCommentaryFetch(
+        `${BIBLE_API_BASE}/c/${commentaryId}/${bookId}/${chapter}.json`
+      );
+      if (!data) return null;
 
       const verseContent = data?.chapter?.content?.find(
         (v: any) => v.type === 'verse' && v.number === verseNumber
@@ -75,8 +92,7 @@ export async function getVerseCommentaries(bookId: string, chapter: number, vers
       );
       if (rawTexts.length === 0) return null;
 
-      const fullText = rawTexts.join(' ');
-      const texts = splitCommentaryText(fullText);
+      const texts = splitCommentaryText(rawTexts.join(' '));
       if (texts.length === 0) return null;
 
       let commentaryName = commentaryId;
@@ -91,12 +107,10 @@ export async function getVerseCommentaries(bookId: string, chapter: number, vers
 
       return { author: commentaryName, texts, id: commentaryId };
     } catch {
-      // Each commentary fails independently — never crashes the app
       return null;
     }
   });
 
-  // allSettled: individual failures never propagate to crash the UI
   const settled = await Promise.allSettled(promises);
   return settled
     .filter((r): r is PromiseFulfilledResult<any> => r.status === 'fulfilled' && r.value !== null)
@@ -104,7 +118,7 @@ export async function getVerseCommentaries(bookId: string, chapter: number, vers
 }
 
 /**
- * Returns a set of verse numbers that have at least one commentary available.
+ * Returns verse numbers that have at least one commentary available.
  * Used to show/hide the "Estudo" button per verse.
  */
 export async function getChapterCommentMap(bookId: string, chapter: number): Promise<Set<number>> {
@@ -112,20 +126,19 @@ export async function getChapterCommentMap(bookId: string, chapter: number): Pro
 
   const promises = COMMENTARIES_IDS.map(async (commentaryId) => {
     try {
-      const res = await fetch(`${BIBLE_API_BASE}/c/${commentaryId}/${bookId}/${chapter}.json`);
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await safeCommentaryFetch(
+        `${BIBLE_API_BASE}/c/${commentaryId}/${bookId}/${chapter}.json`
+      );
+      if (!data?.chapter?.content) return;
 
-      if (data?.chapter?.content) {
-        data.chapter.content.forEach((v: any) => {
-          if (v.type === 'verse' && v.number && v.content?.length > 0) {
-            const hasText = v.content.some(
-              (c: any) => typeof c === 'string' && c.trim().length > 0
-            );
-            if (hasText) availableSet.add(v.number);
-          }
-        });
-      }
+      data.chapter.content.forEach((v: any) => {
+        if (v.type === 'verse' && v.number && v.content?.length > 0) {
+          const hasText = v.content.some(
+            (c: any) => typeof c === 'string' && c.trim().length > 0
+          );
+          if (hasText) availableSet.add(v.number);
+        }
+      });
     } catch {
       // silently ignore per-commentary failures
     }
