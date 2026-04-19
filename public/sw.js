@@ -1,19 +1,15 @@
 /**
- * sw.js — Biblia Alpha Service Worker v4
+ * sw.js — Biblia Alpha Service Worker v5
  *
- * Estrategias de cache:
- * 1. App Shell (HTML + JS + CSS) → Cache-First com revalidacao em background
- * 2. APIs de Biblia (HelloAO, bible-api.com) → Stale-While-Revalidate
- * 3. APIs de Pesquisa (Wikipedia, Google Books) → Stale-While-Revalidate
- * 4. Outros recursos → Network-First com fallback para cache
+ * v5: remove force-navigate no activate (evita loop infinito de reload)
+ *     network-first para HTML (garante index.html sempre atualizado)
+ *     cache-first para /assets/* (hashes imutaveis)
  */
 
-const CACHE_VERSION = 'v4';
-const SHELL_CACHE  = 'bibliaalpha-shell-' + CACHE_VERSION;
-const BIBLE_CACHE  = 'bibliaalpha-bible-' + CACHE_VERSION;
+const CACHE_VERSION = 'v5';
+const SHELL_CACHE    = 'bibliaalpha-shell-'    + CACHE_VERSION;
+const BIBLE_CACHE    = 'bibliaalpha-bible-'    + CACHE_VERSION;
 const RESEARCH_CACHE = 'bibliaalpha-research-' + CACHE_VERSION;
-
-const SHELL_ASSETS = ['/', '/index.html'];
 
 const BIBLE_API_HOSTS = [
   'bible.helloao.org',
@@ -27,78 +23,91 @@ const RESEARCH_API_HOSTS = [
   'kgsearch.googleapis.com',
 ];
 
-// ── INSTALL ──────────────────────────────────────────────────────────────────
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_ASSETS))
-  );
   self.skipWaiting();
 });
 
-// ── ACTIVATE ─────────────────────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const names = await caches.keys();
     await Promise.all(
-      names.filter(n => ![SHELL_CACHE, BIBLE_CACHE, RESEARCH_CACHE].includes(n))
-           .map(n => caches.delete(n))
+      names
+        .filter(n => n.startsWith('bibliaalpha-') && ![SHELL_CACHE, BIBLE_CACHE, RESEARCH_CACHE].includes(n))
+        .map(n => caches.delete(n))
     );
     await self.clients.claim();
-    const clients = await self.clients.matchAll({ type: 'window' });
-    clients.forEach(c => c.navigate(c.url));
+    // REMOVIDO: clients.forEach(c => c.navigate(c.url)) causava loop de reload
   })());
 });
 
-// ── FETCH ─────────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // 1. APIs da Biblia → Stale-While-Revalidate
+  if (event.request.method !== 'GET') return;
+  if (!url.protocol.startsWith('http')) return;
+
   if (BIBLE_API_HOSTS.includes(url.hostname)) {
     event.respondWith(staleWhileRevalidate(BIBLE_CACHE, event.request));
     return;
   }
 
-  // 2. APIs de Pesquisa (Wikipedia, Google Books, KG) → Stale-While-Revalidate
   if (RESEARCH_API_HOSTS.includes(url.hostname)) {
     event.respondWith(staleWhileRevalidate(RESEARCH_CACHE, event.request));
     return;
   }
 
-  // 3. Navegacao (HTML) -> Network-First (evita travar em build antigo)
   if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then((res) => {
-          const clone = res.clone();
-          caches.open(SHELL_CACHE).then((c) => c.put('/index.html', clone));
-          return res;
-        })
-        .catch(() => caches.match('/index.html'))
-    );
+    event.respondWith(networkFirst(SHELL_CACHE, event.request));
     return;
   }
 
-  // 4. Outros → Network-First com fallback para cache
-  event.respondWith(
-    fetch(event.request)
-      .then((res) => {
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(SHELL_CACHE).then((c) => c.put(event.request, clone));
-        }
-        return res;
-      })
-      .catch(() => caches.match(event.request))
-  );
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(cacheFirst(SHELL_CACHE, event.request));
+    return;
+  }
+
+  event.respondWith(networkFirst(SHELL_CACHE, event.request));
 });
 
-// ── Stale-While-Revalidate ────────────────────────────────────────────────────
+async function networkFirst(cacheName, request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok || response.type === 'opaque') {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+  }
+}
+
+async function cacheFirst(cacheName, request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response.ok || response.type === 'opaque') {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+  }
+}
+
 async function staleWhileRevalidate(cacheName, request) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
-  const networkFetch = fetch(request)
-    .then((res) => { if (res.ok) cache.put(request, res.clone()); return res; })
-    .catch(() => null);
-  return cached || networkFetch;
+
+  const fetchPromise = fetch(request).then((response) => {
+    if (response.ok || response.type === 'opaque') {
+      cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => null);
+
+  return cached || fetchPromise;
 }
