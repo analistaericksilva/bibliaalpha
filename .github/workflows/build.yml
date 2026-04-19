@@ -30,11 +30,8 @@ jobs:
 
       - name: Copy .htaccess to dist
         run: |
-          cp public/.htaccess dist/.htaccess
-          echo "=== Conteudo de dist/ ==="
+          if [ -f public/.htaccess ]; then cp public/.htaccess dist/.htaccess; fi
           ls -la dist/
-          echo "=== sw.js primeira linha ==="
-          head -3 dist/sw.js
 
       - name: Deploy via FTP to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -66,7 +63,4 @@ jobs:
         run: |
           echo "$GOOGLE_APPLICATION_CREDENTIALS_JSON" > /tmp/sa.json
           pip install google-auth requests --break-system-packages -q
-          python3 -c "
-import base64
-exec(base64.b64decode('aW1wb3J0IGpzb24KaW1wb3J0IHN5cwppbXBvcnQgcmVxdWVzdHMKaW1wb3J0IGdvb2dsZS5hdXRoLnRyYW5zcG9ydC5yZXF1ZXN0cwpmcm9tIGdvb2dsZS5vYXV0aDIgaW1wb3J0IHNlcnZpY2VfYWNjb3VudAoKd2l0aCBvcGVuKCIvdG1wL3NhLmpzb24iKSBhcyBmOgogICAgc2EgPSBqc29uLmxvYWQoZikKCmNyZWRzID0gc2VydmljZV9hY2NvdW50LkNyZWRlbnRpYWxzLmZyb21fc2VydmljZV9hY2NvdW50X2luZm8oCiAgICBzYSwgc2NvcGVzPVsKICAgICAgICAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vYXV0aC9jbG91ZC1wbGF0Zm9ybSIsCiAgICAgICAgImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL2F1dGgvZmlyZWJhc2UiCiAgICBdKQpjcmVkcy5yZWZyZXNoKGdvb2dsZS5hdXRoLnRyYW5zcG9ydC5yZXF1ZXN0cy5SZXF1ZXN0KCkpCnRva2VuID0gY3JlZHMudG9rZW4KCnByb2plY3RfaWQgPSAic2VudGluZWxhLWFpLTQ4OTAxNSIKZGJfaWQgPSAiYWktc3R1ZGlvLWQwMGQ3NWNkLWVhOWItNGJmMS05ZGIxLTdhYzE0ZWZmNTg2ZiIKaGVhZGVycyA9IHsiQXV0aG9yaXphdGlvbiI6IGYiQmVhcmVyIHt0b2tlbn0iLCAiQ29udGVudC1UeXBlIjogImFwcGxpY2F0aW9uL2pzb24ifQoKd2l0aCBvcGVuKCJmaXJlc3RvcmUucnVsZXMiKSBhcyBmOgogICAgcnVsZXMgPSBmLnJlYWQoKQoKciA9IHJlcXVlc3RzLnBvc3QoCiAgICBmImh0dHBzOi8vZmlyZWJhc2VydWxlcy5nb29nbGVhcGlzLmNvbS92MS9wcm9qZWN0cy97cHJvamVjdF9pZH0vcnVsZXNldHMiLAogICAganNvbj17InNvdXJjZSI6IHsiZmlsZXMiOiBbeyJjb250ZW50IjogcnVsZXMsICJuYW1lIjogImZpcmVzdG9yZS5ydWxlcyJ9XX19LAogICAgaGVhZGVycz1oZWFkZXJzCikKcHJpbnQoZiJDcmVhdGUgcnVsZXNldDoge3Iuc3RhdHVzX2NvZGV9IikKaWYgbm90IHIub2s6CiAgICBwcmludChyLnRleHQpCiAgICBzeXMuZXhpdCgxKQoKcnVsZXNldCA9IHIuanNvbigpWyJuYW1lIl0KcHJpbnQoZiJSdWxlc2V0OiB7cnVsZXNldH0iKQoKcmVsZWFzZV9uYW1lID0gZiJwcm9qZWN0cy97cHJvamVjdF9pZH0vcmVsZWFzZXMvY2xvdWQuZmlyZXN0b3JlL3tkYl9pZH0iCnBheWxvYWQgPSB7InJlbGVhc2UiOiB7Im5hbWUiOiByZWxlYXNlX25hbWUsICJydWxlc2V0TmFtZSI6IHJ1bGVzZXR9fQoKcjIgPSByZXF1ZXN0cy5wYXRjaCgKICAgIGYiaHR0cHM6Ly9maXJlYmFzZXJ1bGVzLmdvb2dsZWFwaXMuY29tL3YxL3tyZWxlYXNlX25hbWV9IiwKICAgIGpzb249cGF5bG9hZCwKICAgIGhlYWRlcnM9aGVhZGVycywKICAgIHBhcmFtcz17InVwZGF0ZU1hc2siOiAicnVsZXNldE5hbWUifQopCnByaW50KGYiUGF0Y2ggcmVsZWFzZToge3IyLnN0YXR1c19jb2RlfSIpCmlmIHIyLnN0YXR1c19jb2RlID09IDQwNDoKICAgIHIyID0gcmVxdWVzdHMucG9zdCgKICAgICAgICBmImh0dHBzOi8vZmlyZWJhc2VydWxlcy5nb29nbGVhcGlzLmNvbS92MS9wcm9qZWN0cy97cHJvamVjdF9pZH0vcmVsZWFzZXMiLAogICAgICAgIGpzb249cGF5bG9hZCwKICAgICAgICBoZWFkZXJzPWhlYWRlcnMKICAgICkKICAgIHByaW50KGYiQ3JlYXRlIHJlbGVhc2U6IHtyMi5zdGF0dXNfY29kZX0iKQppZiBub3QgcjIub2s6CiAgICBwcmludChyMi50ZXh0KQogICAgc3lzLmV4aXQoMSkKCnByaW50KCJGaXJlc3RvcmUgcnVsZXMgZGVwbG95ZWQgc3VjY2Vzc2Z1bGx5ISIpCg==').decode())
-"
+          python3 scripts/deploy_firestore_rules.py
