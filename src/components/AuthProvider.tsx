@@ -27,74 +27,91 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Timeout de segurança: se Firebase não responder em 8s, desbloqueia a tela
-    const failsafeTimer = setTimeout(() => {
-      setLoading(false);
-    }, 8000);
+    let profileUnsub: (() => void) | null = null;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      clearTimeout(failsafeTimer);
-      setUser(firebaseUser);
-      
-      if (!firebaseUser) {
-        setProfile(null);
-        setLoading(false);
-        return;
-      }
-      
-      // Subscribe to user profile
-      const unsubscribeProfile = onSnapshot(doc(db, 'users', firebaseUser.uid), async (docSnap) => {
-        if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
-        } else {
-          // Heal missing profile on page load if rule previously blocked
-          try {
-             const userDocRef = doc(db, 'users', firebaseUser.uid);
-             const { serverTimestamp, setDoc } = await import('firebase/firestore');
-             const isSuperAdmin = firebaseUser.email === 'analista.ericksilva@gmail.com';
-             await setDoc(userDocRef, {
-                email: firebaseUser.email,
-                nome: firebaseUser.displayName || 'Sem Nome',
-                foto: firebaseUser.photoURL || '',
-                status: isSuperAdmin ? 'approved' : 'pending',
-                isAdmin: isSuperAdmin,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
-             });
-          } catch(e) {
-             console.error("Failed to self-heal profile creation", e);
-             setProfile(null);
-          }
-        }
-        setLoading(false);
-      }, (error) => {
-         console.error("Profile fetch error:", error);
-         setLoading(false);
-      });
-      
-      return () => unsubscribeProfile();
-    }, (error) => {
-      clearTimeout(failsafeTimer);
-      console.error("Auth state error:", error);
+    // Timeout global: 6s para o auth resolver, 5s para o profile
+    // Se qualquer um travar, desbloqueia a tela
+    const authTimer = setTimeout(() => {
+      console.warn('Auth timeout — desbloqueando tela');
       setLoading(false);
-    });
+    }, 6000);
+
+    const unsubscribeAuth = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        clearTimeout(authTimer);
+        setUser(firebaseUser);
+
+        if (!firebaseUser) {
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        // Timeout para o Firestore profile
+        const profileTimer = setTimeout(() => {
+          console.warn('Profile timeout — desbloqueando tela sem profile');
+          setLoading(false);
+        }, 5000);
+
+        profileUnsub = onSnapshot(
+          doc(db, 'users', firebaseUser.uid),
+          async (docSnap) => {
+            clearTimeout(profileTimer);
+            if (docSnap.exists()) {
+              setProfile(docSnap.data() as UserProfile);
+            } else {
+              try {
+                const userDocRef = doc(db, 'users', firebaseUser.uid);
+                const { serverTimestamp, setDoc } = await import('firebase/firestore');
+                const isSuperAdmin = firebaseUser.email === 'analista.ericksilva@gmail.com';
+                await setDoc(userDocRef, {
+                  email: firebaseUser.email,
+                  nome: firebaseUser.displayName || 'Sem Nome',
+                  foto: firebaseUser.photoURL || '',
+                  status: isSuperAdmin ? 'approved' : 'pending',
+                  isAdmin: isSuperAdmin,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                });
+              } catch (e) {
+                console.error('Failed to create profile', e);
+                setProfile(null);
+              }
+            }
+            setLoading(false);
+          },
+          (error) => {
+            clearTimeout(profileTimer);
+            console.error('Profile snapshot error:', error);
+            setLoading(false);
+          }
+        );
+      },
+      (error) => {
+        clearTimeout(authTimer);
+        console.error('Auth error:', error);
+        setLoading(false);
+      }
+    );
 
     return () => {
-      clearTimeout(failsafeTimer);
+      clearTimeout(authTimer);
       unsubscribeAuth();
+      if (profileUnsub) profileUnsub();
     };
   }, []);
 
-  const login = async () => {
-    await loginWithGoogle();
-  };
-
-  const logout = async () => {
-    await auth.signOut();
-  };
-
   return (
-    <AuthContext.Provider value={{ user, profile, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        login: loginWithGoogle,
+        logout: () => auth.signOut(),
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
