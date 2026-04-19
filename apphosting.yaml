@@ -1,0 +1,7 @@
+runConfig:
+      runtime: nodejs20
+
+    buildCommand: npm run build
+
+    outputDirectory: dist
+    
