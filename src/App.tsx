@@ -3,192 +3,152 @@ import { Book, getBooks } from './services/bibleApi';
 import { getChapterFromApiBible, AVAILABLE_TRANSLATIONS } from './services/apiBible';
 import Sidebar from './components/Sidebar';
 import ReadingArea from './components/ReadingArea';
-import { AuthProvider, useAuth } from './components/AuthProvider';
-import AdminPanel from './components/AdminPanel';
 import CommandPalette from './components/CommandPalette';
-import { ResearchPanel } from './components/ResearchPanel';
 import NotepadPanel from './components/NotepadPanel';
 import ReadingPlansPanel from './components/ReadingPlansPanel';
-import { geminiService } from './services/geminiService';
+import ResearchPanel from './components/ResearchPanel';
+import ConnectionsDropdown from './components/ConnectionsDropdown';
+import { Menu, Edit3, MoreHorizontal, BookOpen, Globe, X } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-type Panel = 'research' | 'notepad' | 'plans' | null;
-
-function AppContent() {
-  const { user, profile, loading, profileError, login, logout } = useAuth();
-  const [books, setBooks] = useState<Book[]>([]);
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [selectedChapter, setSelectedChapter] = useState<number>(1);
-  const [verses, setVerses] = useState<any[]>([]);
-  const [loadingVerses, setLoadingVerses] = useState(false);
-  const [translation, setTranslation] = useState<string>('nvi');
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [activePanel, setActivePanel] = useState<Panel>(null);
-  const [geminiReady, setGeminiReady] = useState(false);
-  const [errorBanner, setErrorBanner] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (profileError) setErrorBanner(profileError);
-  }, [profileError]);
-
-  useEffect(() => {
-    const ready = geminiService.isReady();
-    setGeminiReady(ready);
-    if (!ready) console.warn('Gemini API key nao configurada.');
-  }, []);
-
-  useEffect(() => {
-    getBooks().then(setBooks).catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    if (!selectedBook) return;
-    setLoadingVerses(true);
-    getChapterFromApiBible(translation, selectedBook.abbrev?.pt || selectedBook.name, selectedChapter)
-      .then(setVerses)
-      .catch(console.error)
-      .finally(() => setLoadingVerses(false));
-  }, [selectedBook, selectedChapter, translation]);
-
-  // ── Tela de Loading ──────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4" />
-          <p className="text-gray-400">Carregando Biblia Alpha...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Tela de Login ────────────────────────────────────────────────────────
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <div className="text-center max-w-sm w-full px-6">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-amber-400 mb-2">📖 Biblia Alpha</h1>
-            <p className="text-gray-400 text-sm">Seu estudo biblico inteligente</p>
-          </div>
-          {errorBanner && (
-            <div className="mb-4 p-3 bg-red-900/50 border border-red-600 rounded-lg text-red-200 text-sm">
-              {errorBanner}
-              <button onClick={() => setErrorBanner(null)} className="ml-2 text-red-400 hover:text-red-200">✕</button>
-            </div>
-          )}
-          <button
-            onClick={login}
-            className="w-full py-3 px-6 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-xl transition-colors"
-          >
-            Entrar com Google
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Aguardando aprovacao ─────────────────────────────────────────────────
-  if (profile?.status === 'pending') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <div className="text-center max-w-sm w-full px-6">
-          <h2 className="text-2xl font-bold text-amber-400 mb-4">⏳ Aguardando aprovacao</h2>
-          <p className="text-gray-400 mb-6">Seu cadastro esta em analise. Em breve voce tera acesso.</p>
-          {errorBanner && (
-            <div className="mb-4 p-3 bg-red-900/50 border border-red-600 rounded-lg text-red-200 text-sm">
-              {errorBanner}
-              <button onClick={() => setErrorBanner(null)} className="ml-2 text-red-400 hover:text-red-200">✕</button>
-            </div>
-          )}
-          <button
-            onClick={logout}
-            className="py-2 px-6 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
-          >
-            Sair
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Acesso bloqueado ─────────────────────────────────────────────────────
-  if (profile?.status === 'blocked') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <div className="text-center max-w-sm w-full px-6">
-          <h2 className="text-2xl font-bold text-red-400 mb-4">🚫 Acesso bloqueado</h2>
-          <p className="text-gray-400 mb-6">Sua conta foi suspensa. Entre em contato com o administrador.</p>
-          <button
-            onClick={logout}
-            className="py-2 px-6 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
-          >
-            Sair
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── App Principal ────────────────────────────────────────────────────────
-  return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
-      {errorBanner && (
-        <div className="bg-red-900/80 border-b border-red-700 px-4 py-2 text-red-200 text-sm flex items-center justify-between">
-          <span>⚠️ {errorBanner}</span>
-          <button onClick={() => setErrorBanner(null)} className="ml-4 text-red-400 hover:text-red-200">✕</button>
-        </div>
-      )}
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          books={books}
-          selectedBook={selectedBook}
-          selectedChapter={selectedChapter}
-          onSelectBook={(book) => { setSelectedBook(book); setSelectedChapter(1); }}
-          onSelectChapter={setSelectedChapter}
-          translation={translation}
-          translations={AVAILABLE_TRANSLATIONS}
-          onSelectTranslation={setTranslation}
-          profile={profile}
-          onShowAdmin={() => setShowAdmin(true)}
-          onLogout={logout}
-          onShowCommandPalette={() => setShowCommandPalette(true)}
-          activePanel={activePanel}
-          onTogglePanel={(panel) => setActivePanel(prev => prev === panel ? null : panel)}
-        />
-        <main className="flex-1 overflow-hidden flex">
-          <ReadingArea
-            book={selectedBook}
-            chapter={selectedChapter}
-            verses={verses}
-            loading={loadingVerses}
-            geminiReady={geminiReady}
-          />
-          {activePanel === 'research' && <ResearchPanel />}
-          {activePanel === 'notepad' && <NotepadPanel book={selectedBook} chapter={selectedChapter} />}
-          {activePanel === 'plans' && <ReadingPlansPanel />}
-        </main>
-      </div>
-      {showAdmin && profile?.isAdmin && (
-        <AdminPanel onClose={() => setShowAdmin(false)} />
-      )}
-      {showCommandPalette && (
-        <CommandPalette
-          books={books}
-          onSelectBook={(book) => { setSelectedBook(book); setSelectedChapter(1); setShowCommandPalette(false); }}
-          onSelectChapter={(ch) => { setSelectedChapter(ch); setShowCommandPalette(false); }}
-          onClose={() => setShowCommandPalette(false)}
-          selectedBook={selectedBook}
-        />
-      )}
-    </div>
-  );
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }
 
 export default function App() {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [activeBook, setActiveBook] = useState<Book | null>(null);
+  const [activeChapter, setActiveChapter] = useState<number>(1);
+  const [activeTranslation, setActiveTranslation] = useState<string>('almeida');
+  const [chapterContent, setChapterContent] = useState<any[]>([]);
+  const [isLoadingChapter, setIsLoadingChapter] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') return window.innerWidth >= 1024;
+    return true;
+  });
+  const [isCommandModeOpen, setIsCommandModeOpen] = useState(false);
+  const [isNotepadOpen, setIsNotepadOpen] = useState(false);
+  const [isPlansOpen, setIsPlansOpen] = useState(false);
+  const [isResearchOpen, setIsResearchOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [apiErrorBanner, setApiErrorBanner] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function init() {
+      try {
+        const fetchedBooks = await getBooks();
+        setBooks(fetchedBooks);
+        if (fetchedBooks.length > 0) setActiveBook(fetchedBooks[1]);
+      } catch (error) { console.error("Failed to load books", error); }
+    }
+    init();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setIsCommandModeOpen(true); }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (books.length > 0 && !activeBook) setActiveBook(books[0]);
+  }, [books]);
+
+  useEffect(() => {
+    if (!activeBook) return;
+    let isMounted = true;
+    async function loadChapter() {
+      setIsLoadingChapter(true);
+      setApiErrorBanner(null);
+      try {
+        let ptContent;
+        try {
+          ptContent = await getChapterFromApiBible(activeTranslation, activeBook!.id, activeChapter);
+        } catch(e: any) {
+          console.error("API err", e);
+          // Substituindo alert() por banner de erro inline
+          if (isMounted) setApiErrorBanner("Erro na API (" + activeTranslation + "): " + e.message + ". Tente outra tradução.");
+          if (isMounted && activeTranslation !== 'almeida') setActiveTranslation('almeida');
+          return;
+        }
+        if (isMounted) setChapterContent(ptContent);
+      } catch (error) {
+        console.error("Failed to load chapter", error);
+        if (isMounted) setChapterContent([]);
+      } finally { if (isMounted) setIsLoadingChapter(false); }
+    }
+    loadChapter();
+    return () => { isMounted = false; };
+  }, [activeBook, activeChapter, activeTranslation]);
+
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <div className="flex h-screen w-full bg-sleek-bg font-sans overflow-hidden text-sleek-text-main">
+      {isSidebarOpen && <div className="fixed inset-0 bg-black/10 z-10 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
+      <Sidebar isOpen={isSidebarOpen} books={books} activeBook={activeBook} activeChapter={activeChapter}
+        onSelectBook={setActiveBook}
+        onSelectChapter={(chapter) => { setActiveChapter(chapter); if (window.innerWidth < 1024) setIsSidebarOpen(false); }}
+        onSearchClick={() => setIsCommandModeOpen(true)}
+      />
+      <div className="flex-1 flex flex-col h-full relative overflow-hidden transition-all duration-300">
+        {apiErrorBanner && (
+          <div className="flex items-center justify-between gap-2 px-4 py-2 bg-red-50 border-b border-red-200 text-red-700 text-sm z-20">
+            <span>⚠️ {apiErrorBanner}</span>
+            <button onClick={() => setApiErrorBanner(null)} className="p-1 hover:bg-red-100 rounded" aria-label="Fechar">
+              <X size={14} />
+            </button>
+          </div>
+        )}
+        <header className="h-14 flex items-center justify-between px-6 sm:px-10 border-b border-sleek-border bg-white shrink-0 z-10 lg:hidden">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-sleek-hover rounded-md text-sleek-text-muted transition-colors">
+              <Menu size={20} />
+            </button>
+            <h1 className="text-[14px] font-semibold text-sleek-text-main">{activeBook?.name} {activeChapter}</h1>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setIsPlansOpen(true)} className="p-2 hover:bg-sleek-hover rounded-md text-blue-600 transition-colors"><BookOpen size={18} /></button>
+            <button onClick={() => setIsNotepadOpen(true)} className="p-2 hover:bg-sleek-hover rounded-md text-sleek-text-muted transition-colors"><Edit3 size={18} /></button>
+            <button onClick={() => setIsResearchOpen(true)} className="p-2 hover:bg-sleek-hover rounded-md text-purple-600 transition-colors" title="Pesquisa Biblica"><Globe size={18} /></button>
+            <div className="relative">
+              <button onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)} className="p-2 hover:bg-sleek-hover rounded-md text-sleek-text-muted transition-colors"><MoreHorizontal size={18} /></button>
+              {isMoreMenuOpen && <ConnectionsDropdown onClose={() => setIsMoreMenuOpen(false)} className="right-0 top-12" />}
+            </div>
+          </div>
+        </header>
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {isLoadingChapter ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-8 h-8 rounded-full border-2 border-slate-300 border-t-slate-800 animate-spin" />
+            </div>
+          ) : (
+            <ReadingArea
+              bookId={activeBook?.id || ''} bookName={activeBook?.name || ''}
+              chapter={activeChapter} totalChapters={activeBook?.numberOfChapters || 1}
+              content={chapterContent} activeTranslation={activeTranslation}
+              onTranslationChange={setActiveTranslation}
+              onOpenBookList={() => { if (window.innerWidth < 1024) setIsSidebarOpen(true); else setIsCommandModeOpen(true); }}
+              onNotepadOpen={() => setIsNotepadOpen(true)}
+              onPlansOpen={() => setIsPlansOpen(true)}
+              onPrevChapter={() => setActiveChapter(Math.max(1, activeChapter - 1))}
+              onNextChapter={() => setActiveChapter(Math.min(activeBook?.numberOfChapters || 1, activeChapter + 1))}
+              onSelectChapter={setActiveChapter}
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+          )}
+        </div>
+      </div>
+      {isSidebarOpen && <div className="fixed inset-0 bg-black/20 z-10 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
+      <NotepadPanel isOpen={isNotepadOpen} onClose={() => setIsNotepadOpen(false)} chapterContext={activeBook?.name + ' ' + activeChapter} />
+      <ReadingPlansPanel isOpen={isPlansOpen} onClose={() => setIsPlansOpen(false)}
+        onSelectChapter={(bookId, chapter) => { const book = books.find(b => b.id === bookId); if (book) { setActiveBook(book); setActiveChapter(chapter); } }}
+      />
+      <ResearchPanel isOpen={isResearchOpen} onClose={() => setIsResearchOpen(false)} initialQuery={activeBook?.name || ''} />
+      <CommandPalette isOpen={isCommandModeOpen} onClose={() => setIsCommandModeOpen(false)} books={books}
+        onSelectChapter={(book, chapter) => { setActiveBook(book); setActiveChapter(chapter); }}
+      />
+    </div>
   );
 }
