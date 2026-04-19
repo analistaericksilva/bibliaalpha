@@ -1,6 +1,6 @@
 import { cn } from '../App';
 import * as React from 'react';
-import * as motion from 'motion/react-client';
+import * as motion from 'motion/react';
 import { Palette, Share2, MoreHorizontal, Book as BookIcon, Bookmark, Globe, ChevronDown, MessageSquareText, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import InlineComments from './InlineComments';
@@ -169,7 +169,7 @@ export default function ReadingArea({ bookId, bookName, chapter, totalChapters =
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col h-full relative font-serif">
+    <div className="w-full flex-1 flex flex-col min-h-full relative font-serif">
       <header className="hidden lg:flex px-10 py-5 justify-between items-center bg-sleek-bg sticky top-0 z-20 border-b border-transparent">
         <div className="text-[14px] text-sleek-text-muted flex items-center gap-4">
           <button 
