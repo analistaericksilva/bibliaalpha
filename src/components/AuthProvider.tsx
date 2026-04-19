@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, UserProfile, loginWithGoogle } from '../services/firebase';
 
 interface AuthContextType {
@@ -27,10 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let profileUnsub: (() => void) | null = null;
-
-    // Timeout global: 6s para o auth resolver, 5s para o profile
-    // Se qualquer um travar, desbloqueia a tela
+    // Timeout global: se Firebase não responder em 6s, desbloqueia
     const authTimer = setTimeout(() => {
       console.warn('Auth timeout — desbloqueando tela');
       setLoading(false);
@@ -38,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const unsubscribeAuth = onAuthStateChanged(
       auth,
-      (firebaseUser) => {
+      async (firebaseUser) => {
         clearTimeout(authTimer);
         setUser(firebaseUser);
 
@@ -48,45 +45,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // Timeout para o Firestore profile
-        const profileTimer = setTimeout(() => {
-          console.warn('Profile timeout — desbloqueando tela sem profile');
-          setLoading(false);
-        }, 5000);
+        // Usa getDoc (uma vez) em vez de onSnapshot (stream) — mais simples e robusto
+        try {
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          const profileTimer = setTimeout(() => {
+            console.warn('Profile getDoc timeout');
+            setLoading(false);
+          }, 5000);
 
-        profileUnsub = onSnapshot(
-          doc(db, 'users', firebaseUser.uid),
-          async (docSnap) => {
-            clearTimeout(profileTimer);
-            if (docSnap.exists()) {
-              setProfile(docSnap.data() as UserProfile);
-            } else {
-              try {
-                const userDocRef = doc(db, 'users', firebaseUser.uid);
-                const { serverTimestamp, setDoc } = await import('firebase/firestore');
-                const isSuperAdmin = firebaseUser.email === 'analista.ericksilva@gmail.com';
-                await setDoc(userDocRef, {
-                  email: firebaseUser.email,
-                  nome: firebaseUser.displayName || 'Sem Nome',
-                  foto: firebaseUser.photoURL || '',
-                  status: isSuperAdmin ? 'approved' : 'pending',
-                  isAdmin: isSuperAdmin,
-                  createdAt: serverTimestamp(),
-                  updatedAt: serverTimestamp(),
-                });
-              } catch (e) {
-                console.error('Failed to create profile', e);
+          const docSnap = await getDoc(userDocRef);
+          clearTimeout(profileTimer);
+
+          if (docSnap.exists()) {
+            setProfile(docSnap.data() as UserProfile);
+          } else {
+            // Cria perfil novo
+            const isSuperAdmin = firebaseUser.email === 'analista.ericksilva@gmail.com';
+            const newProfile: UserProfile = {
+              email: firebaseUser.email || '',
+              nome: firebaseUser.displayName || 'Sem Nome',
+              foto: firebaseUser.photoURL || '',
+              status: isSuperAdmin ? 'approved' : 'pending',
+              isAdmin: isSuperAdmin,
+            };
+            try {
+              await setDoc(userDocRef, {
+                ...newProfile,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              });
+              setProfile(newProfile);
+            } catch (e) {
+              console.error('Erro ao criar perfil:', e);
+              // Mesmo sem salvar, permite super admin entrar
+              if (isSuperAdmin) {
+                setProfile({ ...newProfile, status: 'approved', isAdmin: true });
+              } else {
                 setProfile(null);
               }
             }
-            setLoading(false);
-          },
-          (error) => {
-            clearTimeout(profileTimer);
-            console.error('Profile snapshot error:', error);
-            setLoading(false);
           }
-        );
+        } catch (e) {
+          console.error('Erro ao buscar perfil:', e);
+          // Se for super admin, entra mesmo sem perfil no Firestore
+          if (firebaseUser.email === 'analista.ericksilva@gmail.com') {
+            setProfile({
+              email: firebaseUser.email,
+              nome: firebaseUser.displayName || 'Erick Silva',
+              foto: firebaseUser.photoURL || '',
+              status: 'approved',
+              isAdmin: true,
+            });
+          } else {
+            setProfile(null);
+          }
+        } finally {
+          setLoading(false);
+        }
       },
       (error) => {
         clearTimeout(authTimer);
@@ -98,7 +113,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       clearTimeout(authTimer);
       unsubscribeAuth();
-      if (profileUnsub) profileUnsub();
     };
   }, []);
 
