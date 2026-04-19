@@ -1,6 +1,5 @@
 import { cn } from '../App';
 import * as React from 'react';
-import { motion } from 'motion/react';
 import { Palette, Share2, MoreHorizontal, Book as BookIcon, Bookmark, Globe, ChevronDown, MessageSquareText, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import InlineComments from './InlineComments';
@@ -209,12 +208,9 @@ export default function ReadingArea({ bookId, bookName, chapter, totalChapters =
         </div>
       </header>
 
-      <motion.div
-        className="px-6 sm:px-16 lg:px-24 py-8 sm:py-12 max-w-4xl mx-auto w-full text-justify text-[18px] sm:text-[20px] leading-[1.6] text-sleek-reading-text relative"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div
+        className="px-6 sm:px-16 lg:px-24 py-8 sm:py-12 max-w-4xl mx-auto w-full text-justify text-[18px] sm:text-[20px] leading-[1.6] text-sleek-reading-text relative animate-fade-in"
         key={`${bookName}-${chapter}`}
-        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <div className="pb-8 border-b border-sleek-border mb-8">
           <h1 
@@ -336,7 +332,7 @@ export default function ReadingArea({ bookId, bookName, chapter, totalChapters =
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
