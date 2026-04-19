@@ -33,6 +33,7 @@ jobs:
           publish_branch: deploy
 
       - name: Deploy via FTP to Hostinger
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
