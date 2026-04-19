@@ -1,12 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 
-// @ts-ignore
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); 
+// Usa o database (default) — o customizado do AI Studio não está disponível fora do Studio
+export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
@@ -23,12 +23,10 @@ export async function loginWithGoogle() {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
     
-    // Check if user exists in DB
     const userDocRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
     
     if (!userDoc.exists()) {
-      // Create user with 'pending' status
       const isSuperAdmin = user.email === 'analista.ericksilva@gmail.com';
       await setDoc(userDocRef, {
         email: user.email,
@@ -41,7 +39,7 @@ export async function loginWithGoogle() {
       });
     }
   } catch (error) {
-    console.error("Erro no login:", error);
+    console.error('Erro no login:', error);
     throw error;
   }
 }
@@ -49,15 +47,3 @@ export async function loginWithGoogle() {
 export async function logout() {
   await signOut(auth);
 }
-
-// Test connection on boot
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    if(error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration.");
-    }
-  }
-}
-testConnection();
