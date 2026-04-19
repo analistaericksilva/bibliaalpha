@@ -1,6 +1,6 @@
 import { cn } from '../App';
 import * as React from 'react';
-import * as motion from 'motion/react';
+import { motion } from 'motion/react';
 import { Palette, Share2, MoreHorizontal, Book as BookIcon, Bookmark, Globe, ChevronDown, MessageSquareText, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import InlineComments from './InlineComments';
