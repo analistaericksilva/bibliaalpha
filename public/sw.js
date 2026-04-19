@@ -37,16 +37,16 @@ self.addEventListener('install', (event) => {
 
 // ── ACTIVATE ─────────────────────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((names) =>
-      Promise.all(
-        names
-          .filter((n) => n !== SHELL_CACHE && n !== BIBLE_CACHE && n !== RESEARCH_CACHE)
-          .map((n) => caches.delete(n))
-      )
-    )
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const names = await caches.keys();
+    await Promise.all(
+      names.filter(n => ![SHELL_CACHE, BIBLE_CACHE, RESEARCH_CACHE].includes(n))
+           .map(n => caches.delete(n))
+    );
+    await self.clients.claim();
+    const clients = await self.clients.matchAll({ type: 'window' });
+    clients.forEach(c => c.navigate(c.url));
+  })());
 });
 
 // ── FETCH ─────────────────────────────────────────────────────────────────────
@@ -65,10 +65,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Navegacao (HTML) → App Shell
+  // 3. Navegacao (HTML) -> Network-First (evita travar em build antigo)
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('/index.html').then((cached) => cached || fetch(event.request))
+      fetch(event.request)
+        .then((res) => {
+          const clone = res.clone();
+          caches.open(SHELL_CACHE).then((c) => c.put('/index.html', clone));
+          return res;
+        })
+        .catch(() => caches.match('/index.html'))
     );
     return;
   }
