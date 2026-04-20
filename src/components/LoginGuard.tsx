@@ -4,7 +4,13 @@ import AdminPanel from './AdminPanel';
 
 export default function LoginGuard({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, profileError, login, logout } = useAuth();
-  const [showAdmin, setShowAdmin] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(() => {
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          return params.get('admin') === '1';
+        }
+        return false;
+      });
 
   useEffect(() => {
     const handleOpenAdmin = () => setShowAdmin(true);
@@ -120,7 +126,7 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
       {showAdminButton && (
         <button 
           onClick={() => setShowAdmin(true)}
-          className="fixed bottom-4 right-4 z-[99] bg-slate-400/30 hover:bg-slate-800 text-slate-700 hover:text-white p-2.5 rounded-full shadow-sm backdrop-blur-sm transition-all"
+          className="fixed bottom-4 right-4 z-[99] bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-all"
           title="Abrir Painel Admin"
         >
           <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
