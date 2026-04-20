@@ -24,30 +24,34 @@ import { initializeApp } from 'firebase/app';
       isAdmin?: boolean;
     }
 
-    const isMobile = () =>
-      typeof navigator !== 'undefined' &&
-      /Android|iPhone|iPad|iPod|IEMobile|Mobile/i.test(navigator.userAgent);
-
     /**
      * Inicia o fluxo de login com Google.
-     * Mobile: usa redirect (mais confiavel em browsers moveis).
-     * Desktop: usa popup.
+     * Tenta popup primeiro; se bloqueado (Opera, Firefox strict, Safari),
+     * faz fallback automático para signInWithRedirect.
      */
     export async function loginWithGoogle(): Promise<void> {
       try {
-        if (isMobile()) {
-          await signInWithRedirect(auth, googleProvider);
-        } else {
-          await signInWithPopup(auth, googleProvider);
-        }
+        await signInWithPopup(auth, googleProvider);
       } catch (error: any) {
+        const code = error?.code ?? '';
+
+        // Popup bloqueado pelo browser ou usuário fechou → usa redirect
         if (
-          error?.code !== 'auth/popup-closed-by-user' &&
-          error?.code !== 'auth/cancelled-popup-request'
+          code === 'auth/popup-blocked' ||
+          code === 'auth/popup-closed-by-user' ||
+          code === 'auth/cancelled-popup-request'
         ) {
-          console.error('Erro no login:', error);
-          throw error;
+          try {
+            await signInWithRedirect(auth, googleProvider);
+          } catch (redirectError: any) {
+            console.error('Erro no redirect login:', redirectError);
+            throw redirectError;
+          }
+          return;
         }
+
+        console.error('Erro no login:', error);
+        throw error;
       }
     }
 
