@@ -12,48 +12,78 @@ auth_req = google.auth.transport.requests.Request()
 creds.refresh(auth_req)
 token = creds.token
 
+project = 'sentinela-ai-489015'
 site = 'sentinela-ai-489015'
 old_domain = 'bibliaalpha.studiologos.com.br'
 new_domain = 'bibliaalpha.org'
-base = f'https://firebasehosting.googleapis.com/v1beta1/sites/{site}/domains'
 hdrs = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+hosting_base = f'https://firebasehosting.googleapis.com/v1beta1/sites/{site}/domains'
 
-# 1. DELETE domínio antigo
-print(f'=== DELETE {old_domain} ===')
-r1 = requests.delete(f'{base}/{old_domain}', headers=hdrs)
-print(f'HTTP {r1.status_code}')
-print(r1.text[:200] if r1.text else '(empty — OK)')
+# PASSO 1: Adicionar bibliaalpha.org ao Firebase Auth authorized domains
+print('=== PASSO 1: Firebase Auth authorized domains ===')
+auth_cfg_url = f'https://identitytoolkit.googleapis.com/v2/projects/{project}/config'
+r_cfg = requests.get(auth_cfg_url, headers=hdrs)
+print(f'GET auth config: HTTP {r_cfg.status_code}')
+if r_cfg.status_code == 200:
+    cfg = r_cfg.json()
+    domains = cfg.get('authorizedDomains', [])
+    print(f'Dominios autorizados atuais: {domains}')
+    if new_domain not in domains:
+        domains.append(new_domain)
+        patch = {'authorizedDomains': domains}
+        r_patch = requests.patch(
+            auth_cfg_url,
+            headers=hdrs,
+            params={'updateMask': 'authorizedDomains'},
+            json=patch
+        )
+        print(f'PATCH auth domains: HTTP {r_patch.status_code}')
+        if r_patch.status_code == 200:
+            print(f'✅ {new_domain} adicionado aos authorized domains')
+        else:
+            print(r_patch.text[:300])
+    else:
+        print(f'{new_domain} ja estava na lista')
 
-# 2. POST novo domínio (mesmo formato do existente)
-print(f'\n=== POST {new_domain} ===')
-body = {'domainName': new_domain, 'site': site}
-r2 = requests.post(base, headers=hdrs, json=body)
-print(f'HTTP {r2.status_code}')
-print(json.dumps(r2.json(), indent=2)[:800])
+# PASSO 2: DELETE domínio antigo do Hosting
+print(f'\n=== PASSO 2: DELETE {old_domain} do Hosting ===')
+r_del = requests.delete(f'{hosting_base}/{old_domain}', headers=hdrs)
+print(f'DELETE: HTTP {r_del.status_code}')
+print(r_del.text[:200] if r_del.text.strip() else '(vazio — OK)')
 
-# 3. GET status novo domínio
-print(f'\n=== GET status {new_domain} ===')
-r3 = requests.get(f'{base}/{new_domain}', headers=hdrs)
-print(f'HTTP {r3.status_code}')
-if r3.status_code == 200:
-    info = r3.json()
+# PASSO 3: POST novo domínio
+print(f'\n=== PASSO 3: POST {new_domain} no Hosting ===')
+r_post = requests.post(hosting_base, headers=hdrs, json={'domainName': new_domain, 'site': site})
+print(f'POST: HTTP {r_post.status_code}')
+resp_data = r_post.json()
+print(json.dumps(resp_data, indent=2))
+
+# PASSO 4: GET status e registros DNS
+print(f'\n=== PASSO 4: Status e DNS records ===')
+r_get = requests.get(f'{hosting_base}/{new_domain}', headers=hdrs)
+print(f'GET: HTTP {r_get.status_code}')
+if r_get.status_code == 200:
+    info = r_get.json()
     print(f'status: {info.get("status")}')
     prov = info.get('provisioning', {})
     print(f'dnsStatus: {prov.get("dnsStatus")}')
     print(f'certStatus: {prov.get("certStatus")}')
-    print(f'expectedIps: {prov.get("expectedIps")}')
-    dns = prov.get('certChallengeDns', {})
-    if dns:
-        print(f'\nTXT DNS para SSL:')
-        print(f'  Nome: {dns.get("domainName")}')
-        print(f'  Valor: {dns.get("token")}')
-    print(f'\nFULL:')
-    print(json.dumps(info, indent=2))
+    print(f'expectedIps: {prov.get("expectedIps", [])}')
+    dns_chal = prov.get('certChallengeDns', {})
+    if dns_chal:
+        print(f'\nTXT p/ SSL cert:')
+        print(f'  Nome:  {dns_chal.get("domainName")}')
+        print(f'  Valor: {dns_chal.get("token")}')
+    dom_chal = prov.get('dnsFetchError', '')
+    if dom_chal:
+        print(f'dnsFetchError: {dom_chal}')
+    print(f'\nFULL provisioning:')
+    print(json.dumps(prov, indent=2))
 else:
-    print(r3.text[:400])
+    print(r_get.text[:400])
 
-# 4. Listar todos os domínios
+# PASSO 5: Listar todos os domínios
 print(f'\n=== LISTA FINAL ===')
-r4 = requests.get(base, headers=hdrs)
-for d in r4.json().get('domains', []):
-    print(f'  {d.get("domainName")} -> {d.get("status")}')
+r_list = requests.get(hosting_base, headers=hdrs)
+for d_item in r_list.json().get('domains', []):
+    print(f'  {d_item.get("domainName"):40} {d_item.get("status")}')
