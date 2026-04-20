@@ -1,37 +1,71 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Biblia Alpha de Estudos — Leia, estude e anote com comentarios classicos e planos de leitura." />
+    <!doctype html>
+    <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="Biblia Alpha de Estudos — Leia, estude e anote com comentarios classicos e planos de leitura." />
 
-    <!-- PWA — Theme & manifest -->
-    <meta name="theme-color" content="#1e293b" />
-    <link rel="manifest" href="/manifest.json" />
+        <!-- Cache-busting: impede que proxies e LiteSpeed sirvam HTML antigo -->
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <meta name="build" content="202604200109" />
 
-    <!-- PWA — Icone (Chrome, Firefox, Samsung) -->
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <!-- PWA — Theme & manifest -->
+        <meta name="theme-color" content="#1e293b" />
+        <link rel="manifest" href="/manifest.json" />
 
-    <!-- PWA — iOS Safari (Add to Home Screen) -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Biblia Alpha" />
-    <link rel="apple-touch-icon" href="/icon.svg" />
+        <!-- PWA — Icone (Chrome, Firefox, Samsung) -->
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
 
-    <!-- PWA — Android Chrome -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="application-name" content="Biblia Alpha" />
+        <!-- PWA — iOS Safari (Add to Home Screen) -->
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Biblia Alpha" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
 
-    <title>Biblia Alpha</title>
+        <!-- PWA — Android Chrome -->
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="Biblia Alpha" />
 
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(console.warn);
-      }
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html> 
+        <title>Biblia Alpha</title>
+
+        <script>
+          // Registra o Service Worker e detecta atualizacoes automaticamente
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+              .then(function(registration) {
+                // Verifica por atualizacoes imediatamente
+                registration.update();
+
+                // Quando um novo SW esta esperando, recarrega a pagina automaticamente
+                registration.addEventListener('updatefound', function() {
+                  var newWorker = registration.installing;
+                  if (!newWorker) return;
+                  newWorker.addEventListener('statechange', function() {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // Novo SW instalado — ativa imediatamente
+                      newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                  });
+                });
+              })
+              .catch(console.warn);
+
+            // Quando o SW toma controle, recarrega para usar a versao nova
+            var refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+              if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+              }
+            });
+          }
+        </script>
+      </head>
+      <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.tsx"></script>
+      </body>
+    </html>
+    
