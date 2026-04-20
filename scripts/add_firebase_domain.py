@@ -1,4 +1,4 @@
-import json, sys, os, requests
+import json, sys, os, time, requests
 import google.auth, google.auth.transport.requests
 from google.oauth2 import service_account
 
@@ -17,59 +17,79 @@ credentials = service_account.Credentials.from_service_account_file(
 auth_req = google.auth.transport.requests.Request()
 credentials.refresh(auth_req)
 token = credentials.token
-
 hdrs = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
 
-SITE_ID = 'sentinela-ai-489015'
-CUSTOM_DOMAIN = 'bibliaalpha.studiologos.com.br'
-base_url = f'https://firebasehosting.googleapis.com/v1beta1/sites/{SITE_ID}/domains'
+PROJECT_ID = 'sentinela-ai-489015'
+SITE_ID    = 'sentinela-ai-489015'
+DOMAIN     = 'bibliaalpha.studiologos.com.br'
 
-print(f"Site: {SITE_ID}")
-print(f"Dominio: {CUSTOM_DOMAIN}")
+legacy_base  = f'https://firebasehosting.googleapis.com/v1beta1/sites/{SITE_ID}/domains'
+modern_base  = f'https://firebasehosting.googleapis.com/v1beta1/projects/{PROJECT_ID}/sites/{SITE_ID}/customDomains'
+
+print(f"Site: {SITE_ID}  |  Dominio: {DOMAIN}")
 print()
 
-r = requests.get(base_url, headers=hdrs)
-print(f"Dominios existentes ({r.status_code}):")
-for d in r.json().get('domains', []):
-    print(f"  {d.get('domainName')} | {d.get('status')}")
-
-detail_r = requests.get(f"{base_url}/{CUSTOM_DOMAIN}", headers=hdrs)
-print(f"\nDetalhes do dominio ({detail_r.status_code}):")
-if detail_r.status_code == 200:
-    detail = detail_r.json()
-    print(json.dumps(detail, indent=2))
-    status = detail.get('status', '')
-    provision = detail.get('provisioning', {})
-    dns_records = provision.get('dnsRecords', []) or provision.get('expectedDnsRecords', [])
-
-    if status == 'DOMAIN_VERIFICATION_LOST':
-        print("\nStatus DOMAIN_VERIFICATION_LOST detectado — deletando e re-adicionando...")
-        del_r = requests.delete(f"{base_url}/{CUSTOM_DOMAIN}", headers=hdrs)
-        print(f"Delete: {del_r.status_code}")
-        import time
-        time.sleep(2)
-        add_r = requests.post(base_url, headers=hdrs, json={'domainName': CUSTOM_DOMAIN})
-        print(f"Re-adicionar: {add_r.status_code}")
-        resp = add_r.json()
-        print(json.dumps(resp, indent=2))
-        provision = resp.get('provisioning', {})
-        dns_records = provision.get('dnsRecords', []) or provision.get('expectedDnsRecords', [])
+def show_dns_info(data):
+    provision = data.get('provisioning', data.get('certDetails', {}))
+    recs = provision.get('dnsRecords', []) or provision.get('expectedDnsRecords', [])
+    expected_ips = provision.get('expectedIps', [])
+    cert_dns = provision.get('certChallengeDns', {})
 
     print("\n" + "="*60)
     print("REGISTROS DNS NECESSARIOS NA HOSTINGER:")
     print("="*60)
-    if dns_records:
-        for rec in dns_records:
-            print(f"  Tipo : {rec.get('type')}")
-            print(f"  Host : {rec.get('domainName', CUSTOM_DOMAIN)}")
-            print(f"  Valor: {rec.get('rdata', rec.get('value', ''))}")
-            print()
+
+    if recs:
+        for r in recs:
+            print(f"  {r.get('type'):5} | {r.get('domainName', DOMAIN):45} | {r.get('rdata','')}")
+    elif expected_ips:
+        print(f"  A     | {DOMAIN:45} | {', '.join(expected_ips)}")
+        print(f"  CNAME | bibliaalpha.studiologos.com.br               | sentinela-ai-489015.web.app")
     else:
-        print(f"  CNAME: bibliaalpha -> sentinela-ai-489015.web.app")
+        print(f"  CNAME | bibliaalpha                                   | sentinela-ai-489015.web.app")
+
+    if cert_dns:
+        print(f"\n  (SSL cert challenge DNS):")
+        print(f"  TXT   | {cert_dns.get('domainName','')} | {cert_dns.get('token','')}")
     print("="*60)
+
+r1 = requests.get(f'{legacy_base}/{DOMAIN}', headers=hdrs)
+print(f"Dominio atual (legacy API): {r1.status_code}")
+if r1.status_code == 200:
+    d = r1.json()
+    status = d.get('status', '')
+    print(f"Status: {status}")
+    show_dns_info(d)
+
+    if status in ('DOMAIN_VERIFICATION_LOST', 'PENDING'):
+        print(f"\nTentando modern API /customDomains para {DOMAIN}...")
+        modern_r = requests.post(
+            modern_base,
+            headers=hdrs,
+            json={'customDomainId': DOMAIN}
+        )
+        print(f"Modern API add: {modern_r.status_code}")
+        print(json.dumps(modern_r.json(), indent=2)[:1000])
+
+        if modern_r.status_code not in (200, 409):
+            print("\nTentando com body alternativo...")
+            alt_r = requests.post(
+                modern_base,
+                headers=hdrs,
+                params={'customDomainId': DOMAIN},
+                json={}
+            )
+            print(f"Alt add: {alt_r.status_code}")
+            print(json.dumps(alt_r.json(), indent=2)[:800])
 else:
-    print(detail_r.text[:500])
-    print("\nDominio nao encontrado — adicionando...")
-    add_r = requests.post(base_url, headers=hdrs, json={'domainName': CUSTOM_DOMAIN})
-    print(f"Adicionar: {add_r.status_code}")
-    print(json.dumps(add_r.json(), indent=2))
+    print("Dominio nao existe — adicionando via modern API...")
+    modern_r = requests.post(
+        modern_base,
+        headers=hdrs,
+        json={'customDomainId': DOMAIN}
+    )
+    print(f"Modern API add: {modern_r.status_code}")
+    print(json.dumps(modern_r.json(), indent=2)[:1000])
+
+r2 = requests.get(f'{legacy_base}/{DOMAIN}', headers=hdrs)
+print(f"\nStatus final ({r2.status_code}): {r2.json().get('status','?') if r2.status_code==200 else r2.text[:200]}")
