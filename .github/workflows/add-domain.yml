@@ -1,65 +1,23 @@
 name: Firebase Add Custom Domain
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
-    paths: ['.github/workflows/add-domain.yml']
-  workflow_dispatch:
+    paths:
+      - '.github/workflows/add-domain.yml'
+      - 'scripts/add_firebase_domain.py'
 
 jobs:
   add-domain:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: pip install google-auth requests --break-system-packages -q
+
       - name: Add bibliaalpha.org to Firebase Hosting
         env:
           SA_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SENTINELA_AI_489015 }}
-        run: |
-          pip install google-auth requests --break-system-packages -q
-
-          python3 - <<'PYEOF'
-import json, os, requests
-import google.oauth2.service_account as sa
-import google.auth.transport.requests
-
-creds_info = json.loads(os.environ['SA_JSON'])
-creds = sa.Credentials.from_service_account_info(
-    creds_info,
-    scopes=['https://www.googleapis.com/auth/cloud-platform',
-            'https://www.googleapis.com/auth/firebase']
-)
-auth_req = google.auth.transport.requests.Request()
-creds.refresh(auth_req)
-token = creds.token
-
-site = 'sentinela-ai-489015'
-domain = 'bibliaalpha.org'
-base = f'https://firebasehosting.googleapis.com/v1beta1/sites/{site}/domains'
-headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
-
-# Verificar se ja existe
-r = requests.get(f'{base}/{domain}', headers=headers)
-print(f'GET {domain}: HTTP {r.status_code}')
-
-if r.status_code == 200:
-    print('Dominio JA registrado no Firebase:')
-else:
-    # Criar
-    r2 = requests.post(base, headers=headers, json={'domainName': domain})
-    print(f'POST criar dominio: HTTP {r2.status_code}')
-    print(r2.text[:500])
-
-# Buscar status e registros DNS necessarios
-r3 = requests.get(f'{base}/{domain}', headers=headers)
-print(f'\nStatus final: HTTP {r3.status_code}')
-if r3.status_code == 200:
-    info = r3.json()
-    print(f'domainStatus: {info.get("status")}')
-    prov = info.get('provisioning', {})
-    print('\n=== REGISTROS DNS NECESSARIOS ===')
-    for rset in prov.get('expectedDnsRecordSets', []):
-        print(f'\ndomainName: {rset.get("domainName")}')
-        for rec in rset.get('records', []):
-            print(f'  {rec.get("type"):6} {rec.get("name","@"):40} {rec.get("data","")}')
-    if not prov.get('expectedDnsRecordSets'):
-        print(json.dumps(info, indent=2))
-PYEOF
+        run: python3 scripts/add_firebase_domain.py
