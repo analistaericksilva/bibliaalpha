@@ -1,11 +1,11 @@
 /**
  * sw.js — Service Worker Biblia Alpha
- * Versao: 2026-04-20-v2
+ * Versao: 2026-04-20-v3
  * Estrategia: networkFirst para HTML, cacheFirst para assets com hash
  */
 
-const CACHE_VERSION = 'bibliaalpha-v2';
-const ASSETS_CACHE  = 'bibliaalpha-assets-v2';
+const CACHE_VERSION = 'bibliaalpha-v3';
+const ASSETS_CACHE  = 'bibliaalpha-assets-v3';
 
 const PRECACHE = ['/manifest.json', '/icon.svg'];
 
@@ -20,7 +20,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
-      // Apaga caches antigos de versões anteriores
+      // Apaga TODOS os caches antigos de versoes anteriores
       const keys = await caches.keys();
       await Promise.all(
         keys.filter(k => k !== CACHE_VERSION && k !== ASSETS_CACHE)
@@ -32,17 +32,20 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ── Estratégia de fetch ────────────────────────────────────────────────────────
+// ── Estrategia de fetch ────────────────────────────────────────────────────────
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignorar extensoes do Chrome, não-GET e requests externos de API
+  // Ignorar nao-GET e extensoes do Chrome
   if (request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
+
+  // Nao interceptar chamadas Firebase/Google API
   if (url.hostname.includes('firestore.googleapis.com')) return;
   if (url.hostname.includes('identitytoolkit.googleapis.com')) return;
   if (url.hostname.includes('securetoken.googleapis.com')) return;
+  if (url.hostname.includes('googleapis.com')) return;
 
   // Assets com hash (Vite): cache primeiro, rede como fallback
   if (url.pathname.startsWith('/assets/')) {
@@ -58,10 +61,10 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // HTML e navegacao: rede primeiro, cache como fallback
+  // HTML e navegacao: SEMPRE rede primeiro com no-store, cache como fallback offline
   if (request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
         .then(res => {
           const clone = res.clone();
           caches.open(CACHE_VERSION).then(c => c.put(request, clone));
@@ -73,7 +76,7 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// Ouve SKIP_WAITING para atualizacoes forcadas
+// Ouve SKIP_WAITING para atualizacoes forcadas via postMessage
 self.addEventListener('message', event => {
   if (event?.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
