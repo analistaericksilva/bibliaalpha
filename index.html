@@ -1,70 +1,82 @@
-    <!doctype html>
-    <html lang="pt-BR">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="Biblia Alpha de Estudos — Leia, estude e anote com comentarios classicos e planos de leitura." />
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Biblia Alpha de Estudos — Leia, estude e anote com comentarios classicos e planos de leitura." />
 
-        <!-- Cache-busting -->
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
-        <meta name="build" content="202604200300" />
+    <!-- Cache-busting -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="build" content="202604200300" />
 
-        <!-- PW@ — Theme & manifest -->
-        <meta name="theme-color" content="#1e293b" />
-        <link rel="manifest" href="/manifest.json" />
+    <!-- PW@ — Theme & manifest -->
+    <meta name="theme-color" content="#1e293b" />
+    <link rel="manifest" href="/manifest.json" />
 
-        <!-- PWA — Icone -->
-        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <!-- PWA — Icone -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
 
-        <!-- PW@ — iOS Safari -->
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Biblia Alpha" />
-        <link rel="apple-touch-icon" href="/icon.svg" />
+    <!-- PW@ — iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Biblia Alpha" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
 
-        <!-- PWA — Android Chrome -->
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="Biblia Alpha" />
+    <!-- PWA — Android Chrome -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Biblia Alpha" />
 
-        <title>Biblia Alpha</title>
+    <title>Biblia Alpha</title>
 
-        <script>
-          // SW-KILL: desregistra Service Workers e apaga caches antigos.
-          // navigator.serviceWorker.register() foi REMOVIDO intencionalmente.
-          // Remover este bloco somente apos confirmar no DevTools que nao ha
-          // nenhum SW ativo em Application > Service Workers.
-          (function () {
-            if (!('serviceWorker' in navigator)) return;
-            navigator.serviceWorker.getRegistrations().then(function (regs) {
-              regs.forEach(function (reg) {
-                reg.unregister().then(function (ok) {
-                  if (ok) console.log('[SW-KILL] Desregistrado:', reg.scope);
-                });
+    <script>
+      /**
+       * FORCE-UPDATE: Limpeza profunda de Service Workers e Caches.
+       * Este script força o navegador a descartar versões antigas presas na cache.
+       */
+      (function () {
+        console.log('[FORCE-UPDATE] Iniciando limpeza de emergência...');
+
+        // 1. Desregistar todos os Service Workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function (regs) {
+            regs.forEach(function (reg) {
+              reg.unregister().then(function (ok) {
+                if (ok) console.log('[FORCE-UPDATE] SW Removido:', reg.scope);
               });
-            }).catch(function (err) {
-              console.warn('[SW-KILL] Erro ao desregistrar SW:', err);
             });
-            if ('caches' in window) {
-              caches.keys().then(function (keys) {
-                keys.forEach(function (key) {
-                  caches.delete(key).then(function () {
-                    console.log('[SW-KILL] Cache apagado:', key);
-                  });
-                });
-              }).catch(function (err) {
-                console.warn('[SW-KILL] Erro ao apagar caches:', err);
+          });
+        }
+
+        // 2. Apagar todas as caches do navegador
+        if ('caches' in window) {
+          caches.keys().then(function (keys) {
+            keys.forEach(function (key) {
+              caches.delete(key).then(function () {
+                console.log('[FORCE-UPDATE] Cache apagada:', key);
               });
-            }
-            try { localStorage.clear(); } catch (e) {}
-            try { sessionStorage.clear(); } catch (e) {}
-            console.log('[SW-KILL] Limpeza concluida.');
-          })();
-        </script>
-      </head>
-      <body>
-        <div id="root"></div>
-        <script type="module" src="/src/main.tsx"></script>
-      </body>
-    </html>
+            });
+          });
+        }
+
+        // 3. Limpar storages
+        try { localStorage.clear(); } catch (e) {}
+        try { sessionStorage.clear(); } catch (e) {}
+
+        // 4. Forçar recarregamento único para garantir nova versão do servidor
+        if (!window.name.includes('reloaded_by_manus')) {
+          window.name += '_reloaded_by_manus';
+          setTimeout(function() {
+            console.log('[FORCE-UPDATE] Recarregando para aplicar versão do servidor...');
+            window.location.reload(true);
+          }, 500);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
