@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db, UserProfile, loginWithGoogle } from '../services/firebase';
+import { auth, db, UserProfile, loginWithGoogle, processRedirectResult } from '../services/firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }, 8000);
 
+    processRedirectResult(); // processa redirect do mobile
     const unsubscribeAuth = onAuthStateChanged(
       auth,
       async (firebaseUser) => {
