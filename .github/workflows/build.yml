@@ -1,66 +1,80 @@
-name: Build and Deploy
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+    name: Build and Deploy
+    on:
+      push:
+        branches: [main]
+      workflow_dispatch:
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
+    jobs:
+      build-and-deploy:
+        runs-on: ubuntu-latest
+        permissions:
+          contents: write
+          id-token: write
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+          - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
+          - uses: actions/setup-node@v4
+            with:
+              node-version: 20
+              cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+          - name: Install dependencies
+            run: npm ci
 
-      - name: Build
-        run: npm run build
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          VITE_GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
+          - name: Build
+            run: npm run build
+            env:
+              GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+              VITE_GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      - name: Copy .htaccess to dist
-        run: |
-          if [ -f public/.htaccess ]; then cp public/.htaccess dist/.htaccess; fi
-          ls -la dist/
+          - name: Prepare dist — copiar arquivos publicos
+            run: |
+              if [ -f public/.htaccess ]; then cp public/.htaccess dist/.htaccess; fi
+              if [ -f public/sw.js ]; then cp public/sw.js dist/sw.js; fi
+              echo "--- Conteudo do dist/ ---"
+              ls -la dist/
+              echo "--- sw.js versao ---"
+              head -5 dist/sw.js
 
-      - name: Deploy via FTP to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: /
-          dangerous-clean-slate: false
-          protocol: ftp
-          port: 21
-          timeout: 60000
-          exclude: |
-            **/.git*
-            **/.git*/**
+          - name: Deploy via FTP to Hostinger
+            uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+            with:
+              server: ${{ secrets.FTP_SERVER }}
+              username: ${{ secrets.FTP_USERNAME }}
+              password: ${{ secrets.FTP_PASSWORD }}
+              local-dir: ./dist/
+              server-dir: /
+              dangerous-clean-slate: false
+              protocol: ftp
+              port: 21
+              timeout: 60000
+              exclude: |
+                **/.git*
+                **/.git*/**
 
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SENTINELA_AI_489015 }}
-          channelId: live
-          projectId: sentinela-ai-489015
+          - name: Deploy to Firebase Hosting
+            uses: FirebaseExtended/action-hosting-deploy@v0
+            with:
+              repoToken: ${{ secrets.GITHUB_TOKEN }}
+              firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SENTINELA_AI_489015 }}
+              channelId: live
+              projectId: sentinela-ai-489015
 
-      - name: Deploy Firestore Rules
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SENTINELA_AI_489015 }}
-        run: |
-          echo "$GOOGLE_APPLICATION_CREDENTIALS_JSON" > /tmp/sa.json
-          pip install google-auth requests --break-system-packages -q
-          python3 scripts/deploy_firestore_rules.py
+          - name: Deploy Firestore Rules
+            env:
+              GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SENTINELA_AI_489015 }}
+            run: |
+              echo "$GOOGLE_APPLICATION_CREDENTIALS_JSON" > /tmp/sa.json
+              pip install google-auth requests --break-system-packages -q
+              python3 scripts/deploy_firestore_rules.py
+
+          - name: Resumo do deploy
+            run: |
+              echo "=========================================="
+              echo "  Deploy concluido com sucesso!"
+              echo "  Hostinger (FTP): atualizado"
+              echo "  Firebase Hosting: atualizado"
+              echo "  Service Worker: v6"
+              echo "=========================================="
+    
