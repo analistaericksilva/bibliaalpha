@@ -3,7 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches: [main]
-  workflow_dispatch: null
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -29,15 +29,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VITE_GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      - name: Preparar dist
+      - name: Verificar dist
         run: |
-          [ -f public/sw.js ]         && cp public/sw.js         dist/sw.js
-          [ -f public/manifest.json ] && cp public/manifest.json dist/manifest.json
-          [ -f public/.htaccess ]     && cp public/.htaccess     dist/.htaccess
-          BUILD_TS=$(date +%Y%m%d%H%M%S)
-          sed -i "s/__SW_CACHE_VERSION__/bibliaalpha-${BUILD_TS}/" dist/sw.js || true
           echo "dist/ contents:"; ls -la dist/
-          echo "sw.js head:"; head -3 dist/sw.js
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
