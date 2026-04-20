@@ -1,68 +1,63 @@
-    # Biblia Alpha — Cache Control para Hostinger/LiteSpeed (v2)
+# Biblia Alpha — Cache Control para Hostinger/LiteSpeed (v3)
 
-    # ─── LiteSpeed: desabilitar cache para arquivos criticos ───────────────────────
-    # O LiteSpeed tem cache proprio (LSCache) que ignora mod_headers padrao.
-    # Estas diretivas desativam o cache do LiteSpeed para index.html e sw.js.
-    <IfModule LiteSpeed>
-      RewriteEngine On
+# ─── LiteSpeed: desabilitar cache do LSCache para arquivos criticos ──────────────
+<IfModule LiteSpeed>
+  <FilesMatch "^(index\.html|sw\.js|manifest\.json)$">
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+    Header always set X-LiteSpeed-Purge "all"
+  </FilesMatch>
+</IfModule>
 
-      <FilesMatch "^(index\.html|sw\.js|manifest\.json)$">
-        Header always set X-LiteSpeed-Cache-Control "no-cache"
-        Header always set X-LiteSpeed-Purge "all"
-      </FilesMatch>
-    </IfModule>
+# ─── Headers de cache — Apache mod_headers ────────────────────────────────────
+<IfModule mod_headers.c>
 
-    # ─── Headers de cache — Apache mod_headers ────────────────────────────────────
-    <IfModule mod_headers.c>
+  # Assets com hash Vite (imutaveis): cache longo
+  # NOTA: sw.js nao tem hash no nome — sera sobrescrito abaixo
+  <FilesMatch "\.(js|css|woff2?|ttf|eot)$">
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
 
-      # sw.js: NUNCA cachear (browser precisa detectar atualizacoes do SW)
-      <FilesMatch "^sw\.js$">
-        Header always set Cache-Control "no-cache, no-store, must-revalidate"
-        Header always set Pragma "no-cache"
-        Header always set Expires "0"
-        Header always set X-LiteSpeed-Cache-Control "no-cache"
-      </FilesMatch>
+  # Imagens: cache de 1 dia
+  <FilesMatch "\.(png|jpg|jpeg|gif|webp|svg|ico)$">
+    Header always set Cache-Control "public, max-age=86400"
+  </FilesMatch>
 
-      # index.html + manifest: sempre buscar versao nova
-      <FilesMatch "^(index\.html|manifest\.json)$">
-        Header always set Cache-Control "no-cache, no-store, must-revalidate"
-        Header always set Pragma "no-cache"
-        Header always set Expires "0"
-        Header always set X-LiteSpeed-Cache-Control "no-cache"
-      </FilesMatch>
+  # index.html + manifest: sempre buscar versao nova
+  # (vem APOS a regra geral .js para garantir override)
+  <FilesMatch "^(index\.html|manifest\.json)$">
+    Header always set Cache-Control "no-cache, no-store, must-revalidate"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+  </FilesMatch>
 
-      # Assets com hash Vite (imutaveis): cache longo e correto
-      <FilesMatch "\.(js|css|woff2?|ttf|eot)$">
-        Header always set Cache-Control "public, max-age=31536000, immutable"
-      </FilesMatch>
+  # sw.js: NUNCA cachear — browser precisa detectar updates do SW
+  # DEVE ser a ULTIMA regra .js para sobrescrever a regra geral acima
+  <Files "sw.js">
+    Header always set Cache-Control "no-cache, no-store, must-revalidate"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+    Header always set Content-Type "application/javascript"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+  </Files>
 
-      # Imagens: cache de 1 dia
-      <FilesMatch "\.(png|jpg|jpeg|gif|webp|svg|ico)$">
-        Header always set Cache-Control "public, max-age=86400"
-      </FilesMatch>
+</IfModule>
 
-    </IfModule>
+# ─── Compressao Gzip ────────────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript
+  AddOutputFilterByType DEFLATE application/json application/manifest+json
+</IfModule>
 
-    # ─── Compressao Gzip (LiteSpeed respeita) ────────────────────────────────────
-    <IfModule mod_deflate.c>
-      AddOutputFilterByType DEFLATE text/html text/css application/javascript
-      AddOutputFilterByType DEFLATE application/json application/manifest+json
-    </IfModule>
+# ─── SPA Routing (React Router) ─────────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
 
-    # ─── SPA Routing (React Router) ───────────────────────────────────────────────
-    <IfModule mod_rewrite.c>
-      RewriteEngine On
-      RewriteBase /
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/assets/
+  RewriteCond %{REQUEST_URI} !\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot|json)$
 
-      # Nao redirecionar arquivos e diretorios que existem
-      RewriteCond %{REQUEST_FILENAME} !-f
-      RewriteCond %{REQUEST_FILENAME} !-d
-
-      # Nao redirecionar assets
-      RewriteCond %{REQUEST_URI} !^/assets/
-      RewriteCond %{REQUEST_URI} !\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot|json)$
-
-      # Redirecionar tudo para index.html
-      RewriteRule ^ index.html [L]
-    </IfModule>
-    
+  RewriteRule ^ index.html [L]
+</IfModule>
