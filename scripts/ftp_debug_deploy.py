@@ -3,7 +3,7 @@ import ftplib, os, sys, pathlib, time, subprocess
 SERVER = os.environ['FTP_SERVER']
 USER = os.environ['FTP_USERNAME']
 PASS = os.environ['FTP_PASSWORD']
-SITE_URL = os.environ.get('SITE_URL', 'https://bibliaalpha.stuiologos.com.br')
+SITE_URL = os.environ.get('SITE_URL', 'https://bibliaalpha.studiologos.com.br')
 
 def connect():
     ftp = ftplib.FTP()
@@ -18,7 +18,7 @@ print("OK:", ftp.getwelcome()[:80])
 print("PWD inicial:", ftp.pwd())
 
 # Descobrir diretorio raiz do site
-candidates = ['public_html', 'bibliaalpha.stuiologos.com.br', 'httpdocs', 'www']
+candidates = ['public_html', 'bibliaalpha.studiologos.com.br', 'httpdocs', 'www']
 target_dir = None
 for candidate in candidates:
     try:
