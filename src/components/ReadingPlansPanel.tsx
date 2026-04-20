@@ -135,7 +135,7 @@ export default function ReadingPlansPanel({
                                 'text-[13px] font-medium transition-colors',
                                 isDone
                                   ? 'text-green-700/70 line-through'
-                                  : 'text-sleek-text-main group-hover:text-blue-600",
+                                  : 'text-sleek-text-main group-hover:text-blue-600',
                               )}
                             >
                               {milestone.label}

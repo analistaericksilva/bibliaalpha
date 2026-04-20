@@ -1,6 +1,6 @@
 import { cn } from '../App';
 import * as React from 'react';
-import { X, FileText, UploadCloud, RefreshCw, PeNLine, Bold, Italic, List } from 'lucide-react';
+import { X, FileText, UploadCloud, RefreshCw, PenLine, Bold, Italic, List } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface NotepadPanelProps {
@@ -102,9 +102,13 @@ export default function NotepadPanel({ isOpen, onClose, chapterContext }: Notepa
         <footer className="shrink-0 p-4 border-t border-sleek-border bg-sleek-bg flex items-center justify-between">
           <div className="text-[11px] text-sleek-text-muted flex items-center gap-1.5">
             {isSaving ? (
-              <span className="flex items-center gap-1"><RefreshCw size={12} className="animate-spin" /> Preparando download...</span>
+              <span className="flex items-center gap-1">
+                <RefreshCw size={12} className="animate-spin" /> Preparando download...
+              </span>
             ) : lastSaved ? (
-              <span className="flex items-center gap-1"><FileText size={12} /> Baixado as {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              <span className="flex items-center gap-1">
+                <FileText size={12} /> Baixado as {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
             ) : (
               'Escreva e baixe como .txt'
             )}
