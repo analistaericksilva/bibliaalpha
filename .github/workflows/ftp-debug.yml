@@ -26,9 +26,7 @@ name: FTP Debug Deploy
             run: |
               cp public/.htaccess dist/.htaccess || true
               cp public/sw.js dist/sw.js || true
-              echo "=== Arquivos em dist/ ==="
               ls -la dist/
-              echo "=== sw.js primeiras linhas ==="
               head -5 dist/sw.js
 
           - name: FTP Debug e Deploy
