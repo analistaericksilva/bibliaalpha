@@ -127,9 +127,14 @@ export default function Sidebar({ isOpen, books, activeBook, activeChapter, onSe
       )}
     >
       <div className={cn("flex-1 overflow-y-auto py-4 custom-scrollbar w-[85vw] sm:w-[240px]", !isOpen && "hidden")}>
-        <div className="flex items-center gap-2 px-4 pt-1 pb-3 font-semibold text-[14px]">
-          <div className="w-5 h-5 bg-[#DDD] rounded-sm shrink-0"></div>
-          <span>Bíblia Alpha</span>
+        {/* Logo discreta no topo do sidebar */}
+        <div className="flex items-center justify-center px-4 pt-1 pb-4">
+          <img
+            src="/icon.svg"
+            alt="Bíblia de Estudo Alpha"
+            className="h-9 w-auto object-contain opacity-90"
+            draggable={false}
+          />
         </div>
         <button 
           onClick={onSearchClick}
@@ -161,40 +166,30 @@ export default function Sidebar({ isOpen, books, activeBook, activeChapter, onSe
             </button>
             <button onClick={() => handleAction('drive')} className="w-full flex items-center justify-between px-2 py-1.5 text-[13px] rounded-md transition-colors text-sleek-text-main hover:bg-sleek-hover">
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded flex items-center justify-center bg-[#0F9D58] text-white font-bold text-[10px]">D</div>
-                Acessar Google Drive
+                <div className="w-5 h-5 rounded flex items-center justify-center bg-[#4285F4] text-white text-[10px] font-bold">D</div>
+                Abrir Google Drive
               </div>
             </button>
             <button onClick={() => handleAction('calendar')} className="w-full flex items-center justify-between px-2 py-1.5 text-[13px] rounded-md transition-colors text-sleek-text-main hover:bg-sleek-hover">
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded flex items-center justify-center bg-[#4285F4] text-white font-bold text-[10px]">C</div>
-                Marcar na Agenda
+                <div className="w-5 h-5 rounded flex items-center justify-center bg-[#1B73E8] text-white text-[10px]">C</div>
+                Agendar Estudo
               </div>
             </button>
           </div>
         </div>
 
-        <div className="mt-4 px-4 py-4 border-t border-sleek-border text-[12px] text-sleek-text-muted">
-          <div className="font-semibold mb-2">Configurações</div>
-          
-          {showAdminButton && (
-            <button 
-              onClick={() => window.dispatchEvent(new Event('open-admin'))}
-              className="w-full flex items-center gap-2 px-2 py-2 mb-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition font-medium"
+        {showAdminButton && (
+          <div className="px-3 pb-4">
+            <a
+              href="/admin"
+              className="w-full flex items-center gap-2 px-3 py-2 text-[12px] rounded-md transition-colors text-sleek-text-muted hover:bg-sleek-hover"
             >
-              <Shield size={16} /> Painel Administrativo
-            </button>
-          )}
-
-          <div 
-            onClick={() => {
-              import('../services/firebase').then(m => m.logout());
-            }}
-            className="w-full flex items-center px-2 py-2 rounded-md text-red-500 hover:bg-red-50 cursor-pointer font-medium transition"
-          >
-            Sair / Logout
+              <Shield size={13} className="text-sleek-text-muted" />
+              Painel Admin
+            </a>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
